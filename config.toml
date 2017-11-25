@@ -1,0 +1,59 @@
+theme = "hugo_theme_pickles"
+baseurl = "https://functionally-defined.rbind.io/"
+languageCode = "en-us"
+Title = "Functionally Defined"
+# Copyright notice. This is displayer in the footer.
+copyright = "&copy; 2017 Allen Chang"
+enableEmoji = true
+footnotereturnlinkcontents = "<sup>^</sup>"
+#ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+
+[params]
+  paginate = 10
+  # Social accounts. Link to these accounts are displayed in the header and
+  # footer
+  #twitter = "Your Twitter username"
+  #facebook = "Your Facebook username"
+  #instagram = "Your Instagram username"
+  #googleplus = "Your Google+ account URL" # https://plus.google.com/u/0/xxxxxx
+  github = "allenchng"
+  #gitlab = "Your GitLab username"
+  #npm = "Your npm username"
+  #codepen = "Your CodePen username"
+  #dribbble = "Your Dribbble username"
+  #fivehundredpx = "Your 500px username" # 500px
+  #flickr = "Your Flickr username"
+  #pinterest = "Your Pinterest username"
+  #tumblr = "Your Tumblr username"
+  #vimeo = "Your Vimeo username"
+  #youtube = "Your YouTube username"
+  #linkedin = "Your LinkedIn username"
+  # Disqus shortname
+  disqus = ""
+  # Google Analytics API key.
+  ga_api_key = "Your Google Analytics tracking id"
+  author = "Allen Chang"
+  #authorwebsite = "example.com"
+  avatar = "/path/to/avatar"
+  contact = "achang35@gmail.com"
+  bio = "PhD student in cognitive neuroscience"
+  # Short subtitle/tagline. This is displayed in the header.
+  subtitle = "What this means..."
+  # Logo image. This is displayed ogp image.
+  logo = "/path/to/logo"
+  favicon = "/path/to/favicon"
+
+[[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+
+[[menu.main]]
+    name = "About"
+    url = "/about"
+    weight = 2
+
+[[menu.main]]
+    name = "Tags"
+    url = "/tags"
+    weight = 4
