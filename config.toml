@@ -1,5 +1,5 @@
 theme = "hugo_theme_pickles"
-baseurl = "https://functionally-defined.rbind.io/"
+baseurl = "https://functionally-defined.netlify.com/"
 languageCode = "en-us"
 Title = "Functionally Defined"
 # Copyright notice. This is displayer in the footer.
