@@ -1,16 +1,8 @@
 +++
-title = "About Hugo"
-date = "2014-04-09"
+title = "About me"
+date = "2017-11-05"
 +++
 
-Hugo is a static site engine written in Go.
+I am a Ph.D. student in Cognitive Neuroscience at Boston University. Inside the lab, I think about why humans learn differently from one another. Outside the lab, I scour the internet for vintage clothes and eat as much Korean fried chicken as I can afford after buying vintage clothes.
 
-
-It makes use of a variety of open source projects including:
-
-* [Cobra](https://github.com/spf13/cobra)
-* [Viper](https://github.com/spf13/viper)
-* [J Walter Weatherman](https://github.com/spf13/jWalterWeatherman)
-* [Cast](https://github.com/spf13/cast)
-
-Learn more and contribute on [GitHub](https://github.com/gohugoio).
+This site is a work in progress, so please forgive any and all broken things.

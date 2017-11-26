@@ -6,7 +6,7 @@ Title = "Functionally Defined"
 copyright = "&copy; 2017 Allen Chang"
 enableEmoji = true
 footnotereturnlinkcontents = "<sup>^</sup>"
-#ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [params]
   paginate = 10
@@ -27,7 +27,7 @@ footnotereturnlinkcontents = "<sup>^</sup>"
   #tumblr = "Your Tumblr username"
   #vimeo = "Your Vimeo username"
   #youtube = "Your YouTube username"
-  #linkedin = "Your LinkedIn username"
+  linkedin = "allen-chang-b3580723"
   # Disqus shortname
   disqus = ""
   # Google Analytics API key.
@@ -36,11 +36,11 @@ footnotereturnlinkcontents = "<sup>^</sup>"
   #authorwebsite = "example.com"
   avatar = "/path/to/avatar"
   contact = "achang35@gmail.com"
-  bio = "PhD student in cognitive neuroscience"
+  bio = "Catch me outside Uniqlo"
   # Short subtitle/tagline. This is displayed in the header.
-  subtitle = "What this means..."
+  #subtitle = ""
   # Logo image. This is displayed ogp image.
-  logo = "/path/to/logo"
+  #logo = "/path/to/logo"
   favicon = "/path/to/favicon"
 
 [[menu.main]]
