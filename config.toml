@@ -34,13 +34,13 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   ga_api_key = "Your Google Analytics tracking id"
   author = "Allen Chang"
   #authorwebsite = "example.com"
-  avatar = "/path/to/avatar"
+  avatar = "/images/ac.png""
   contact = "achang35@gmail.com"
   bio = "Catch me outside Uniqlo"
   # Short subtitle/tagline. This is displayed in the header.
   #subtitle = ""
   # Logo image. This is displayed ogp image.
-  logo = "/functionally_defined/static/image/ac.png"
+  # logo = "/image/ac.png"
   #favicon = "/path/to/favicon"
 
 [[menu.main]]
