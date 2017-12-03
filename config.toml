@@ -29,12 +29,12 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   #youtube = "Your YouTube username"
   linkedin = "allen-chang-b3580723"
   # Disqus shortname
-  disqus = ""
+  #disqus = ""
   # Google Analytics API key.
-  ga_api_key = "Your Google Analytics tracking id"
+  #ga_api_key = "Your Google Analytics tracking id"
   author = "Allen Chang"
   #authorwebsite = "example.com"
-  avatar = "/images/ac.png""
+  avatar = "/images/ac.png"
   contact = "achang35@gmail.com"
   bio = "Catch me outside Uniqlo"
   # Short subtitle/tagline. This is displayed in the header.
