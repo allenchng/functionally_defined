@@ -34,7 +34,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   #ga_api_key = "Your Google Analytics tracking id"
   author = "Allen Chang"
   #authorwebsite = "example.com"
-  avatar = "/images/ac.png"
+  avatar = "/images/me2_squarewb.png"
   contact = "achang35@gmail.com"
   bio = "Catch me outside Uniqlo"
   # Short subtitle/tagline. This is displayed in the header.
@@ -52,6 +52,11 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     name = "About"
     url = "/about"
     weight = 2
+    
+[[menu.main]]
+    name = "Favorite Links"
+    url = "/links"
+    weight = 3
 
 [[menu.main]]
     name = "Tags"
