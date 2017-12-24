@@ -7,10 +7,23 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2017 Allen Chang</copyright>
-    <lastBuildDate>Sat, 25 Nov 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 21 Dec 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Things I like</title>
+      <link>/links/</link>
+      <pubDate>Thu, 21 Dec 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/links/</guid>
+      <description>Also known as my bookmarks bar substitue
+R ggplot visualization examples
+arranging multiple plots - useful for scientific figures
+picking visualization colors
+wes anderson color palletes</description>
+    </item>
     
     <item>
       <title>Test post</title>
@@ -29,15 +42,6 @@
       <guid>/about/</guid>
       <description>I am a Ph.D. candidate in Cognitive Neuroscience at Boston University. Inside the lab, I think about why humans learn differently from one another. Outside the lab, I scour the internet for vintage clothes and eat as much Korean fried chicken as I can afford after buying vintage clothes.
 This site is a work in progress, so please forgive any and all broken things.</description>
-    </item>
-    
-    <item>
-      <title>Things I like</title>
-      <link>/links/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/links/</guid>
-      <description>R ggplot visualization examples</description>
     </item>
     
   </channel>

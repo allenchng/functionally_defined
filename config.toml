@@ -12,7 +12,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   paginate = 10
   # Social accounts. Link to these accounts are displayed in the header and
   # footer
-  #twitter = "Your Twitter username"
+  twitter = "allenchng"
   #facebook = "Your Facebook username"
   #instagram = "Your Instagram username"
   #googleplus = "Your Google+ account URL" # https://plus.google.com/u/0/xxxxxx
