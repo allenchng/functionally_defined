@@ -50,7 +50,7 @@ pull_table <- function(i){
 chef_list <- lapply(site, pull_table)
 ```
 
-The contestant tables for each season are not completely identical, so to bind all contestants into one dataframe, I had to select only the first 3 columns (Name / Hometown / Current location). Also, later seasons of Top Chef brought back previous contestants, so to avoid duplicate counts, I filtered the table to only keep unique chefs. 
+The contestant tables for each season are not completely identical, so I selected only the first 3 columns (Name / Hometown / Current location). Later seasons of Top Chef started a trend of bringing back previous contestants, so to avoid duplicate counts I filtered the table to only keep unique chefs. 
 
 ```{r}
 #--------------------------------------------
@@ -69,7 +69,7 @@ unique_chefs <- full_df %>%
   distinct()
 ```
 
-The map I used has states as lower case character strings, so I changed the state names in my scraped data to lower case. 
+Just a few more preprocessing steps. The map I used has states as lower case character strings, so I changed the state names in my scraped data to lower case. 
 
 ```{r message=FALSE, warning=FALSE}
 #----------------------------------------------------------------
@@ -87,27 +87,25 @@ unique_chefs <- unique_chefs %>%
          currentstate = str_to_lower(gsub(".*, ", "", .$Current)))
 ```
 
-I also only want to visualize state information, so I dropped city information and finally counted the number of contestants from each state.
+I also only want to visualize only state information, so I dropped city information and finally counted the number of contestants from each state. Unfortunately that means leaving out chefs born outside of the US.
 
 ```{r}
-# remove hometowns now in the USA
+#----------------------------------------------------------------
+# RECODE DC and FILTER FOR US STATES
+# - store map data
+#   convert character strings to lower case
+#----------------------------------------------------------------
 unique_chefs$homestate <- recode(unique_chefs$homestate, "D.C" = "district of columbia")
 
 unique_states <- unique_chefs %>%
   filter(homestate %in% map.states$region) %>%
   group_by(homestate) %>%
   summarise(count = n())
-
-head(unique_states)
 ```
 
-Lastly, the plotting. Of course I had to color states in orange for Top Chef. Looking at the map, I'm most surprised at how many contests were from Michigan (no slight to Michigan, I have a soft spot for Zingerman's). 
+Finally I have a dataframe consisting of the number of Top Chef contestants from each state. Time to plot! I of course had to use Top Chef orange to fill in each state by count. Looking at the final map, I'm not surprised to see so many contestants from California and New York. More interesting to me is the "middle" range of states including Colorado, Washington, and Michigan. This map is obviously imperfect, as I'm missing 5 seasons worth of data, but it gives a rough idea of how contestant homestates are distributed.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-# ggplot(data = df, aes(x = long, y = lat, group = group)) + 
-#   geom_polygon(aes(fill = count)) +
-#   scale_fill_brewer(palette = "YlOrRd")
-
 gg <- ggplot()
 gg <- gg + geom_map(data = map.states, map = map.states, 
               aes(x = long, y = lat, map_id = region),
@@ -121,7 +119,7 @@ gg <- gg + theme(panel.border = element_blank())
 gg <- gg + theme(panel.background = element_blank())
 gg <- gg + theme(axis.ticks = element_blank())
 gg <- gg + theme(axis.text = element_blank())
-gg <- gg + ggtitle("")
+gg <- gg + ggtitle("Top Chef contestant home states")
 gg
 ```
 
