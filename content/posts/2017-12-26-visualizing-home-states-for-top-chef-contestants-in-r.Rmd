@@ -1,0 +1,131 @@
+---
+title: Visualizing home states for Top Chef contestants in R
+author: Allen Chang
+date: '2017-12-26'
+slug: visualizing-home-states-for-top-chef-contestants-in-r
+categories: []
+tags: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Each season of Top Chef is something that I look forward to every year and it's one of the only shows that my girlfriend and I will make an hour of time for every week to watch. To my delight, this season two of my favorite writers [Tom Haberstroh](https://twitter.com/tomhaberstroh) and [Kevin Arnovitz](https://twitter.com/kevinarnovitz) have started a weekly podcast called [Pack Your Knives](https://twitter.com/PackKnives) to discuss each episode and share their love of Top Chef. During one of their first episodes, they discussed states that have never had a Top Chef contestant but moved onto other topics before finishing the list. This inspired me to try and map out the number of Top Chef contestants across US states.
+
+First some packages. 
+
+```{r packages, echo=TRUE, message=FALSE, warning=FALSE}
+#--------------
+#  PACKAGES
+#--------------
+
+library(tidyverse)
+library(rvest)
+library(stringr)
+library(RColorBrewer)
+library(reshape2)
+```
+
+Next I tried to scrape contestant information from Wikipedia. Early on, I had to make a choice of whether to use contestant hometowns or current locations. A scan through of the current locations for many of the chefs seemed to be suggest that many of them had not been updated (Lee Ann Wong's location has her listed in New York instead of Hawaii for example), so I opted to use hometowns. Unfortunately, the pages for seasons 1, 2, 8, 9, and 15 are missing hometown information so I ommitted them from the scrape. I might try and add the information manually later but for now my scrape included 10/15 (season 15 is airing right now) seasons.
+
+```{r}
+#--------------------------------
+# Scraping contestant information
+#--------------------------------
+
+url <- "https://en.wikipedia.org/wiki/Top_Chef_(season_"
+season <- c(3:7, 10:14)
+bracket <- ")"
+site <- paste0(url, season, bracket)
+
+pull_table <- function(i){
+  read_html(i) %>%
+  html_nodes("table") %>%
+    .[grepl("Name", .)] %>%
+    html_table(header = FALSE, fill = TRUE) %>%
+    bind_rows()
+}
+
+chef_list <- lapply(site, pull_table)
+```
+
+The contestant tables for each season are not completely identical, so to bind all contestants into one dataframe, I had to select only the first 3 columns (Name / Hometown / Current location). Also, later seasons of Top Chef brought back previous contestants, so to avoid duplicate counts, I filtered the table to only keep unique chefs. 
+
+```{r}
+#--------------------------------------------
+# BIND SEASONS TOGETHER
+# - keep only first 3 columns 
+#   some column names differ across season
+# - let's just clean them up
+#--------------------------------------------
+
+full_df <- do.call(rbind, chef_list) %>% 
+  select(1:3) %>%
+  filter(!X1 == "Name")
+
+names(full_df) <- c("Chef", "Hometown","Current")
+unique_chefs <- full_df %>%
+  distinct()
+```
+
+The map I used has states as lower case character strings, so I changed the state names in my scraped data to lower case. 
+
+```{r message=FALSE, warning=FALSE}
+#----------------------------------------------------------------
+# LOAD MAP DATA AND CONVERT STATE NAMES TO LOWER CASE
+# - store map data
+#   convert character strings to lower case
+#----------------------------------------------------------------
+map.states <- map_data("state")
+
+map_data('state') %>% group_by(region) %>% summarise() %>% head()
+
+# keep only state names
+unique_chefs <- unique_chefs %>%
+  mutate(homestate = str_to_lower(gsub(".*, ", "", .$Hometown)), 
+         currentstate = str_to_lower(gsub(".*, ", "", .$Current)))
+```
+
+I also only want to visualize state information, so I dropped city information and finally counted the number of contestants from each state.
+
+```{r}
+# remove hometowns now in the USA
+unique_chefs$homestate <- recode(unique_chefs$homestate, "D.C" = "district of columbia")
+
+unique_states <- unique_chefs %>%
+  filter(homestate %in% map.states$region) %>%
+  group_by(homestate) %>%
+  summarise(count = n())
+
+head(unique_states)
+```
+
+Lastly, the plotting. Of course I had to color states in orange for Top Chef. Looking at the map, I'm most surprised at how many contests were from Michigan (no slight to Michigan, I have a soft spot for Zingerman's). 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# ggplot(data = df, aes(x = long, y = lat, group = group)) + 
+#   geom_polygon(aes(fill = count)) +
+#   scale_fill_brewer(palette = "YlOrRd")
+
+gg <- ggplot()
+gg <- gg + geom_map(data = map.states, map = map.states, 
+              aes(x = long, y = lat, map_id = region),
+              fill="#ffffff", color="gray", size=0.15)
+gg <- gg + geom_map(data = unique_states, map = map.states,
+                    aes(fill = count, map_id = homestate))
+gg <- gg + scale_fill_gradientn(colours=brewer.pal(3,"Oranges"))
+gg <- gg + labs(x=NULL, y=NULL, fill = "# of contestants")
+# gg <- gg + coord_map("albers", lat0 = 39, lat1 = 45) 
+gg <- gg + theme(panel.border = element_blank())
+gg <- gg + theme(panel.background = element_blank())
+gg <- gg + theme(axis.ticks = element_blank())
+gg <- gg + theme(axis.text = element_blank())
+gg <- gg + ggtitle("")
+gg
+```
+
+### References
+[Stack post on ggplot maps](https://stackoverflow.com/questions/29614972/ggplot-us-state-map-colors-are-fine-polygons-jagged-r)
+
+[Sharp sight labs on web scraping](http://sharpsightlabs.com/blog/map-lithium-production-r/)

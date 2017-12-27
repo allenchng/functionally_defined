@@ -3,7 +3,7 @@ title = "Things I like"
 date = "2017-12-21"
 +++
 
-Also known as my bookmarks bar substitue
+Also known as my bookmarks bar substitute
 
 ## R
 
@@ -13,4 +13,6 @@ Also known as my bookmarks bar substitue
 
 [picking visualization colors](http://colorschemedesigner.com/csd-3.5/)
 
-[wes anderson color palletes](https://github.com/karthik/wesanderson)
+[wes anderson movie color palletes](https://github.com/karthik/wesanderson)
+
+[alternative to tikz diagrams](http://rich-iannone.github.io/DiagrammeR/io.html)
