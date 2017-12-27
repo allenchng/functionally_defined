@@ -9,7 +9,7 @@ tags: []
 
 
 
-<p>Each season of Top Chef is something that I look forward to every year and it’s one of the only shows that my girlfriend and I will make an hour of time for every week to watch. To my delight, this season two of my favorite writers <a href="https://twitter.com/tomhaberstroh">Tom Haberstroh</a> and <a href="https://twitter.com/kevinarnovitz">Kevin Arnovitz</a> have started a weekly podcast called <a href="https://twitter.com/PackKnives">Pack Your Knives</a> to discuss each episode and share their love of Top Chef. During one of their first episodes, they discussed states that have never had a Top Chef contestant but moved onto other topics before finishing the list. This inspired me to try and map out the distribution of Top Chef contestants across US states to see not only which states have never had a Top Chef contestant, but which states other than New York and California would surprise me with the quantity of contestants.</p>
+<p>Each season of Top Chef is something that I look forward to every year and it’s one of the only shows that my girlfriend and I will make an hour of time for every week to watch. To my delight, this season two of my favorite writers <a href="https://twitter.com/tomhaberstroh">Tom Haberstroh</a> and <a href="https://twitter.com/kevinarnovitz">Kevin Arnovitz</a> have started a weekly podcast called <a href="https://twitter.com/PackKnives">Pack Your Knives</a> to discuss each episode and share their love of Top Chef. During one of their first episodes, they discussed states that have never had a Top Chef contestant but moved onto other topics before finishing the list. This inspired me to try and map out the number of Top Chef contestants across US states.</p>
 <p>First some packages.</p>
 <pre class="r"><code>#--------------
 #  PACKAGES
@@ -20,7 +20,7 @@ library(rvest)
 library(stringr)
 library(RColorBrewer)
 library(reshape2)</code></pre>
-<p>Next I tried to scrape contestant information from Wikipedia. Early on, I had to make a choice of whether to use contestant hometowns or current locations. A scan through of the current locations for many of the chefs seemed to be inaccurate, so I opted to use hometowns. Unfortunately, the pages for seasons 1, 2, 8, 9, and 15 are missing hometown information so I ommitted them from the scrape. I might try and add the information manually later when I am doing something mindless. For now this includes 10/15 (season 15 is airing right now) seasons.</p>
+<p>Next I tried to scrape contestant information from Wikipedia. Early on, I had to make a choice of whether to use contestant hometowns or current locations. A scan through of the current locations for many of the chefs seemed to be suggest that many of them had not been updated (Lee Ann Wong’s location has her listed in New York instead of Hawaii for example), so I opted to use hometowns. Unfortunately, the pages for seasons 1, 2, 8, 9, and 15 are missing hometown information so I ommitted them from the scrape. I might try and add the information manually later but for now my scrape included 10/15 (season 15 is airing right now) seasons.</p>
 <pre class="r"><code>#--------------------------------
 # Scraping contestant information
 #--------------------------------
@@ -39,7 +39,7 @@ pull_table &lt;- function(i){
 }
 
 chef_list &lt;- lapply(site, pull_table)</code></pre>
-<p>The contestant tables for each season are not completely identical, so to bind all contestants into one dataframe, I had to select only the first 3 columns (Name / Hometown / Current location). Also, later seasons of Top Chef brought back previous contestants, so to avoid duplicate counts, I filtered the table to only keep unique chefs.</p>
+<p>The contestant tables for each season are not completely identical, so I selected only the first 3 columns (Name / Hometown / Current location). Later seasons of Top Chef started a trend of bringing back previous contestants, so to avoid duplicate counts I filtered the table to only keep unique chefs.</p>
 <pre class="r"><code>#--------------------------------------------
 # BIND SEASONS TOGETHER
 # - keep only first 3 columns 
@@ -54,7 +54,7 @@ full_df &lt;- do.call(rbind, chef_list) %&gt;%
 names(full_df) &lt;- c(&quot;Chef&quot;, &quot;Hometown&quot;,&quot;Current&quot;)
 unique_chefs &lt;- full_df %&gt;%
   distinct()</code></pre>
-<p>The map I used has states as lower case character strings, so I changed the state names in my scraped data to lower case.</p>
+<p>Just a few more preprocessing steps. The map I used has states as lower case character strings, so I changed the state names in my scraped data to lower case.</p>
 <pre class="r"><code>#----------------------------------------------------------------
 # LOAD MAP DATA AND CONVERT STATE NAMES TO LOWER CASE
 # - store map data
@@ -76,26 +76,19 @@ map_data(&#39;state&#39;) %&gt;% group_by(region) %&gt;% summarise() %&gt;% head
 unique_chefs &lt;- unique_chefs %&gt;%
   mutate(homestate = str_to_lower(gsub(&quot;.*, &quot;, &quot;&quot;, .$Hometown)), 
          currentstate = str_to_lower(gsub(&quot;.*, &quot;, &quot;&quot;, .$Current)))</code></pre>
-<p>I also only want to visualize state information, so I dropped city information and finally counted the number of contestants from each state.</p>
-<pre class="r"><code># remove hometowns now in the USA
+<p>I also only want to visualize only state information, so I dropped city information and finally counted the number of contestants from each state. Unfortunately that means leaving out chefs born outside of the US.</p>
+<pre class="r"><code>#----------------------------------------------------------------
+# RECODE DC and FILTER FOR US STATES
+# - store map data
+#   convert character strings to lower case
+#----------------------------------------------------------------
 unique_chefs$homestate &lt;- recode(unique_chefs$homestate, &quot;D.C&quot; = &quot;district of columbia&quot;)
 
 unique_states &lt;- unique_chefs %&gt;%
   filter(homestate %in% map.states$region) %&gt;%
   group_by(homestate) %&gt;%
-  summarise(count = n())
-
-head(unique_states)</code></pre>
-<pre><code>## # A tibble: 6 x 2
-##     homestate count
-##         &lt;chr&gt; &lt;int&gt;
-## 1     alabama     2
-## 2     arizona     1
-## 3  california    21
-## 4    colorado     4
-## 5 connecticut     3
-## 6     florida     8</code></pre>
-<p>Lastly, the plotting. Of course I had to color states in orange for Top Chef. Looking at the map, I’m most surprised at how many contests were from Michigan (no slight to Michigan, I have a soft spot for Zingerman’s)</p>
+  summarise(count = n())</code></pre>
+<p>Finally I have a dataframe consisting of the number of Top Chef contestants from each state. Time to plot! I of course had to use Top Chef orange to fill in each state by count. Looking at the final map, I’m not surprised to see so many contestants from California and New York. More interesting to me is the “middle” range of states including Colorado, Washington, and Michigan. This map is obviously imperfect, as I’m missing 5 seasons worth of data, but it gives a rough idea of how contestant homestates are distributed.</p>
 <p><img src="/posts/2017-12-26-visualizing-home-states-for-top-chef-contestants-in-r_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <section id="references" class="level3">
 <h3>References</h3>
