@@ -79,7 +79,7 @@ theme_set(theme_classic())</code></pre>
 <p>I used a Google sheet to keep track my daily wears. Each day I recorded the maker and up to two colors of each article of clothing that I wore. There were 4 categories of clothes; Coat, Shirt (I collapsed sweaters into here as well), Pants, and Shoes. Since I’m almost certain that I miscapitalized a stray word here or there, I added a column changing all the maker names to upper case. Then I grouped by maker to get the total number of times that I wore each maker across all articles of clothing.</p>
 <pre class="r"><code># Load in data
 
-wear_tbl &lt;- read_csv(&quot;/Users/allenchang/Desktop/daily_wear.csv&quot;)
+wear_tbl &lt;- read_csv(&quot;daily_wear.csv&quot;)
 
 head(wear_tbl, 4)</code></pre>
 <pre><code>## # A tibble: 4 x 6
