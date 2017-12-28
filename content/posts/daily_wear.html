@@ -1,0 +1,211 @@
+---
+title: Tracking preferences in my daily clothing choices
+author: Allen Chang
+date: '2017-12-27'
+slug: daily_wear
+categories: []
+tags:
+  - R
+  - visualization
+  - clothing
+---
+
+
+
+<p>Clothing is one of my hobbies. I spend a fair amount of time thinking, searching for, and talking about clothes with some of my friends. This led me to ask whether I could analyze my own clothing preferences over a period of time starting from Sept. 15 - Dec. 15th. While I’m consciously aware of some of my preferences (I wear a lot of black and clothes from Belgian born designers), I was hoping that I might see other patterns of choices that I had not picked up on.</p>
+<pre class="r"><code>library(tidyverse)
+library(scales)
+library(RColorBrewer)
+
+theme_set(theme_classic())</code></pre>
+<section id="prepping-data" class="level2">
+<h2>Prepping data</h2>
+<p>I used a Google sheet to keep track my daily wears. Each day I recorded the maker and up to two colors of each article of clothing that I wore. There were 4 categories of clothes; Coat, Shirt (I collapsed sweaters into here as well), Pants, and Shoes. Since I’m almost certain that I miscapitalized a stray word here or there, I added a column changing all the maker names to upper case. Then I grouped by maker to get the total number of times that I wore each maker across all articles of clothing.</p>
+<pre class="r"><code># Load in data
+
+wear_tbl &lt;- read_csv(&quot;/Users/allenchang/Desktop/daily_wear.csv&quot;)
+
+head(wear_tbl, 4)</code></pre>
+<pre><code>## # A tibble: 4 x 6
+##         Day Article                   Maker Color1 Color2     Month
+##       &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;
+## 1 9-15-2017    Coat       Stephan Schneider   Navy   &lt;NA&gt; September
+## 2 9-15-2017   Shirt                  Uniqlo   Navy   &lt;NA&gt; September
+## 3 9-15-2017   Pants Comme Des Garcons Homme  Black   &lt;NA&gt; September
+## 4 9-15-2017   Shoes                    Vans  Black   &lt;NA&gt; September</code></pre>
+<pre class="r"><code>tail(wear_tbl, 4)</code></pre>
+<pre><code>## # A tibble: 4 x 6
+##          Day Article        Maker Color1 Color2    Month
+##        &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;
+## 1 12-15-2017    Coat     Document   Blue   &lt;NA&gt; December
+## 2 12-15-2017   Shirt     Document   Navy   &lt;NA&gt; December
+## 3 12-15-2017   Pants Sage de Cret  Black   Gray December
+## 4 12-15-2017   Shoes     Heschung  Black   &lt;NA&gt; December</code></pre>
+<pre class="r"><code># filter out times when I did not wear a coat, convert case to upper
+df &lt;- wear_tbl %&gt;% 
+  filter(!Maker == &quot;NA&quot;) %&gt;%
+  mutate(maker_up = toupper(Maker)) %&gt;%
+  group_by(maker_up) %&gt;%
+  summarise(timesworn = n()) %&gt;%
+  arrange(desc(timesworn))</code></pre>
+<p>To make visualizing popular makers easier, I set the maker column as an ordered factor so that they would listed by descending count.</p>
+<pre class="r"><code># set makers as an ordered factor based on number of wears
+df$maker_up &lt;- factor(df$maker_up, levels = df$maker_up[order(df$timesworn)])
+df$timesworn &lt;- as.numeric(df$timesworn)</code></pre>
+<p>Then I plotted the count of the number of times I wore each maker. Wow, I really like Uniqlo.</p>
+<pre class="r"><code>df %&gt;%
+  filter(timesworn &gt; 1) %&gt;%
+  ggplot(aes(x=maker_up, y=timesworn)) + 
+  geom_point(col=&quot;tomato3&quot;, size=3) +   # Draw points
+  geom_segment(aes(x=maker_up, 
+                  xend=maker_up, 
+                   y=min(timesworn), 
+                   yend=max(timesworn)), 
+               linetype=&quot;dashed&quot;, 
+               size=0.1) +   # Draw dashed lines
+  labs(title=&quot;Number of wears for each maker&quot;, 
+       subtitle=&quot;Sep. 15, 2017 - Dec. 15, 2017&quot;, 
+       caption=&quot;source: me&quot;,
+       x = &quot;Maker&quot;,
+       y = &quot;Count&quot;) +  
+  coord_flip()</code></pre>
+<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>But I can go deeper! It’s clear that I wear a lot Uniqlo, but Uniqlo makes all sorts of clothes. Do I happen to favor specific articles of clothing in particular?</p>
+<pre class="r"><code>category_df &lt;- wear_tbl %&gt;% 
+  filter(!Maker == &quot;NA&quot;) %&gt;%
+  mutate(maker_up = toupper(Maker))
+
+category_df$maker_up &lt;- factor(category_df$maker_up, levels = df$maker_up[order(df$timesworn)])
+  
+g &lt;- ggplot(category_df, aes(maker_up))
+g + geom_bar(aes(fill=Article), width = 0.5) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
+  labs(title=&quot;Number of wears for each maker broken into categories&quot;, 
+       subtitle=&quot;Sept. 15, 2017 - Dec. 15, 2017&quot;,
+       x = &quot;Maker&quot;,
+       y = &quot;Count&quot;) +
+    scale_fill_brewer(palette = &quot;RdGy&quot;) + 
+  scale_y_continuous(breaks = c(0,20,40,60), labels = c(&quot;0&quot;,&quot;20&quot;,&quot;40&quot;,&quot;60&quot;)) +
+  coord_flip()</code></pre>
+<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Looking at the breakdown, it seems that I mostly wear Uniqlo shirts (a glance at an overflowing drawer in my bedroom does seem to confirm this…). Interesting to me as well is that most of these makers seem to be concentrated on one specific article of clothing. I seem to also like only a few shoe makers.</p>
+<p>Finally, I want to know how varied my choice of color was. Do I really prefer black above everything else?</p>
+<pre class="r"><code># gather both color columns into 1 and filter out NA&#39;s
+color_tbl &lt;- wear_tbl %&gt;%
+  select(Color1, Color2) %&gt;%
+  gather(key, color) %&gt;%
+  filter(!color == &quot;NA&quot;) %&gt;%
+  group_by(color) %&gt;%
+  summarise(color_count = n())
+
+color_tbl$color &lt;- factor(color_tbl$color, levels = color_tbl$color[order(color_tbl$color_count)])
+
+fill_colors &lt;- c(&quot;black&quot;, &quot;white&quot;, &quot;dodgerblue4&quot;, &quot;tan4&quot;, &quot;skyblue2&quot;, &quot;gray48&quot;, &quot;darkviolet&quot;, &quot;gray28&quot;, &quot;darkred&quot;, &quot;beige&quot;, &quot;forestgreen&quot;, &quot;antiquewhite&quot;, &quot;darkolivegreen4&quot;, &quot;darkorange&quot;, &quot;darkkhaki&quot;)
+
+# Plot color counts
+g &lt;- ggplot(color_tbl, aes(x = color, y = color_count))
+g + geom_bar(stat = &quot;identity&quot;, width = 0.5, fill = rev(fill_colors), colour = &quot;black&quot;) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
+  labs(title=&quot;Total number of times each color was worn \nacross all articles of clothing&quot;, 
+       subtitle=&quot;Sept. 15, 2017 - Dec. 15, 2017&quot;,
+       x = &quot;Color&quot;,
+       y = &quot;Count&quot;) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0,40, 80, 120), labels = c(&quot;0&quot;, &quot;40&quot;, &quot;80&quot;, &quot;120&quot;))</code></pre>
+<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>It seems that while I do seem to prefer wearing black, that I also have a preference for Navy and White. Maybe I should keep this in mind next time I think about buying more black clothes… Lastly, I wanted to ask if my color preferences change as a function of time. As the days get colder and gloomier in Boston, does my color selection get similarly dark?</p>
+<pre class="r"><code># Define functions. Source: https://github.com/jkeirstead/r-slopegraph
+
+tufte_sort &lt;- function(df, x=&quot;year&quot;, y=&quot;value&quot;, group=&quot;group&quot;, method=&quot;tufte&quot;, min.space=0.05) {
+    ## First rename the columns for consistency
+    ids &lt;- match(c(x, y, group), names(df))
+    df &lt;- df[,ids]
+    names(df) &lt;- c(&quot;x&quot;, &quot;y&quot;, &quot;group&quot;)
+
+    ## Expand grid to ensure every combination has a defined value
+    tmp &lt;- expand.grid(x=unique(df$x), group=unique(df$group))
+    tmp &lt;- merge(df, tmp, all.y=TRUE)
+    df &lt;- mutate(tmp, y=ifelse(is.na(y), 0, y))
+  
+    ## Cast into a matrix shape and arrange by first column
+    require(reshape2)
+    tmp &lt;- dcast(df, group ~ x, value.var=&quot;y&quot;)
+    ord &lt;- order(tmp[,2])
+    tmp &lt;- tmp[ord,]
+    
+    min.space &lt;- min.space*diff(range(tmp[,-1]))
+    yshift &lt;- numeric(nrow(tmp))
+    ## Start at &quot;bottom&quot; row
+    ## Repeat for rest of the rows until you hit the top
+    for (i in 2:nrow(tmp)) {
+        ## Shift subsequent row up by equal space so gap between
+        ## two entries is &gt;= minimum
+        mat &lt;- as.matrix(tmp[(i-1):i, -1])
+        d.min &lt;- min(diff(mat))
+        yshift[i] &lt;- ifelse(d.min &lt; min.space, min.space - d.min, 0)
+    }
+    
+    tmp &lt;- cbind(tmp, yshift=cumsum(yshift))
+
+    scale &lt;- 1
+    tmp &lt;- melt(tmp, id=c(&quot;group&quot;, &quot;yshift&quot;), variable.name=&quot;x&quot;, value.name=&quot;y&quot;)
+    ## Store these gaps in a separate variable so that they can be scaled ypos = a*yshift + y
+
+    tmp &lt;- transform(tmp, ypos=y + scale*yshift)
+    return(tmp)
+   
+}
+
+plot_slopegraph &lt;- function(df) {
+    ylabs &lt;- subset(df, x==head(x,1))$group
+    yvals &lt;- subset(df, x==head(x,1))$ypos
+    fontSize &lt;- 3
+    gg &lt;- ggplot(df,aes(x=x,y=ypos)) +
+        geom_line(aes(group=group),colour=&quot;grey80&quot;) +
+        geom_point(colour=&quot;white&quot;,size=10) +
+        geom_text(aes(label=y), size=fontSize, family=&quot;Helvetica&quot;) +
+        scale_y_continuous(name=&quot;&quot;, breaks=yvals, labels=ylabs)
+    return(gg)
+}    
+
+# Prep data by getting colors worn in each month
+colorone_df &lt;- data.frame(wear_tbl$Color1, wear_tbl$Month)
+names(colorone_df) &lt;- c(&quot;color&quot;, &quot;month&quot;)
+colorone_df &lt;- colorone_df %&gt;%
+  filter(!is.na(color))
+colortwo_df &lt;- data.frame(wear_tbl$Color2, wear_tbl$Month)
+names(colortwo_df) &lt;- c(&quot;color&quot;, &quot;month&quot;)
+colortwo_df &lt;- colortwo_df %&gt;%
+  filter(!is.na(color))
+
+color_df &lt;- bind_rows(colorone_df, colortwo_df) %&gt;%
+  group_by(color, month) %&gt;%
+  summarise(color_count = n()) %&gt;%
+  filter(color %in% c(&quot;Black&quot;, &quot;White&quot;, &quot;Navy&quot;, &quot;Brown&quot;, &quot;Blue&quot;, &quot;Gray&quot;, &quot;Purple&quot;, &quot;Charcoal&quot;))
+
+color_df$month &lt;- factor(color_df$month, levels = c(&quot;September&quot;, &quot;October&quot;, &quot;November&quot;, &quot;December&quot;))
+
+# Plot slope graph
+df &lt;- tufte_sort(color_df, 
+                 x=&quot;month&quot;, 
+                 y=&quot;color_count&quot;, 
+                 group=&quot;color&quot;, 
+                 method=&quot;tufte&quot;, 
+                 min.space=0.05)
+
+plot_slopegraph(df) + 
+  labs(title=&quot;Color counts across month&quot;) + 
+                      theme(axis.title=element_blank(),
+                            axis.ticks = element_blank(),
+                            plot.title = element_text(hjust=0.5,
+                                                      family = &quot;Helvetica&quot;,
+                                                      face=&quot;bold&quot;),
+                            axis.text = element_text(family = &quot;Helvetica&quot;,
+                                                     face=&quot;bold&quot;))</code></pre>
+<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>It looks like my preference for black did increase over time (the decrease in slope for December is due to me stopping collection due to traveling for the winter holidays). All in all, this was in interesting form of analysis for me. I got to see what makers that I bias, but also which makers and clothes I only rare put into rotation. I’m going to try and do a follow up post thinking about all these makers as vertices in a network to see whether certain makers are more often paired with one another.</p>
+<section id="references" class="level3">
+<h3>References</h3>
+<p><a href="http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Slope%20Chart%202">Visualization examples</a></p>
+</section>
+</section>

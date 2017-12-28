@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2017 Allen Chang</copyright>
-    <lastBuildDate>Tue, 26 Dec 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 27 Dec 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Tracking preferences in my daily clothing choices</title>
+      <link>/posts/daily_wear/</link>
+      <pubDate>Wed, 27 Dec 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/daily_wear/</guid>
+      <description>Clothing is one of my hobbies. I spend a fair amount of time thinking, searching for, and talking about clothes with some of my friends. This led me to ask whether I could analyze my own clothing preferences over a period of time starting from Sept. 15 - Dec. 15th. While I’m consciously aware of some of my preferences (I wear a lot of black and clothes from Belgian born designers), I was hoping that I might see other patterns of choices that I had not picked up on.</description>
+    </item>
     
     <item>
       <title>Visualizing home states for Top Chef contestants in R</title>
@@ -19,15 +28,6 @@
       
       <guid>/posts/visualizing-home-states-for-top-chef-contestants-in-r/</guid>
       <description>Each season of Top Chef is something that I look forward to every year and it’s one of the only shows that my girlfriend and I will make an hour of time for every week to watch. To my delight, this season two of my favorite writers Tom Haberstroh and Kevin Arnovitz have started a weekly podcast called Pack Your Knives to discuss each episode and share their love of Top Chef.</description>
-    </item>
-    
-    <item>
-      <title>Test post</title>
-      <link>/posts/test-post/</link>
-      <pubDate>Sat, 25 Nov 2017 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/test-post/</guid>
-      <description>This is a test of the new post function and the serve site add in  </description>
     </item>
     
   </channel>
