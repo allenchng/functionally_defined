@@ -1,0 +1,122 @@
+---
+title: "Network analysis of daily clothing choices"
+author: "Allen Chang"
+date: '2018-01-06'
+slug: daily_clothing_network
+tags:
+- R
+- clothing
+- networks
+categories: []
+---
+
+
+
+<p>This is a continuation of my previous analysis on tracking preferences in clothing choices (part 1 is <a href="https://functionallydefined.netlify.com/posts/daily_wear/">here</a>). The inspiration for this post came about after re-reading David Robinson’s network analysis of the movie <a href="http://varianceexplained.org/r/love-actually-network/">love actually</a> and realizing that a similar approach could be applied to my sparse network of clothing choices. I found additional help by working through the Network Analysis course on <a href="https://www.datacamp.com/courses/network-analysis-in-r">Datacamp</a>.</p>
+<p>As per usual, these were the packages used.</p>
+<pre class="r"><code>library(tidyverse)
+library(reshape2)
+library(igraph)</code></pre>
+<p>I used the same dataset as my previous analysis in which I recorded the maker and color for each article of clothing that I wore on each day. To fix possible errors in capitalization, I converted all character strings to upper case, and modified the day column to go from 1 to 93. I also filtered out rows from when it was too warm to wear a jacket.</p>
+<pre class="r"><code># Prepare data
+wear_tbl &lt;- read_csv(&quot;daily_wear.csv&quot;)
+
+wear_tbl &lt;- wear_tbl %&gt;% 
+  mutate(day = rep(c(1:93), each = 4), maker_up = toupper(Maker)) %&gt;%
+  select(day, maker_up) %&gt;%
+  filter(!maker_up == &quot;NA&quot;)
+
+wear_mat &lt;- wear_tbl %&gt;%
+  acast(maker_up ~ day, fun.aggregate = length)</code></pre>
+<p>Following David Robinson, I elected to run a few visualizations to examine relationships between makers. The visualization was a hierarchical cluster on my data using Canberra distance, which is a weighted form of the Manhattan distance. I opted to use normalized and non-normalized data to view how clustering differed.</p>
+<pre class="r"><code># normalize data
+norm &lt;- wear_mat / rowSums(wear_mat)</code></pre>
+<p><img src="/posts/daily_clothing_network_files/figure-html/clust_plots-1.png" width="672" /><img src="/posts/daily_clothing_network_files/figure-html/clust_plots-2.png" width="672" /></p>
+<p>For this data, I only recorded 3 months worth of choices, so some combinations of makers only occur once. I plan on continuing to gather data after my winter holiday, so it will be interesting to see how well the clustering works with more data. Again borrowing from David, I plotted the timeline of wears for each day.</p>
+<p><img src="/posts/daily_clothing_network_files/figure-html/timeline_plot-1.png" width="672" /></p>
+<p>I really loved this timeline because it let me point out time related preferences. You can see that I heavily favored wearing Vans early in the fall, but as it cooled off I start to transition more into my other shoes. One drawback of this plot though is that it’s a little diffiult to see strengths of connections between one maker and all other makers. Again following David, I plotted a heatmap of the adjacency matrix.</p>
+<pre class="r"><code>## cooccurence mat
+cooccur &lt;- wear_mat %*% t(wear_mat)
+
+heatmap(cooccur, cexRow = 0.8, cexCol = 0.8)</code></pre>
+<p><img src="/posts/daily_clothing_network_files/figure-html/cooccurence-1.png" width="672" /></p>
+<p>That made tracking what connections each of my makers had and the strength of those connections much easier to see. Next, I used the igraph package as another way to plot the network.</p>
+<pre class="r"><code>g &lt;- graph.adjacency(cooccur, weighted = TRUE, mode = &quot;undirected&quot;, diag = FALSE)
+
+# Places vertex labels around circular layout - code via stack, see references for post
+radian.rescale &lt;- function(x, start=0, direction=1) {
+  c.rotate &lt;- function(x) (x + start) %% (2 * pi) * direction
+  c.rotate(scales::rescale(x, c(0, 2 * pi), range(x)))
+}
+lab.locs &lt;- radian.rescale(x=1:25, direction=-1, start=0)</code></pre>
+<p><img src="/posts/daily_clothing_network_files/figure-html/network%20as%20circle-1.png" width="672" /></p>
+<p>This was still a little too busy for me, so to clean things up I opted to remove vertices with less than 4 edges (if I only wore a maker once, it could have at max 3 other edges).</p>
+<pre class="r"><code>counts &lt;- as.data.frame(lengths(as_adj_list(g))) %&gt;%
+  rownames_to_column()
+
+names(counts) &lt;- c(&quot;maker&quot;, &quot;count&quot;)
+counts &lt;- counts %&gt;%
+  filter(count &lt; 4)
+
+g2 &lt;- delete_vertices(g, counts$maker)</code></pre>
+<p><img src="/posts/daily_clothing_network_files/figure-html/subset%20network%20circle%20layout-1.png" width="672" /></p>
+<p>That looked better, but I still thought there might be a better layout that I could use.</p>
+<p><img src="/posts/daily_clothing_network_files/figure-html/fr%20/%20sphere%20vis-1.png" width="672" /><img src="/posts/daily_clothing_network_files/figure-html/fr%20/%20sphere%20vis-2.png" width="672" /></p>
+<p>These looked pretty good. I liked that the vertices with the most connections were placed inwards. Next, I moved on to look at some basic network attributes. First I wanted to look at how well connected all of the makers in my network were using edge density and the diameter of the graph.</p>
+<pre class="r"><code># Get network density
+gd &lt;- edge_density(g)
+gd</code></pre>
+<pre><code>## [1] 0.3333333</code></pre>
+<pre class="r"><code># Get network diameter
+diameter(g, directed = FALSE)</code></pre>
+<pre><code>## [1] 7</code></pre>
+<p>An edge density of 0.35 is not surprising given the number of makers that were only worn once in my dataset. I further determined how connected the makers were by taking the average path length and comparing it to a random graph.</p>
+<pre class="r"><code># Get the average path length of my maker network
+g.apl &lt;- mean_distance(g, directed = FALSE)
+g.apl</code></pre>
+<pre><code>## [1] 1.789174</code></pre>
+<pre class="r"><code># Generate 1000 random graphs
+gl &lt;- vector(&#39;list&#39;, 1000)
+
+for(i in 1:1000){
+  gl[[i]] &lt;- erdos.renyi.game(n = gorder(g), p.or.m = gd, type = &quot;gnp&quot;)
+}
+
+# Calculate average path length of 1000 random graphs
+gl.apl &lt;- lapply(gl, mean_distance, directed = FALSE)
+gl.apls &lt;- unlist(gl.apl)
+
+# Calculate the proportion of random graphs with an average path length lower than my maker network
+sum(gl.apl &lt; gl.apls)/1000</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p><img src="/posts/daily_clothing_network_files/figure-html/path%20length%20comparison-1.png" width="672" /></p>
+<p>To see how well adjacent nodes were interconnected in subgroups, I looked at the transitivity and again compared the probability against a null graph.</p>
+<pre class="r"><code># Calculate the global transitivity of the network.
+transitivity(g)</code></pre>
+<pre><code>## [1] 0.5625</code></pre>
+<pre class="r"><code># Calculate average transitivity of 1000 random graphs
+gl.tr &lt;- lapply(gl, transitivity)
+gl.trs &lt;- unlist(gl.tr)
+
+# Get summary statistics of transitivity scores
+summary(gl.trs)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.2149  0.3055  0.3281  0.3276  0.3510  0.4240</code></pre>
+<pre class="r"><code># Proportion of random graphs with a transitivity score higher than my maker network.
+sum(gl.trs &gt; gl.tr)/1000</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>It’s pretty clear from my network measures that my network is more interconnected than the random networks. That means I might not just be choosing clothes at random everyday! Maybe some makers do pair well with each other. Finally, I ran some community detection to understand the structure of my network. I used two types of community detection functions, fast-greedy communities and edge-betweenness communities.</p>
+<pre><code>## Community sizes
+##  1  2  3 
+##  8 12  7</code></pre>
+<pre><code>## Community sizes
+##  1  2  3  4  5 
+##  3 10  6  6  2</code></pre>
+<p><img src="/posts/daily_clothing_network_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Looking forward, I still have one more post planned for this dataset using the <a href="https://cran.rstudio.com/web/packages/threejs/index.html">threejs</a> package to create interactive networks. I’ve had a lot of fun working through this data, and I’m looking forward to continuing to track and think about my clothing choices.</p>
+<section id="references" class="level3">
+<h3>References</h3>
+<p><a href="https://stackoverflow.com/questions/23209802/placing-vertex-label-outside-a-circular-layout-in-igraph/23210025">labels around circular layout</a></p>
+<p><a href="http://varianceexplained.org/r/love-actually-network/">david robinson’s love actually network</a></p>
+<p><a href="https://www.datacamp.com/courses/network-analysis-in-r">datacamp - network analysis in R</a></p>
+</section>

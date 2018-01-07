@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Clothing on Functionally Defined</title>
-    <link>/tags/clothing/</link>
-    <description>Recent content in Clothing on Functionally Defined</description>
+    <title>Networks on Functionally Defined</title>
+    <link>/tags/networks/</link>
+    <description>Recent content in Networks on Functionally Defined</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2017 Allen Chang</copyright>
     <lastBuildDate>Sat, 06 Jan 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/clothing/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/networks/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -20,15 +20,6 @@
       <guid>/posts/daily_clothing_network/</guid>
       <description>This is a continuation of my previous analysis on tracking preferences in clothing choices (part 1 is here). The inspiration for this post came about after re-reading David Robinson’s network analysis of the movie love actually and realizing that a similar approach could be applied to my sparse network of clothing choices. I found additional help by working through the Network Analysis course on Datacamp.
 As per usual, these were the packages used.</description>
-    </item>
-    
-    <item>
-      <title>Tracking preferences in my daily clothing choices</title>
-      <link>/posts/daily_wear/</link>
-      <pubDate>Wed, 27 Dec 2017 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/daily_wear/</guid>
-      <description>Clothing is one of my hobbies. I spend a fair amount of time thinking, searching for, and talking about clothes with some of my friends. This led me to ask whether I could analyze my own clothing preferences over a period of time starting from Sept. 15 - Dec. 15th. While I’m consciously aware of some of my preferences (I wear a lot of black and clothes from Belgian born designers), I was hoping that I might see other patterns of choices that I had not picked up on.</description>
     </item>
     
   </channel>

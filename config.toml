@@ -29,7 +29,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
   #youtube = "Your YouTube username"
   linkedin = "allen-chang-b3580723"
   # Disqus shortname
-  #disqus = ""
+  # disqus = "functionallydefined-com."
   # Google Analytics API key.
   #ga_api_key = "Your Google Analytics tracking id"
   author = "Allen Chang"

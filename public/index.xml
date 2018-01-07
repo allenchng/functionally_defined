@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2017 Allen Chang</copyright>
-    <lastBuildDate>Wed, 27 Dec 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 06 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Network analysis of daily clothing choices</title>
+      <link>/posts/daily_clothing_network/</link>
+      <pubDate>Sat, 06 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/daily_clothing_network/</guid>
+      <description>This is a continuation of my previous analysis on tracking preferences in clothing choices (part 1 is here). The inspiration for this post came about after re-reading David Robinson’s network analysis of the movie love actually and realizing that a similar approach could be applied to my sparse network of clothing choices. I found additional help by working through the Network Analysis course on Datacamp.
+As per usual, these were the packages used.</description>
+    </item>
     
     <item>
       <title>Tracking preferences in my daily clothing choices</title>
@@ -41,7 +51,8 @@ R ggplot visualization examples
 arranging multiple plots - useful for scientific figures
 picking visualization colors
 wes anderson movie color palletes
-alternative to tikz diagrams</description>
+alternative to tikz diagrams
+a solution to my list object frustrations</description>
     </item>
     
     <item>
