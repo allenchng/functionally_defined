@@ -1,5 +1,5 @@
 ---
-title: "Network analysis of daily clothing choices"
+title: "Network analysis of my daily clothing choices"
 author: "Allen Chang"
 date: '2018-01-06'
 slug: daily_clothing_network
