@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2017 Allen Chang</copyright>
-    <lastBuildDate>Wed, 27 Dec 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 08 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/visualization/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Text scraping Styleforum’s “Random Fashion Thoughts” thread</title>
+      <link>/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/</link>
+      <pubDate>Mon, 08 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/</guid>
+      <description>Styleforum’s “Random fashion thoughts” is one of the most popular sections of the website. It’s a thread where users can talk about almost anything they want regarding clothing and fashion. Every once in awhile the thread gets so long that the moderators opt to close it off and create a new post. The most recent iteration, RFT II, was recently retired so I decided to give myself a weekend project and run some text analysis on it.</description>
+    </item>
     
     <item>
       <title>Tracking preferences in my daily clothing choices</title>

@@ -1,0 +1,211 @@
+---
+title: Text scraping Styleforum’s “Random Fashion Thoughts” thread
+author: Allen Chang
+date: '2018-01-08'
+tags:
+  - R
+  - textscraping
+  - visualization
+slug: text-scraping-styleforum-s-random-fashion-thoughts-thread
+---
+
+Styleforum's "Random fashion thoughts" is one of the most popular sections of the website. It's a thread where users can talk about almost anything they want regarding clothing and fashion. Every once in awhile the thread gets so long that the moderators opt to close it off and create a new post. The most recent iteration, RFT II, was recently retired so I decided to give myself a weekend project and run some text analysis on it. 
+
+As usual, here's the packages I used.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(rvest)
+library(tidyverse)
+library(stringr)
+library(tm)
+library(wordcloud)
+```
+
+The first thing I needed to do was scrape some information. Luckily, the package "rvest" and the SelectorGadget web extension made scraping easy. I simply used SelectorGadget to identify the css that I wanted and passed the information to a few functions from rvest. For this first part, I pulled username information.
+
+```{r data prep, echo=TRUE, message=FALSE, warning=FALSE}
+# Set up website to scrape text from
+theme_set(theme_bw())
+
+url <- "https://www.styleforum.net/threads/random-fashion-thoughts-part-ii-a-new-hope.480819/page-"
+page <- c(2:1551)
+site <- paste0(url, page)
+
+# function to pull usernames
+pull_users <- function(i){
+  read_html(i) %>%
+    html_nodes(".userText .username") %>%
+    html_text() %>%
+    as.data.frame()
+}
+```
+
+Then I used lapply to scrape all the usernames with posts on each page and rbind to package it into a dataframe. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+# scrape and bind to dataframe
+user_list <- lapply(site, pull_users)
+user_df <- do.call(rbind, user_list)
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+user_df <- readRDS("/Users/allenchang/Desktop/sf_users.rds")
+```
+
+With all my information in a handy dataframe, I counted the total number of posts by each user. I also converted my user column into a factor arranged by post count for easier plotting.
+
+```{r message=FALSE, warning=FALSE}
+# get username counts and arrange in descending order
+names(user_df) <- c("user")
+user_arranged <- user_df %>%
+  group_by(user) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+user_arranged$user <- factor(user_arranged$user, levels = user_arranged$user)
+```
+
+```{r echo=FALSE}
+head(user_arranged)
+```
+
+Then I plotted a simple lollipop chart to see what users had the most posts.
+
+```{r post count plot, echo=FALSE, message=FALSE, warning=FALSE}
+user_arranged %>%
+  filter(row_number() < 11) %>%
+  ggplot(aes(x = user, y = count)) +
+  geom_point(size=3) + 
+  geom_segment(aes(x=user, 
+                   xend=user, 
+                   y=0, 
+                   yend=count)) + 
+  labs(title="Post count in RFT II", 
+       subtitle="User Vs Post Count", 
+       caption="source: SF - RFT part II") + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+Moving on, I wanted to play around with analyzing the actual content of posts themselves, so I re-configured my scraping function to pull post information instead. The post information was much more complex to deal with. Part of this was due to html formatting in the posts, but there was also username information, and "quoting" formatting that I had to get rid of. To be perfectly honest, I want to be the first to say that the number of gsubs here looks particularly ugly. Hopefully, I'll get a chance to make it more elegant down the line, but for a quick scrape it did the job. 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# pull text from posts, don't include quoted text or html formatting
+pull_content <- function(i){
+  read_html(i) %>%
+    html_nodes(".SelectQuoteContainer") %>%
+    html_text() %>%
+    gsub('[\r\n\t]', '', .) %>%
+    gsub(".*:", "", .) %>% 
+    gsub("↑.*Click to expand...", "", .) %>%
+    gsub("//.*Click to expand...", "", .) %>%
+    str_trim() %>%
+    as.data.frame()
+}
+```
+
+```{r scrape, eval=FALSE, message=FALSE, warning=FALSE}
+content_list <- lapply(site, pull_content)
+content_df <- do.call(rbind, content_list)
+```
+
+```{r read data, message=FALSE, warning=FALSE, include=FALSE}
+content_list <- readRDS("/Users/allenchang/Desktop/sf_posts.rds")
+content_df <- do.call(rbind, content_list)
+```
+
+Once I had my dataframe of posts, I was ready to do some pre-processing using the "tm" (text mining) package. I created a Source object using my dataframe and converted that object to a volatile corpus using a few tm functions.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Convert dataframe to volatile corpus
+content_df <- rownames_to_column(content_df, "postnum")
+names(content_df) <- c("doc_id", "text")
+
+content_source <- DataframeSource(content_df)
+content_corpus <- VCorpus(content_source)
+```
+
+Next I ran a series of cleaning functions to my corpus. I ran this a few times to add words that I thought should be excluded (most of which ended up being contractions).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Cleaning functions
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, stripWhitespace)
+  corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "like", "just",
+                                                    "really", "also", "theyre",
+                                                    "theres", "youre", "thats",
+                                                    "just", "can", "get", "dont",
+                                                    "ive", "etc", "cant"))
+  return(corpus)
+}
+
+clean_corp <- clean_corpus(content_corpus)
+
+```
+
+Once I had my cleaned corpus, I was just a few steps away from analysis. To get my terms as rows and my documents as columns, I used the TermDocumentMatrix function. After that all that was left was to get the term frequency and store it into a dataframe.
+
+```{r echo=TRUE}
+# Convert corpus to tdm
+content_tdm <- TermDocumentMatrix(clean_corp)
+
+# Convert tdm to a matrix: content_tdm
+content_tm <- as.matrix(content_tdm)
+
+term_frequency <- rowSums(content_tm)
+
+# Sort term_frequency in descending order
+term_frequency <- sort(term_frequency, decreasing = T)
+
+# View the top 10 most common words
+term_frequency[1:10]
+
+post_word_freqs <- data.frame(
+  term = names(term_frequency),
+  num = term_frequency
+)
+```
+
+Finally some visualizations! The "wordcloud" package has an aptly named function wordcloud.
+
+```{r wordcloud plot, echo=FALSE, message=FALSE, warning=FALSE}
+wordcloud(post_word_freqs$term,
+          post_word_freqs$num,
+          max.words = 75, 
+          scale = c(1.85, 0.5),
+          use.r.layout = TRUE,
+          colors = c("#009999","#FF0000", "#A60000")
+)
+```
+
+This gave me the most popular words from the thread, but I was also interested in what words are normally associated with the actual word "fashion". Lucky for me there was a function in the "tm" package to do that as well. 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Find words correlated with the phrase "fashion"
+associations <- findAssocs(content_tdm, "fashion", 0.2)
+associations_df <- as.data.frame(associations)
+associations_df <- rownames_to_column(associations_df, "term")
+associations_df <- associations_df %>%
+  arrange(desc(fashion))
+
+associations_df$term <- factor(associations_df$term, levels = associations_df$term)
+```
+
+```{r association_plot, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(associations_df, aes(y = associations_df[, 1])) + 
+  geom_point(aes(x = associations_df[, 2]), 
+             data = associations_df, size = 3) + 
+  ggtitle("Word Associations to 'fashion'") 
+```
+
+Unsurprisingly, terms like "designers" and "writers" come up fairly frequently when people talk about fashion. Somewhat more interesting though are terms like anti-sportcoat (punctuation is removed in the pre-processing) as well as workwear. All in all, this was a fun little project for me to play around with text analysis and learn more about my fellow users on styleforum. If you are interested in any of the data, I will include it on my github as well. 
+
+### References
+
+[removing html formatting](https://stackoverflow.com/questions/30541445/r-rvest-got-hidden-text-i-dont-want)
+
+[text analysis help](https://rpubs.com/williamsurles/316682)
+
+[Datacamp: Text Mining](https://www.datacamp.com/courses/intro-to-text-mining-bag-of-words)
