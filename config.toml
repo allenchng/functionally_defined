@@ -3,7 +3,7 @@ baseurl = "https://functionallydefined.netlify.com/"
 languageCode = "en-us"
 Title = "Functionally Defined"
 # Copyright notice. This is displayer in the footer.
-copyright = "&copy; 2017 Allen Chang"
+copyright = "&copy; 2018 Allen Chang"
 enableEmoji = true
 footnotereturnlinkcontents = "<sup>^</sup>"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
