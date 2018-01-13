@@ -1,6 +1,6 @@
 +++
 title = "Things I like"
-date = "2017-12-21"
+date = "2018-01-13"
 +++
 
 Also known as my bookmarks bar substitute
@@ -19,6 +19,18 @@ Also known as my bookmarks bar substitute
 
 [a solution to my list object frustrations](https://cran.r-project.org/web/packages/rlist/rlist.pdf)
 
-# Books
+## Bayes
+
+[fast AB testing](https://github.com/FrankPortman/bayesAB????)
+
+[linear regression with gibbs](https://stablemarkets.wordpress.com/2017/08/07/bayesian-simple-linear-regression-with-gibbs-sampling-in-r/)
+
+[intro to bayes with stan](https://cdn.rawgit.com/tjmahr/Psych710_BayesLecture/55f446a0/bayes_slides_out.pdf)
+
+## Books
 
 [my bible](http://www-bcf.usc.edu/~gareth/ISL/)
+
+## Stats
+
+[probability cheatsheet](https://static1.squarespace.com/static/54bf3241e4b0f0d81bf7ff36/t/55e9494fe4b011aed10e48e5/1441352015658/probability_cheatsheet.pdf)
