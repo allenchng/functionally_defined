@@ -76,7 +76,8 @@ library(dplyr)
 library(purrr)
 library(ggplot2)</code></pre>
 <p>Next I set up the list of pages to scrape.</p>
-<pre class="r"><code>url &lt;- &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-&quot;
+<pre class="r"><code># Create vector of links to scrape data from
+url &lt;- &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-&quot;
 page &lt;- c(1792:2138)
 site &lt;- paste0(url, page)
 
@@ -85,7 +86,8 @@ head(site, 3)</code></pre>
 ## [2] &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-1793&quot;
 ## [3] &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-1794&quot;</code></pre>
 <p>To identify which CSS selectors I needed to scrape, I used <a href="http://selectorgadget.com/">selectorgadget</a>. The information I was interested in were the usernames and number of likes for each post. Because some posts didn’t have likes, I set up two functions. One to pull the list of users and the post numbers from each page, and another function to pull posts numbers with likes I also included the hypertext reference from each post to use a little later for downloading the actual images themselves.</p>
-<pre class="r"><code>pull_users &lt;- function(i){
+<pre class="r"><code># Function that pulls username and post number and stores in dataframe
+pull_users &lt;- function(i){
   html &lt;- read_html(i)
   post_href &lt;- html_nodes(html, &quot;.hashPermalink&quot;)
   postnum &lt;- html_attr(post_href, &quot;href&quot;) %&gt;% str_sub(., start= -7)
@@ -95,6 +97,7 @@ head(site, 3)</code></pre>
   cbind(postnum, user, postfull) %&gt;% as.data.frame()
 }
 
+# Function that pulls number of likes and post number and stores in dataframe
 pull_likes &lt;- function(i){
   html &lt;- read_html(i)
     likes &lt;- html_nodes(html, &quot;.likesTotal&quot;)
@@ -104,25 +107,47 @@ pull_likes &lt;- function(i){
     cbind(postnum, num_likes) %&gt;% as.data.frame()
 }</code></pre>
 <p>Once I had the CSS information that I needed, I applied my scraping functions across all pages.</p>
-<pre class="r"><code>user_list &lt;- lapply(site, pull_users)
+<pre class="r"><code># Scrape data and bind list elements into one dataframe
+user_list &lt;- lapply(site, pull_users)
 user_df &lt;- do.call(rbind, user_list)
 
 likes_list &lt;- lapply(site, pull_likes)
 likes_df &lt;- do.call(rbind, likes_list)</code></pre>
 <p>Next I needed to join my user data frame with my data frame of likes In the past I’ve had problems with R setting data as factors, so I converted the post numbers and like counts to numeric values.</p>
-<pre class="r"><code>user_df$postnum &lt;- as.numeric(as.character(user_df$postnum))
+<pre class="r"><code># Change factors to numeric values for joining
+user_df$postnum &lt;- as.numeric(as.character(user_df$postnum))
 likes_df$postnum &lt;- as.numeric(as.character(likes_df$postnum))
 likes_df$num_likes &lt;- as.numeric(as.character(likes_df$num_likes))
 
+# Join data frames and keep only the distinct rows
 waywt_df &lt;- left_join(user_df, likes_df, by = &quot;postnum&quot;) %&gt;% distinct()</code></pre>
-<p>After I joined my two dataframes, I wanted to see what the distribution of likes looked like. I made a density plot and added a dashed line for the mean number of likes</p>
+<p>After I joined my two dataframes, I wanted to see what the distribution of likes looked like. I made a density plot of all likes posts and added a dashed line for the mean number of likes</p>
 <p><img src="/posts/2018-01-16-web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<pre class="r"><code>top_posts &lt;- waywt_df %&gt;%
+<pre class="r"><code># Arrange dataframe by top posts
+top_posts &lt;- waywt_df %&gt;%
   filter(!is.na(num_likes)) %&gt;%
   arrange(desc(num_likes)) %&gt;%
-  top_n(50, wt = num_likes) </code></pre>
+  top_n(50, wt = num_likes) 
+
+top_posts %&gt;% count(user) %&gt;% arrange(desc(n)) %&gt;% head(., 5)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##              user     n
+##            &lt;fctr&gt; &lt;int&gt;
+## 1 conceptual 4est     4
+## 2           ChetB     4
+## 3       spacepope     3
+## 4           mumma     3
+## 5          Parker     3</code></pre>
+<pre class="r"><code>top_posts %&gt;% select(user, num_likes) %&gt;% arrange(desc(num_likes)) %&gt;% head(., 5)</code></pre>
+<pre><code>##              user num_likes
+## 1           ChetB        95
+## 2           ChetB        90
+## 3 conceptual 4est        89
+## 4       KamoteJoe        84
+## 5        RegisDB9        83</code></pre>
 <p>Here’s where things got a little more complicated. Within each post, there’s a separate reference to where the images are hosted. The first time I ran this, I ran into a problem where I was pulling image links from the entire page. To get around this, I used the CSS selector for the exact image post number.</p>
-<pre class="r"><code>img &lt;- top_posts$postfull
+<pre class="r"><code># Scrape image links from post numbers 
+img &lt;- top_posts$postfull
 base &lt;- &quot;https://www.styleforum.net/&quot;
 img_url &lt;- paste0(base, img)
 
@@ -140,11 +165,14 @@ pull_imgs &lt;- function(i){
 img_list &lt;- lapply(img_url, pull_imgs)
 img_vec &lt;- unlist(img_list)</code></pre>
 <p>Now that I had a vector of links, I was ready to write them out into a text file. My plan was to use the file of links to download each image onto a local directory.</p>
-<pre class="r"><code>write(img_vec, &quot;urls.txt&quot;)</code></pre>
+<pre class="r"><code># Write out image links to download
+write(img_vec, &quot;urls.txt&quot;)</code></pre>
 <p>To do the actual downloading of image files, I used <a href="https://www.gnu.org/software/wget/">wget</a>. If you’re on a Mac, wget is easily installed using homebrew. To avoid pinging the server too often, I passed an argument to wget to wait 10 seconds between downloading each file. One handy line of text into my command line, and I was off downloading images.</p>
-<pre class="bash"><code>wget -i urls.txt -w 10</code></pre>
+<pre class="bash"><code># Download all images from paths specifiedi n urls.txt. Wait 10 seconds between each download
+wget -i urls.txt -w 10</code></pre>
 <p>Once I finished downloading the images, I did a little extra processing with the Mac batch editor and some lines in UNIX to get ordered filenames. The section of code below just adds the “.jpg” extension to the name of each file (some of them downloaded without extension names).</p>
-<pre class="bash"><code>for file in *; do
+<pre class="bash"><code># Add .jpg to extensionless files
+for file in *; do
     if [ -f ${file} ]; then
         mv ${file} ${file}.jpg
     fi

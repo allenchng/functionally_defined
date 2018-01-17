@@ -25,6 +25,7 @@ library(ggplot2)
 Next I set up the list of pages to scrape.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Create vector of links to scrape data from
 url <- "https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-"
 page <- c(1792:2138)
 site <- paste0(url, page)
@@ -35,6 +36,7 @@ head(site, 3)
 To identify which CSS selectors I needed to scrape, I used [selectorgadget](http://selectorgadget.com/). The information I was interested in were the usernames and number of likes for each post. Because some posts didn't have likes, I set up two functions. One to pull the list of users and the post numbers from each page, and another function to pull posts numbers with likes I also included the hypertext reference from each post to use a little later for downloading the actual images themselves. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Function that pulls username and post number and stores in dataframe
 pull_users <- function(i){
   html <- read_html(i)
   post_href <- html_nodes(html, ".hashPermalink")
@@ -45,6 +47,7 @@ pull_users <- function(i){
   cbind(postnum, user, postfull) %>% as.data.frame()
 }
 
+# Function that pulls number of likes and post number and stores in dataframe
 pull_likes <- function(i){
   html <- read_html(i)
     likes <- html_nodes(html, ".likesTotal")
@@ -58,6 +61,7 @@ pull_likes <- function(i){
 Once I had the CSS information that I needed, I applied my scraping functions across all pages.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
+# Scrape data and bind list elements into one dataframe
 user_list <- lapply(site, pull_users)
 user_df <- do.call(rbind, user_list)
 
@@ -68,10 +72,12 @@ likes_df <- do.call(rbind, likes_list)
 Next I needed to join my user data frame with my data frame of likes In the past I've had problems with R setting data as factors, so I converted the post numbers and like counts to numeric values. 
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
+# Change factors to numeric values for joining
 user_df$postnum <- as.numeric(as.character(user_df$postnum))
 likes_df$postnum <- as.numeric(as.character(likes_df$postnum))
 likes_df$num_likes <- as.numeric(as.character(likes_df$num_likes))
 
+# Join data frames and keep only the distinct rows
 waywt_df <- left_join(user_df, likes_df, by = "postnum") %>% distinct()
 ```
 
@@ -80,7 +86,7 @@ waywt_df <- readRDS("/Users/allenchang/Desktop/waywt_df.RDS")
 top_posts <- readRDS("/Users/allenchang/Desktop/top_posts.RDS")
 ```
 
-After I joined my two dataframes, I wanted to see what the distribution of likes looked like. I made a density plot and added a dashed line for the mean number of likes 
+After I joined my two dataframes, I wanted to see what the distribution of likes looked like. I made a density plot of all likes posts and added a dashed line for the mean number of likes 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 waywt_df %>% 
@@ -90,7 +96,7 @@ waywt_df %>%
   geom_density(alpha=.6, fill="steelblue") +
   geom_vline(aes(xintercept=mean(num_likes)),
              color="blue", linetype="dashed", size=1) +
-  labs(title="Density plot for thumbs in 2017", 
+  labs(title="Density plot of thumbs in 2017", 
        subtitle="",
        caption="Source: SF:WAYWT",
        x="Thumbs",
@@ -99,17 +105,23 @@ waywt_df %>%
 
 
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Arrange dataframe by top posts
 top_posts <- waywt_df %>%
   filter(!is.na(num_likes)) %>%
   arrange(desc(num_likes)) %>%
   top_n(50, wt = num_likes) 
+
+top_posts %>% count(user) %>% arrange(desc(n)) %>% head(., 5)
+
+top_posts %>% select(user, num_likes) %>% arrange(desc(num_likes)) %>% head(., 5)
 
 ```
 
 Here's where things got a little more complicated. Within each post, there's a separate reference to where the images are hosted. The first time I ran this, I ran into a problem where I was pulling image links from the entire page. To get around this, I used the CSS selector for the exact image post number.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Scrape image links from post numbers 
 img <- top_posts$postfull
 base <- "https://www.styleforum.net/"
 img_url <- paste0(base, img)
@@ -132,18 +144,21 @@ img_vec <- unlist(img_list)
 Now that I had a vector of links, I was ready to write them out into a text file. My plan was to use the file of links to download each image onto a local directory.
 
 ```{r}
+# Write out image links to download
 write(img_vec, "urls.txt")
 ```
 
 To do the actual downloading of image files, I used [wget](https://www.gnu.org/software/wget/). If you're on a Mac, wget is easily installed using homebrew. To avoid pinging the server too often, I passed an argument to wget to wait 10 seconds between downloading each file. One handy line of text into my command line, and I was off downloading images.
 
 ```{bash eval=FALSE}
+# Download all images from paths specifiedi n urls.txt. Wait 10 seconds between each download
 wget -i urls.txt -w 10
 ```
 
 Once I finished downloading the images, I did a little extra processing with the Mac batch editor and some lines in UNIX to get ordered filenames. The section of code below just adds the ".jpg" extension to the name of each file (some of them downloaded without extension names).
 
 ```{bash eval=FALSE}
+# Add .jpg to extensionless files
 for file in *; do
     if [ -f ${file} ]; then
         mv ${file} ${file}.jpg
