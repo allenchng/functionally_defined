@@ -6,11 +6,20 @@
     <description>Recent content in R on Functionally Defined</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>&amp;copy; 2017 Allen Chang</copyright>
-    <lastBuildDate>Mon, 08 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <copyright>&amp;copy; 2018 Allen Chang</copyright>
+    <lastBuildDate>Tue, 16 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Web scraping the most popular fit pictures of 2017 from Styleforum’s “What are you wearing today” thread</title>
+      <link>/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/</link>
+      <pubDate>Tue, 16 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/</guid>
+      <description>One of the main draws of Styleforum is it’s “What Are You Wearing Today” thread. In it, users get to show off their clothes in pictures, other users can give “likes” to deem a fit exemplary (if you’ve ever opened up Instagram this concept is probably not too foreign for you). I wanted to see not only which posts were given the most likes in 2017, but I also wanted to download the photo(s) from each fit to upload into a photo album to share with others.</description>
+    </item>
     
     <item>
       <title>Text scraping Styleforum’s “Random Fashion Thoughts” thread</title>

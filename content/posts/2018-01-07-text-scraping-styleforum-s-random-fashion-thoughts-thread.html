@@ -33,11 +33,11 @@ pull_users &lt;- function(i){
     html_text() %&gt;%
     as.data.frame()
 }</code></pre>
-<p>Then I used lapply and rbind to scrape all the usernames with posts on each page.</p>
+<p>Then I used lapply to scrape all the usernames with posts on each page and rbind to package it into a dataframe.</p>
 <pre class="r"><code># scrape and bind to dataframe
 user_list &lt;- lapply(site, pull_users)
 user_df &lt;- do.call(rbind, user_list)</code></pre>
-<p>With all my information in a handy dataframe, I grouped by username and counted the total number of posts by each user. I also converted my user column into a factor arranged by post count for easier plotting.</p>
+<p>With all my information in a handy dataframe, I counted the total number of posts by each user. I also converted my user column into a factor arranged by post count for easier plotting.</p>
 <pre class="r"><code># get username counts and arrange in descending order
 names(user_df) &lt;- c(&quot;user&quot;)
 user_arranged &lt;- user_df %&gt;%

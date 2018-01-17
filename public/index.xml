@@ -6,11 +6,40 @@
     <description>Recent content on Functionally Defined</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <copyright>&amp;copy; 2017 Allen Chang</copyright>
-    <lastBuildDate>Mon, 08 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <copyright>&amp;copy; 2018 Allen Chang</copyright>
+    <lastBuildDate>Tue, 16 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Web scraping the most popular fit pictures of 2017 from Styleforum’s “What are you wearing today” thread</title>
+      <link>/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/</link>
+      <pubDate>Tue, 16 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/</guid>
+      <description>One of the main draws of Styleforum is it’s “What Are You Wearing Today” thread. In it, users get to show off their clothes in pictures, other users can give “likes” to deem a fit exemplary (if you’ve ever opened up Instagram this concept is probably not too foreign for you). I wanted to see not only which posts were given the most likes in 2017, but I also wanted to download the photo(s) from each fit to upload into a photo album to share with others.</description>
+    </item>
+    
+    <item>
+      <title>Things I like</title>
+      <link>/links/</link>
+      <pubDate>Sat, 13 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/links/</guid>
+      <description>Also known as my bookmarks bar substitute
+R ggplot visualization examples
+arranging multiple plots - useful for scientific figures
+picking visualization colors
+wes anderson movie color palletes
+alternative to tikz diagrams
+a solution to my list object frustrations
+Bayes fast AB testing
+linear regression with gibbs
+intro to bayes with stan
+Books my bible
+Stats probability cheatsheet</description>
+    </item>
     
     <item>
       <title>Text scraping Styleforum’s “Random Fashion Thoughts” thread</title>
@@ -47,21 +76,6 @@ As per usual, these were the packages used.</description>
       
       <guid>/posts/visualizing-home-states-for-top-chef-contestants-in-r/</guid>
       <description>Each season of Top Chef is something that I look forward to every year and it’s one of the only shows that my girlfriend and I will make an hour of time for every week to watch. To my delight, this season two of my favorite writers Tom Haberstroh and Kevin Arnovitz have started a weekly podcast called Pack Your Knives to discuss each episode and share their love of Top Chef.</description>
-    </item>
-    
-    <item>
-      <title>Things I like</title>
-      <link>/links/</link>
-      <pubDate>Thu, 21 Dec 2017 00:00:00 +0000</pubDate>
-      
-      <guid>/links/</guid>
-      <description>Also known as my bookmarks bar substitute
-R ggplot visualization examples
-arranging multiple plots - useful for scientific figures
-picking visualization colors
-wes anderson movie color palletes
-alternative to tikz diagrams
-a solution to my list object frustrations</description>
     </item>
     
     <item>
