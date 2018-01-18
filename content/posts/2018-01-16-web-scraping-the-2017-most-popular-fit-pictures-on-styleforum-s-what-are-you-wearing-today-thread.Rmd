@@ -171,3 +171,4 @@ Done! The last step was to upload all the photos to an image sharing website of 
 [Styleforum's best of 2017](https://postimg.org/gallery/1szjk8a92/)
 
 ### References
+[renaming files using unix](https://stackoverflow.com/questions/12152626/how-can-remove-the-extension-of-a-filename-in-a-shell-script)
