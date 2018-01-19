@@ -17,7 +17,8 @@ Also known as my bookmarks bar substitute
 
 [alternative to tikz diagrams](http://rich-iannone.github.io/DiagrammeR/io.html)
 
-[a solution to my list object frustrations](https://cran.r-project.org/web/packages/rlist/rlist.pdf)
+[a solution to my list frustrations](https://cran.r-project.org/web/packages/rlist/rlist.pdf) + [associated tutorial](https://renkun-ken.github.io/rlist-tutorial/)
+
 
 ## Emacs
 
