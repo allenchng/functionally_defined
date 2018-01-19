@@ -19,6 +19,10 @@ Also known as my bookmarks bar substitute
 
 [a solution to my list object frustrations](https://cran.r-project.org/web/packages/rlist/rlist.pdf)
 
+## Emacs
+
+[keybindings references](https://www.gnu.org/software/emacs/refcards/pdf/refcard.pdf)
+
 ## Bayes
 
 [fast AB testing](https://github.com/FrankPortman/bayesAB????)
