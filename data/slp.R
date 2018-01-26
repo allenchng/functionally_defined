@@ -9,7 +9,7 @@ library(lubridate)
 theme_set(theme_bw())
 
 url <- "https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-"
-page <- c(665:1330)
+page <- c(2:664)
 #1329
 site <- paste0(url, page)
 
@@ -52,29 +52,35 @@ content_dtm <- DocumentTermMatrix(clean_corp)
 
 content_td <- tidy(content_dtm)
 # saveRDS(content_td, "slp1_td.rds")
-# saveRDS(content_td, "slp2_td.rds")
+#saveRDS(content_td, "slp2_td.rds")
 slp1 <- readRDS("slp1_td.rds")
 slp2 <- readRDS("slp2_td.rds")
 
+### ABOVE THIS IS GOOD
+
 full_df <- bind_rows(slp1, slp2)
 #### SOMETHING IS STILL WEIRD HERE
-full_df$document <- mdy(full_df$document)
+full_df$document <- mdy(full_df$document) 
+full_df <- full_df %>%
+  drop_na(document)
 
 ### BING
 
 post_sent_bing <- full_df %>%
   inner_join(get_sentiments("bing"), by = c(term = "word"))
 
+# diverging bar chart
 post_sent_bing %>%
   count(sentiment, term, wt = count) %>%
   ungroup() %>%
-  filter(n >= 200) %>%
+  filter(n >= 300) %>%
   mutate(n = ifelse(sentiment == "negative", -n, n)) %>%
   mutate(term = reorder(term, n)) %>%
   ggplot(aes(term, n, fill = sentiment)) +
   geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  ylab("Contribution to sentiment")
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 11.5)) +
+  ylab("Contribution to sentiment") + 
+  coord_flip()
 
 post_sent_bing %>%
   count(term, sort = TRUE) %>%
@@ -122,6 +128,31 @@ sentiment_by_time <- full_df %>%
   ungroup() %>%
   # Implement sentiment analysis using the NRC lexicon
   inner_join(get_sentiments("nrc"))
+
+test <- full_df %>%
+  # Define a new column using floor_date()
+  mutate(date = floor_date(document, unit = "3 months")) %>%
+  # Group by date
+  group_by(document) %>%
+  mutate(total_words = n()) %>%
+  ungroup() %>%
+  # Implement sentiment analysis using the NRC lexicon
+  inner_join(get_sentiments("nrc"), by = c(term = "word"))
+
+test %>%
+  # Filter for positive and negative words
+  filter(sentiment %in% c("positive", "negative")) %>%
+  # Count by date, sentiment, and total_words
+  count(date, sentiment, total_words) %>%
+  ungroup() %>%
+  mutate(percent = n / total_words) %>%
+  group_by(date, sentiment) %>%
+  summarise(aveperc = mean(percent)) %>%
+  # Set up the plot with aes()
+  ggplot(aes(date, aveperc, color = sentiment)) +
+  geom_line(size = 1.5) +
+  geom_smooth(method = "lm", se = FALSE, lty = 2) +
+  expand_limits(y = 0)
 
 ### afinn
 post_sent_afinn <- full_df %>%
