@@ -50,6 +50,29 @@
 
 <article class="c-article p-list-article">
   <header>
+    <h2 class="c-title c-article__title"><a href="/posts/sentiment-analysis-of-fashion-enthusiasts/">Sentiment analysis of fashion enthusiasts</a></h2>
+    <p class="c-article__meta">
+      Posted on
+      <time datetime="2018-01-27T00:00:00Z">
+        Jan 27, 2018
+      </time>
+    </p>
+  </header>
+  <div class="c-article__summary">
+    Packages
+library(rvest) library(tidyverse) library(stringr) library(tidytext) library(broom) library(lubridate) theme_set(theme_bw()) The first step was to
+url &lt;- &quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&quot; page &lt;- c(2:664) # page &lt;- c(664:1330) site &lt;- paste0(url, page) pull_posts &lt;- function(i){ html &lt;- read_html(i) date &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;) %&gt;% html_text() post &lt;- html_nodes(html, &quot;.SelectQuoteContainer&quot;) %&gt;% html_text() %&gt;% gsub(&#39;[\r\n\t]&#39;, &#39;&#39;, .) %&gt;% gsub(&quot;.*:&quot;, &quot;&quot;, .) %&gt;% gsub(&quot;↑.*Click to expand...&quot;, &quot;&quot;, .) %&gt;% gsub(&quot;//.*Click to expand...&quot;, &quot;&quot;, .) %&gt;% str_trim() cbind(date, post) %&gt;% as.
+  </div>
+  
+  <a href="/posts/sentiment-analysis-of-fashion-enthusiasts/" class="c-article__btn p-list-article__btn">Read more</a></li>
+  
+</article>
+
+
+
+
+<article class="c-article p-list-article">
+  <header>
     <h2 class="c-title c-article__title"><a href="/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/">Text scraping Styleforum’s “Random Fashion Thoughts” thread</a></h2>
     <p class="c-article__meta">
       Posted on

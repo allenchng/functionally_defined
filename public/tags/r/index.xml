@@ -7,10 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Tue, 16 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 27 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Sentiment analysis of fashion enthusiasts</title>
+      <link>/posts/sentiment-analysis-of-fashion-enthusiasts/</link>
+      <pubDate>Sat, 27 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/sentiment-analysis-of-fashion-enthusiasts/</guid>
+      <description>Packages
+library(rvest) library(tidyverse) library(stringr) library(tidytext) library(broom) library(lubridate) theme_set(theme_bw()) The first step was to
+url &amp;lt;- &amp;quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&amp;quot; page &amp;lt;- c(2:664) # page &amp;lt;- c(664:1330) site &amp;lt;- paste0(url, page) pull_posts &amp;lt;- function(i){ html &amp;lt;- read_html(i) date &amp;lt;- html_nodes(html, &amp;quot;.datePermalink .DateTime&amp;quot;) %&amp;gt;% html_text() post &amp;lt;- html_nodes(html, &amp;quot;.SelectQuoteContainer&amp;quot;) %&amp;gt;% html_text() %&amp;gt;% gsub(&amp;#39;[\r\n\t]&amp;#39;, &amp;#39;&amp;#39;, .) %&amp;gt;% gsub(&amp;quot;.*:&amp;quot;, &amp;quot;&amp;quot;, .) %&amp;gt;% gsub(&amp;quot;↑.*Click to expand...&amp;quot;, &amp;quot;&amp;quot;, .) %&amp;gt;% gsub(&amp;quot;//.*Click to expand...&amp;quot;, &amp;quot;&amp;quot;, .) %&amp;gt;% str_trim() cbind(date, post) %&amp;gt;% as.</description>
+    </item>
     
     <item>
       <title>Web scraping the most popular fit pictures of 2017 from Styleforum’s “What are you wearing today” thread</title>

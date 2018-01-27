@@ -1,0 +1,210 @@
+---
+title: Sentiment analysis of fashion enthusiasts
+author: Allen
+date: '2018-01-27'
+slug: sentiment-analysis-of-fashion-enthusiasts
+categories: []
+tags:
+  - clothing
+  - R
+  - visualization
+  - webscraping
+draft: yes
+---
+
+Here's the list of packages used 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(rvest)
+library(tidyverse)
+library(stringr)
+library(tidytext)
+library(broom)
+library(lubridate)
+
+theme_set(theme_bw())
+```
+
+The first step was to pull text from all posts in the Saint Laurent Paris thread. If you've read my previous analyses, this follows the same scraping procedure as I've outlined in my (random fashion thoughts post)[https://functionallydefined.netlify.com/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/] and my (what are you wearing today post)[https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/].
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+url <- "https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-"
+page <- c(2:664)
+# page <- c(664:1330)
+site <- paste0(url, page)
+
+pull_posts <- function(i){
+  html <- read_html(i)
+  date <- html_nodes(html, ".datePermalink .DateTime") %>% html_text()
+  post <- html_nodes(html, ".SelectQuoteContainer") %>%
+    html_text() %>%
+    gsub('[\r\n\t]', '', .) %>%
+    gsub(".*:", "", .) %>% 
+    gsub("↑.*Click to expand...", "", .) %>%
+    gsub("//.*Click to expand...", "", .) %>%
+    str_trim()
+  
+  cbind(date, post) %>% as.data.frame()
+}
+
+post_list <- lapply(site, pull_posts)
+post_df <- do.call(rbind, post_list)
+```
+
+To preprocess my text data, I used the text mining package to remove stop words. One problem I ran into was that the number of words in my document term matrix were too many to tidy into a tokenized data frame. To get around that I split my scrape into two parts. I saved each tidied, tokenized data frame into separate files and then bound them into one data frame. 
+
+```{r eval = FALSE, message=FALSE, warning=FALSE}
+names(post_df) <- c("doc_id", "text")
+content_source <- DataframeSource(post_df)
+content_corpus <- VCorpus(content_source)
+
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, stripWhitespace)
+  corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "like", "just",
+                                          "really", "also", "theyre",
+                                          "theres", "youre", "thats",
+                                          "just", "can", "get", "dont",
+                                          "ive", "etc", "cant", "saint", "black"))
+  return(corpus)
+}
+
+clean_corp <- clean_corpus(content_corpus)
+content_dtm <- DocumentTermMatrix(clean_corp)
+
+content_td <- tidy(content_dtm)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+slp1 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp1_td.rds")
+slp2 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp2_td.rds")
+
+full_df <- bind_rows(slp1, slp2)
+names(full_df) <- c("date", "term", "count")
+```
+
+Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a first exploratory measure, I wanted to see what the top 10 words were (not yet filtering for only emotional words)
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+full_df %>% count(term) %>% arrange(desc(n)) %>% top_n(10)
+```
+
+It seems that jeans and boots are a popular topic in the thread. Next, it was time to filter my dataframe of words for sentiment. I found that all 3 lexicons for defining sentiments each have interesting properties for analysis, so I went ahead and just inner joined my data with each lexicon. For reference, the (nrc)[http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm] lexicon categorizes words into 10 different categories of sentiment, the (bing)[https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html] lexicon categorizes into positive and negative sentiment, and the (afinn)[http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010] lexicon categorizes words into positive and negative sentiment, but also scores by degree of sentiment.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+post_sent_bing <- full_df %>%
+  inner_join(get_sentiments("bing"), by = c(term = "word"))
+
+post_sent_nrc <- full_df %>%
+  inner_join(get_sentiments("nrc"), by = c(term = "word"))
+
+post_sent_afinn <- full_df %>%
+  inner_join(get_sentiments("afinn"), by = c(term = "word"))
+```
+
+I continued with my exploratory data by asking what the most common words were by sentiment in the nrc lexicon.
+
+```{r}
+post_sent_nrc %>%
+  count(term, sentiment) %>%
+  arrange(desc(n))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+post_sent_bing %>%
+  count(sentiment, term, wt = count) %>%
+  ungroup() %>%
+  filter(n >= 300) %>%
+  mutate(n = ifelse(sentiment == "negative", -n, n)) %>%
+  mutate(term = reorder(term, n)) %>%
+  ggplot(aes(term, n, fill = sentiment)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 11.5)) +
+  ylab("Term count") + xlab("Term") +
+  coord_flip()
+```
+
+test <- post_sent_bing %>%
+count(sentiment, date) %>% spread(sentiment, n, fill = 0) %>%
+mutate(polarity = positive - negative)
+
+
+### NRC
+post_sent_nrc %>%
+  # Filter to only choose the words associated with sadness
+  filter(sentiment == "sadness") %>%
+  # Group by word
+  group_by(term) %>%
+  # Use the summarize verb to find the mean frequency
+  summarize(count = mean(count)) %>%
+  # Arrange to sort in order of descending frequency
+  arrange(desc(count))
+
+joy_words <- post_sent_nrc %>%
+  # Filter to only choose the words associated with sadness
+  filter(sentiment == "joy") %>%
+  # Group by word
+  group_by(term) %>%
+  # Use the summarize verb to find the mean frequency
+  summarize(count = mean(count)) %>%
+  # Arrange to sort in order of descending frequency
+  arrange(desc(count))    
+
+joy_words %>%
+  top_n(20) %>%
+  mutate(word = reorder(term, count)) %>%
+  # Use aes() to put words on the x-axis and frequency on the y-axis
+  ggplot(aes(word, count)) +
+  # Make a bar chart with geom_col()
+  geom_col() +
+  coord_flip()
+
+sentiment_by_time <- full_df %>%
+  # Define a new column using floor_date()
+  mutate(date = floor_date(document, unit = "6 months")) %>%
+  # Group by date
+  group_by(date) %>%
+  mutate(total_words = n()) %>%
+  ungroup() %>%
+  # Implement sentiment analysis using the NRC lexicon
+  inner_join(get_sentiments("nrc"))
+
+test <- full_df %>%
+  # Define a new column using floor_date()
+  mutate(date = floor_date(document, unit = "3 months")) %>%
+  # Group by date
+  group_by(document) %>%
+  mutate(total_words = n()) %>%
+  ungroup() %>%
+  # Implement sentiment analysis using the NRC lexicon
+  inner_join(get_sentiments("nrc"), by = c(term = "word"))
+
+test %>%
+  # Filter for positive and negative words
+  filter(sentiment %in% c("positive", "negative")) %>%
+  # Count by date, sentiment, and total_words
+  count(date, sentiment, total_words) %>%
+  ungroup() %>%
+  mutate(percent = n / total_words) %>%
+  group_by(date, sentiment) %>%
+  summarise(aveperc = mean(percent)) %>%
+  # Set up the plot with aes()
+  ggplot(aes(date, aveperc, color = sentiment)) +
+  geom_line(size = 1.5) +
+  geom_smooth(method = "lm", se = FALSE, lty = 2) +
+  expand_limits(y = 0)
+
+### afinn
+sentiment_contributions <- full_df %>%
+  # Count by title and word
+  count(term, sort = TRUE) %>%
+  # Implement sentiment analysis using the "afinn" lexicon
+  inner_join(get_sentiments("afinn"), by = c(term = "word")) %>%
+  # Calculate a contribution for each word in each title
+  mutate(contribution = score * n / sum(n)) %>%
+  ungroup()
+
+### REFERENCES
+
+https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html

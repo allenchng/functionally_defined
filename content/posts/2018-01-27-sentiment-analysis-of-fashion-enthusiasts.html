@@ -1,0 +1,120 @@
+---
+title: Sentiment analysis of fashion enthusiasts
+author: Allen
+date: '2018-01-27'
+slug: sentiment-analysis-of-fashion-enthusiasts
+categories: []
+tags:
+  - clothing
+  - R
+  - visualization
+  - webscraping
+---
+
+
+
+<p>Packages</p>
+<pre class="r"><code>library(rvest)
+library(tidyverse)
+library(stringr)
+library(tidytext)
+library(broom)
+library(lubridate)
+
+theme_set(theme_bw())</code></pre>
+<p>The first step was to</p>
+<pre class="r"><code>url &lt;- &quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&quot;
+page &lt;- c(2:664)
+# page &lt;- c(664:1330)
+site &lt;- paste0(url, page)
+
+pull_posts &lt;- function(i){
+  html &lt;- read_html(i)
+  date &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;) %&gt;% html_text()
+  post &lt;- html_nodes(html, &quot;.SelectQuoteContainer&quot;) %&gt;%
+    html_text() %&gt;%
+    gsub(&#39;[\r\n\t]&#39;, &#39;&#39;, .) %&gt;%
+    gsub(&quot;.*:&quot;, &quot;&quot;, .) %&gt;% 
+    gsub(&quot;↑.*Click to expand...&quot;, &quot;&quot;, .) %&gt;%
+    gsub(&quot;//.*Click to expand...&quot;, &quot;&quot;, .) %&gt;%
+    str_trim()
+  
+  cbind(date, post) %&gt;% as.data.frame()
+}
+
+post_list &lt;- lapply(site, pull_posts)
+post_df &lt;- do.call(rbind, post_list)</code></pre>
+<pre class="r"><code>names(post_df) &lt;- c(&quot;doc_id&quot;, &quot;text&quot;)
+content_source &lt;- DataframeSource(post_df)
+content_corpus &lt;- VCorpus(content_source)
+
+clean_corpus &lt;- function(corpus){
+  corpus &lt;- tm_map(corpus, stripWhitespace)
+  corpus &lt;- tm_map(corpus, removePunctuation)
+  corpus &lt;- tm_map(corpus, content_transformer(tolower))
+  corpus &lt;- tm_map(corpus, removeWords, c(stopwords(&quot;en&quot;), &quot;like&quot;, &quot;just&quot;,
+                                          &quot;really&quot;, &quot;also&quot;, &quot;theyre&quot;,
+                                          &quot;theres&quot;, &quot;youre&quot;, &quot;thats&quot;,
+                                          &quot;just&quot;, &quot;can&quot;, &quot;get&quot;, &quot;dont&quot;,
+                                          &quot;ive&quot;, &quot;etc&quot;, &quot;cant&quot;, &quot;saint&quot;))
+  return(corpus)
+}
+
+clean_corp &lt;- clean_corpus(content_corpus)
+content_dtm &lt;- DocumentTermMatrix(clean_corp)
+
+content_td &lt;- tidy(content_dtm)</code></pre>
+<pre class="r"><code>slp1 &lt;- readRDS(&quot;/Users/AllenChang/Desktop/functionally_defined/data/slp1_td.rds&quot;)
+slp2 &lt;- readRDS(&quot;/Users/AllenChang/Desktop/functionally_defined/data/slp2_td.rds&quot;)
+
+full_df &lt;- bind_rows(slp1, slp2)</code></pre>
+<pre><code>## # A tibble: 10 x 2
+##    term      n
+##    &lt;chr&gt; &lt;int&gt;
+##  1 one    4598
+##  2 size   4568
+##  3 look   4528
+##  4 slp    4252
+##  5 think  4244
+##  6 fit    3952
+##  7 black  3672
+##  8 jeans  3544
+##  9 boots  3324
+## 10 wear   3228</code></pre>
+<pre class="r"><code>post_sent_bing &lt;- full_df %&gt;%
+  inner_join(get_sentiments(&quot;bing&quot;), by = c(term = &quot;word&quot;))
+
+post_sent_nrc &lt;- full_df %&gt;%
+  inner_join(get_sentiments(&quot;nrc&quot;), by = c(term = &quot;word&quot;))
+
+post_sent_afinn &lt;- full_df %&gt;%
+  inner_join(get_sentiments(&quot;afinn&quot;), by = c(term = &quot;word&quot;))</code></pre>
+<div id="top-words-by-sentiment" class="section level3">
+<h3>top words by sentiment</h3>
+<p>post_sent_nrc %&gt;% count(term, sentiment) %&gt;% group_by(sentiment) %&gt;% arrange(desc(n)) %&gt;% ggplot(aes(x = term, y = n)) + geom_bar(stat = “identity”) + facet_wrap(~sentiment)</p>
+</div>
+<div id="diverging-bar-chart" class="section level3">
+<h3>diverging bar chart</h3>
+<p>post_sent_bing %&gt;% count(sentiment, term, wt = count) %&gt;% ungroup() %&gt;% filter(n &gt;= 300) %&gt;% mutate(n = ifelse(sentiment == “negative”, -n, n)) %&gt;% mutate(term = reorder(term, n)) %&gt;% ggplot(aes(term, n, fill = sentiment)) + geom_bar(stat = “identity”) + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 11.5)) + ylab(“Contribution to sentiment”) + coord_flip()</p>
+<p>post_sent_bing %&gt;% count(term, sort = TRUE) %&gt;% head(10)</p>
+</div>
+<div id="section" class="section level3">
+<h3></h3>
+</div>
+<div id="nrc" class="section level3">
+<h3>NRC</h3>
+<p>post_sent_nrc %&gt;% # Filter to only choose the words associated with sadness filter(sentiment == “sadness”) %&gt;% # Group by word group_by(term) %&gt;% # Use the summarize verb to find the mean frequency summarize(count = mean(count)) %&gt;% # Arrange to sort in order of descending frequency arrange(desc(count))</p>
+<p>joy_words &lt;- post_sent_nrc %&gt;% # Filter to only choose the words associated with sadness filter(sentiment == “joy”) %&gt;% # Group by word group_by(term) %&gt;% # Use the summarize verb to find the mean frequency summarize(count = mean(count)) %&gt;% # Arrange to sort in order of descending frequency arrange(desc(count))</p>
+<p>joy_words %&gt;% top_n(20) %&gt;% mutate(word = reorder(term, count)) %&gt;% # Use aes() to put words on the x-axis and frequency on the y-axis ggplot(aes(word, count)) + # Make a bar chart with geom_col() geom_col() + coord_flip()</p>
+<p>sentiment_by_time &lt;- full_df %&gt;% # Define a new column using floor_date() mutate(date = floor_date(document, unit = “6 months”)) %&gt;% # Group by date group_by(date) %&gt;% mutate(total_words = n()) %&gt;% ungroup() %&gt;% # Implement sentiment analysis using the NRC lexicon inner_join(get_sentiments(“nrc”))</p>
+<p>test &lt;- full_df %&gt;% # Define a new column using floor_date() mutate(date = floor_date(document, unit = “3 months”)) %&gt;% # Group by date group_by(document) %&gt;% mutate(total_words = n()) %&gt;% ungroup() %&gt;% # Implement sentiment analysis using the NRC lexicon inner_join(get_sentiments(“nrc”), by = c(term = “word”))</p>
+<p>test %&gt;% # Filter for positive and negative words filter(sentiment %in% c(“positive”, “negative”)) %&gt;% # Count by date, sentiment, and total_words count(date, sentiment, total_words) %&gt;% ungroup() %&gt;% mutate(percent = n / total_words) %&gt;% group_by(date, sentiment) %&gt;% summarise(aveperc = mean(percent)) %&gt;% # Set up the plot with aes() ggplot(aes(date, aveperc, color = sentiment)) + geom_line(size = 1.5) + geom_smooth(method = “lm”, se = FALSE, lty = 2) + expand_limits(y = 0)</p>
+</div>
+<div id="afinn" class="section level3">
+<h3>afinn</h3>
+<p>sentiment_contributions &lt;- full_df %&gt;% # Count by title and word count(term, sort = TRUE) %&gt;% # Implement sentiment analysis using the “afinn” lexicon inner_join(get_sentiments(“afinn”), by = c(term = “word”)) %&gt;% # Calculate a contribution for each word in each title mutate(contribution = score * n / sum(n)) %&gt;% ungroup()</p>
+</div>
+<div id="references" class="section level3">
+<h3>REFERENCES</h3>
+<p><a href="https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html" class="uri">https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html</a></p>
+</div>

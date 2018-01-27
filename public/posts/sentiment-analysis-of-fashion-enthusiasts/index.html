@@ -4,16 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   
-  <title>Text scraping Styleforum’s “Random Fashion Thoughts” thread</title>
-  <meta property="og:title" content="Text scraping Styleforum’s “Random Fashion Thoughts” thread" />
-  <meta name="twitter:title" content="Text scraping Styleforum’s “Random Fashion Thoughts” thread" />
+  <title>Sentiment analysis of fashion enthusiasts</title>
+  <meta property="og:title" content="Sentiment analysis of fashion enthusiasts" />
+  <meta name="twitter:title" content="Sentiment analysis of fashion enthusiasts" />
   
 
   
 
   <meta name="author" content="Allen Chang"/>
   <meta property="og:site_name" content="Functionally Defined" />
-  <meta property="og:url" content="/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/" />
+  <meta property="og:url" content="/posts/sentiment-analysis-of-fashion-enthusiasts/" />
 
   
   <meta name="twitter:card" content="summary" />
@@ -49,133 +49,132 @@
 
 <article class="p-article">
   <header>
-    <h1>Text scraping Styleforum’s “Random Fashion Thoughts” thread</h1>
+    <h1>Sentiment analysis of fashion enthusiasts</h1>
     <div>
       <div class="c-time">
         Posted on
-        <time datetime="2018-01-08T00:00:00Z">
-          Jan 8, 2018
+        <time datetime="2018-01-27T00:00:00Z">
+          Jan 27, 2018
         </time>
       </div>
       
+      <a href="/tags/clothing" class="c-tag">clothing</a>
+      
       <a href="/tags/r" class="c-tag">R</a>
       
-      <a href="/tags/textscraping" class="c-tag">textscraping</a>
-      
       <a href="/tags/visualization" class="c-tag">visualization</a>
+      
+      <a href="/tags/webscraping" class="c-tag">webscraping</a>
       
     </div>
   </header>
   
   <section id="js-article" class="p-article__body">
-    <p>Styleforum’s “Random fashion thoughts” is one of the most popular sections of the website. It’s a thread where users can talk about almost anything they want regarding clothing and fashion. Every once in awhile the thread gets so long that the moderators opt to close it off and create a new post. The most recent iteration, RFT II, was recently retired so I decided to give myself a weekend project and run some text analysis on it.</p>
-<p>As usual, here’s the packages I used.</p>
+    <p>Packages</p>
 <pre class="r"><code>library(rvest)
 library(tidyverse)
 library(stringr)
-library(tm)
-library(wordcloud)</code></pre>
-<p>The first thing I needed to do was scrape some information. Luckily, the package “rvest” and the SelectorGadget web extension made scraping easy. I simply used SelectorGadget to identify the css that I wanted and passed the information to a few functions from rvest. For this first part, I pulled username information.</p>
-<pre class="r"><code># Set up website to scrape text from
-theme_set(theme_bw())
+library(tidytext)
+library(broom)
+library(lubridate)
 
-url &lt;- &quot;https://www.styleforum.net/threads/random-fashion-thoughts-part-ii-a-new-hope.480819/page-&quot;
-page &lt;- c(2:1551)
+theme_set(theme_bw())</code></pre>
+<p>The first step was to</p>
+<pre class="r"><code>url &lt;- &quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&quot;
+page &lt;- c(2:664)
+# page &lt;- c(664:1330)
 site &lt;- paste0(url, page)
 
-# function to pull usernames
-pull_users &lt;- function(i){
-  read_html(i) %&gt;%
-    html_nodes(&quot;.userText .username&quot;) %&gt;%
-    html_text() %&gt;%
-    as.data.frame()
-}</code></pre>
-<p>Then I used lapply to scrape all the usernames with posts on each page and rbind to package it into a dataframe.</p>
-<pre class="r"><code># scrape and bind to dataframe
-user_list &lt;- lapply(site, pull_users)
-user_df &lt;- do.call(rbind, user_list)</code></pre>
-<p>With all my information in a handy dataframe, I counted the total number of posts by each user. I also converted my user column into a factor arranged by post count for easier plotting.</p>
-<pre class="r"><code># get username counts and arrange in descending order
-names(user_df) &lt;- c(&quot;user&quot;)
-user_arranged &lt;- user_df %&gt;%
-  group_by(user) %&gt;%
-  summarise(count = n()) %&gt;%
-  arrange(desc(count))
-
-user_arranged$user &lt;- factor(user_arranged$user, levels = user_arranged$user)</code></pre>
-<pre><code>## # A tibble: 6 x 2
-##              user count
-##            &lt;fctr&gt; &lt;int&gt;
-## 1          LA Guy  1985
-## 2     dieworkwear  1447
-## 3         nahneun   758
-## 4 OccultaVexillum   655
-## 5       Find Finn   598
-## 6           Fuuma   540</code></pre>
-<p>Then I plotted a simple lollipop chart to see what users had the most posts.</p>
-<p><img src="/posts/2018-01-07-text-scraping-styleforum-s-random-fashion-thoughts-thread_files/figure-html/post%20count%20plot-1.png" width="672" /></p>
-<p>Moving on, I wanted to play around with analyzing the actual content of posts themselves, so I re-configured my scraping function to pull post information instead. The post information was much more complex to deal with. Part of this was due to html formatting in the posts, but there was also username information, and “quoting” formatting that I had to get rid of. To be perfectly honest, I want to be the first to say that the number of gsubs here looks particularly ugly. Hopefully, I’ll get a chance to make it more elegant down the line, but for a quick scrape it did the job.</p>
-<pre class="r"><code># pull text from posts, don&#39;t include quoted text or html formatting
-pull_content &lt;- function(i){
-  read_html(i) %&gt;%
-    html_nodes(&quot;.SelectQuoteContainer&quot;) %&gt;%
+pull_posts &lt;- function(i){
+  html &lt;- read_html(i)
+  date &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;) %&gt;% html_text()
+  post &lt;- html_nodes(html, &quot;.SelectQuoteContainer&quot;) %&gt;%
     html_text() %&gt;%
     gsub(&#39;[\r\n\t]&#39;, &#39;&#39;, .) %&gt;%
     gsub(&quot;.*:&quot;, &quot;&quot;, .) %&gt;% 
     gsub(&quot;↑.*Click to expand...&quot;, &quot;&quot;, .) %&gt;%
     gsub(&quot;//.*Click to expand...&quot;, &quot;&quot;, .) %&gt;%
-    str_trim() %&gt;%
-    as.data.frame()
-}</code></pre>
-<pre class="r"><code>content_list &lt;- lapply(site, pull_content)
-content_df &lt;- do.call(rbind, content_list)</code></pre>
-<p>Once I had my dataframe of posts, I was ready to do some pre-processing using the “tm” (text mining) package. I created a Source object using my dataframe and converted that object to a volatile corpus using a few tm functions.</p>
-<pre class="r"><code># Convert dataframe to volatile corpus
-content_df &lt;- rownames_to_column(content_df, &quot;postnum&quot;)
-names(content_df) &lt;- c(&quot;doc_id&quot;, &quot;text&quot;)
+    str_trim()
+  
+  cbind(date, post) %&gt;% as.data.frame()
+}
 
-content_source &lt;- DataframeSource(content_df)
-content_corpus &lt;- VCorpus(content_source)</code></pre>
-<p>Next I ran a series of cleaning functions to my corpus. I ran this a few times to add words that I thought should be excluded (most of which ended up being contractions).</p>
-<p>Once I had my cleaned corpus, I was just a few steps away from analysis. To get my terms as rows and my documents as columns, I used the TermDocumentMatrix function. After that all that was left was to get the term frequency and store it into a dataframe.</p>
-<pre class="r"><code># Convert corpus to tdm
-content_tdm &lt;- TermDocumentMatrix(clean_corp)
+post_list &lt;- lapply(site, pull_posts)
+post_df &lt;- do.call(rbind, post_list)</code></pre>
+<pre class="r"><code>names(post_df) &lt;- c(&quot;doc_id&quot;, &quot;text&quot;)
+content_source &lt;- DataframeSource(post_df)
+content_corpus &lt;- VCorpus(content_source)
 
-# Convert tdm to a matrix: content_tdm
-content_tm &lt;- as.matrix(content_tdm)
+clean_corpus &lt;- function(corpus){
+  corpus &lt;- tm_map(corpus, stripWhitespace)
+  corpus &lt;- tm_map(corpus, removePunctuation)
+  corpus &lt;- tm_map(corpus, content_transformer(tolower))
+  corpus &lt;- tm_map(corpus, removeWords, c(stopwords(&quot;en&quot;), &quot;like&quot;, &quot;just&quot;,
+                                          &quot;really&quot;, &quot;also&quot;, &quot;theyre&quot;,
+                                          &quot;theres&quot;, &quot;youre&quot;, &quot;thats&quot;,
+                                          &quot;just&quot;, &quot;can&quot;, &quot;get&quot;, &quot;dont&quot;,
+                                          &quot;ive&quot;, &quot;etc&quot;, &quot;cant&quot;, &quot;saint&quot;))
+  return(corpus)
+}
 
-term_frequency &lt;- rowSums(content_tm)
+clean_corp &lt;- clean_corpus(content_corpus)
+content_dtm &lt;- DocumentTermMatrix(clean_corp)
 
-# Sort term_frequency in descending order
-term_frequency &lt;- sort(term_frequency, decreasing = T)
+content_td &lt;- tidy(content_dtm)</code></pre>
+<pre class="r"><code>slp1 &lt;- readRDS(&quot;/Users/AllenChang/Desktop/functionally_defined/data/slp1_td.rds&quot;)
+slp2 &lt;- readRDS(&quot;/Users/AllenChang/Desktop/functionally_defined/data/slp2_td.rds&quot;)
 
-# View the top 10 most common words
-term_frequency[1:10]</code></pre>
-<pre><code>##  think    one people   good   much   know  stuff   will    now pretty 
-##   2695   2473   2196   2014   1786   1649   1553   1542   1540   1532</code></pre>
-<pre class="r"><code>post_word_freqs &lt;- data.frame(
-  term = names(term_frequency),
-  num = term_frequency
-)</code></pre>
-<p>Finally some visualizations! The “wordcloud” package has an aptly named function wordcloud.</p>
-<p><img src="/posts/2018-01-07-text-scraping-styleforum-s-random-fashion-thoughts-thread_files/figure-html/wordcloud%20plot-1.png" width="672" /></p>
-<p>This gave me the most popular words from the thread, but I was also interested in what words are normally associated with the actual word “fashion”. Lucky for me there was a function in the “tm” package to do that as well.</p>
-<pre class="r"><code># Find words correlated with the phrase &quot;fashion&quot;
-associations &lt;- findAssocs(content_tdm, &quot;fashion&quot;, 0.2)
-associations_df &lt;- as.data.frame(associations)
-associations_df &lt;- rownames_to_column(associations_df, &quot;term&quot;)
-associations_df &lt;- associations_df %&gt;%
-  arrange(desc(fashion))
+full_df &lt;- bind_rows(slp1, slp2)</code></pre>
+<pre><code>## # A tibble: 10 x 2
+##    term      n
+##    &lt;chr&gt; &lt;int&gt;
+##  1 one    4598
+##  2 size   4568
+##  3 look   4528
+##  4 slp    4252
+##  5 think  4244
+##  6 fit    3952
+##  7 black  3672
+##  8 jeans  3544
+##  9 boots  3324
+## 10 wear   3228</code></pre>
+<pre class="r"><code>post_sent_bing &lt;- full_df %&gt;%
+  inner_join(get_sentiments(&quot;bing&quot;), by = c(term = &quot;word&quot;))
 
-associations_df$term &lt;- factor(associations_df$term, levels = associations_df$term)</code></pre>
-<p><img src="/posts/2018-01-07-text-scraping-styleforum-s-random-fashion-thoughts-thread_files/figure-html/association_plot-1.png" width="672" /></p>
-<p>Unsurprisingly, terms like “designers” and “writers” come up fairly frequently when people talk about fashion. Somewhat more interesting though are terms like anti-sportcoat (punctuation is removed in the pre-processing) as well as workwear. All in all, this was a fun little project for me to play around with text analysis and learn more about my fellow users on styleforum. If you are interested in any of the data, I will include it on my github as well.</p>
-<section id="references" class="level3">
-<h3>References</h3>
-<p><a href="https://stackoverflow.com/questions/30541445/r-rvest-got-hidden-text-i-dont-want">removing html formatting</a></p>
-<p><a href="https://rpubs.com/williamsurles/316682">text analysis help</a></p>
-<p><a href="https://www.datacamp.com/courses/intro-to-text-mining-bag-of-words">Datacamp: Text Mining</a></p>
-</section>
+post_sent_nrc &lt;- full_df %&gt;%
+  inner_join(get_sentiments(&quot;nrc&quot;), by = c(term = &quot;word&quot;))
+
+post_sent_afinn &lt;- full_df %&gt;%
+  inner_join(get_sentiments(&quot;afinn&quot;), by = c(term = &quot;word&quot;))</code></pre>
+<div id="top-words-by-sentiment" class="section level3">
+<h3>top words by sentiment</h3>
+<p>post_sent_nrc %&gt;% count(term, sentiment) %&gt;% group_by(sentiment) %&gt;% arrange(desc(n)) %&gt;% ggplot(aes(x = term, y = n)) + geom_bar(stat = “identity”) + facet_wrap(~sentiment)</p>
+</div>
+<div id="diverging-bar-chart" class="section level3">
+<h3>diverging bar chart</h3>
+<p>post_sent_bing %&gt;% count(sentiment, term, wt = count) %&gt;% ungroup() %&gt;% filter(n &gt;= 300) %&gt;% mutate(n = ifelse(sentiment == “negative”, -n, n)) %&gt;% mutate(term = reorder(term, n)) %&gt;% ggplot(aes(term, n, fill = sentiment)) + geom_bar(stat = “identity”) + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 11.5)) + ylab(“Contribution to sentiment”) + coord_flip()</p>
+<p>post_sent_bing %&gt;% count(term, sort = TRUE) %&gt;% head(10)</p>
+</div>
+<div id="section" class="section level3">
+<h3></h3>
+</div>
+<div id="nrc" class="section level3">
+<h3>NRC</h3>
+<p>post_sent_nrc %&gt;% # Filter to only choose the words associated with sadness filter(sentiment == “sadness”) %&gt;% # Group by word group_by(term) %&gt;% # Use the summarize verb to find the mean frequency summarize(count = mean(count)) %&gt;% # Arrange to sort in order of descending frequency arrange(desc(count))</p>
+<p>joy_words &lt;- post_sent_nrc %&gt;% # Filter to only choose the words associated with sadness filter(sentiment == “joy”) %&gt;% # Group by word group_by(term) %&gt;% # Use the summarize verb to find the mean frequency summarize(count = mean(count)) %&gt;% # Arrange to sort in order of descending frequency arrange(desc(count))</p>
+<p>joy_words %&gt;% top_n(20) %&gt;% mutate(word = reorder(term, count)) %&gt;% # Use aes() to put words on the x-axis and frequency on the y-axis ggplot(aes(word, count)) + # Make a bar chart with geom_col() geom_col() + coord_flip()</p>
+<p>sentiment_by_time &lt;- full_df %&gt;% # Define a new column using floor_date() mutate(date = floor_date(document, unit = “6 months”)) %&gt;% # Group by date group_by(date) %&gt;% mutate(total_words = n()) %&gt;% ungroup() %&gt;% # Implement sentiment analysis using the NRC lexicon inner_join(get_sentiments(“nrc”))</p>
+<p>test &lt;- full_df %&gt;% # Define a new column using floor_date() mutate(date = floor_date(document, unit = “3 months”)) %&gt;% # Group by date group_by(document) %&gt;% mutate(total_words = n()) %&gt;% ungroup() %&gt;% # Implement sentiment analysis using the NRC lexicon inner_join(get_sentiments(“nrc”), by = c(term = “word”))</p>
+<p>test %&gt;% # Filter for positive and negative words filter(sentiment %in% c(“positive”, “negative”)) %&gt;% # Count by date, sentiment, and total_words count(date, sentiment, total_words) %&gt;% ungroup() %&gt;% mutate(percent = n / total_words) %&gt;% group_by(date, sentiment) %&gt;% summarise(aveperc = mean(percent)) %&gt;% # Set up the plot with aes() ggplot(aes(date, aveperc, color = sentiment)) + geom_line(size = 1.5) + geom_smooth(method = “lm”, se = FALSE, lty = 2) + expand_limits(y = 0)</p>
+</div>
+<div id="afinn" class="section level3">
+<h3>afinn</h3>
+<p>sentiment_contributions &lt;- full_df %&gt;% # Count by title and word count(term, sort = TRUE) %&gt;% # Implement sentiment analysis using the “afinn” lexicon inner_join(get_sentiments(“afinn”), by = c(term = “word”)) %&gt;% # Calculate a contribution for each word in each title mutate(contribution = score * n / sum(n)) %&gt;% ungroup()</p>
+</div>
+<div id="references" class="section level3">
+<h3>REFERENCES</h3>
+<p><a href="https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html" class="uri">https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html</a></p>
+</div>
 
   </section>
   <footer>
@@ -184,12 +183,11 @@ associations_df$term &lt;- factor(associations_df$term, levels = associations_df
       <div class="c-pagination__ctrl">
         <div class="c-pagination__newer">
           
-          <a href="/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/">Newer</a>
           
         </div>
         <div class="c-pagination__older">
           
-          <a href="/posts/daily_clothing_network/">Older</a>
+          <a href="/links/">Older</a>
           
         </div>
       </div>
