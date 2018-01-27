@@ -43,7 +43,7 @@ clean_corpus <- function(corpus){
                                           "really", "also", "theyre",
                                           "theres", "youre", "thats",
                                           "just", "can", "get", "dont",
-                                          "ive", "etc", "cant"))
+                                          "ive", "etc", "cant", "saint"))
   return(corpus)
 }
 
@@ -64,12 +64,38 @@ full_df$document <- mdy(full_df$document)
 full_df <- full_df %>%
   drop_na(document)
 
-### BING
+### get sentiments
 
 post_sent_bing <- full_df %>%
   inner_join(get_sentiments("bing"), by = c(term = "word"))
 
-# diverging bar chart
+post_sent_nrc <- full_df %>%
+  inner_join(get_sentiments("nrc"), by = c(term = "word"))
+
+post_sent_afinn <- full_df %>%
+  inner_join(get_sentiments("afinn"), by = c(term = "word"))
+
+### top 10 words
+
+post_sent_bing %>%
+  count(term, sort = TRUE) %>%
+  head(10)
+
+post_sent_nrc %>%
+  count(term, sort = TRUE) %>%
+  head(10)
+
+### top words by sentiment
+
+post_sent_nrc %>%
+  count(term, sentiment) %>%
+  group_by(sentiment) %>%
+  arrange(desc(n)) %>%
+  ggplot(aes(x = term, y = n)) + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~sentiment)
+
+###  diverging bar chart
 post_sent_bing %>%
   count(sentiment, term, wt = count) %>%
   ungroup() %>%
@@ -86,10 +112,9 @@ post_sent_bing %>%
   count(term, sort = TRUE) %>%
   head(10)
 
-### NRC
-post_sent_nrc <- full_df %>%
-  inner_join(get_sentiments("nrc"), by = c(term = "word"))
+###
 
+### NRC
 post_sent_nrc %>%
   # Filter to only choose the words associated with sadness
   filter(sentiment == "sadness") %>%
@@ -121,7 +146,7 @@ joy_words %>%
 
 sentiment_by_time <- full_df %>%
   # Define a new column using floor_date()
-  mutate(date = floor_date(show_date, unit = "6 months")) %>%
+  mutate(date = floor_date(document, unit = "6 months")) %>%
   # Group by date
   group_by(date) %>%
   mutate(total_words = n()) %>%
@@ -155,9 +180,6 @@ test %>%
   expand_limits(y = 0)
 
 ### afinn
-post_sent_afinn <- full_df %>%
-  inner_join(get_sentiments("afinn"), by = c(term = "word"))
-
 sentiment_contributions <- full_df %>%
   # Count by title and word
   count(term, sort = TRUE) %>%
