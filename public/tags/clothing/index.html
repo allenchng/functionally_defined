@@ -27,7 +27,7 @@
   <meta property="og:type" content="website" />
   
   
-  <meta name="generator" content="Hugo 0.26" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
+  <meta name="generator" content="Hugo 0.30.2" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css" />
   <script type="text/javascript" src="/js/bundle.js"></script>
   
@@ -59,9 +59,10 @@
     </p>
   </header>
   <div class="c-article__summary">
-    Packages
-library(rvest) library(tidyverse) library(stringr) library(tidytext) library(broom) library(lubridate) theme_set(theme_bw()) The first step was to
-url &lt;- &quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&quot; page &lt;- c(2:664) # page &lt;- c(664:1330) site &lt;- paste0(url, page) pull_posts &lt;- function(i){ html &lt;- read_html(i) date &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;) %&gt;% html_text() post &lt;- html_nodes(html, &quot;.SelectQuoteContainer&quot;) %&gt;% html_text() %&gt;% gsub(&#39;[\r\n\t]&#39;, &#39;&#39;, .) %&gt;% gsub(&quot;.*:&quot;, &quot;&quot;, .) %&gt;% gsub(&quot;↑.*Click to expand...&quot;, &quot;&quot;, .) %&gt;% gsub(&quot;//.*Click to expand...&quot;, &quot;&quot;, .) %&gt;% str_trim() cbind(date, post) %&gt;% as.
+    I recently completed
+Here’s the list of packages used..
+library(rvest) library(tidyverse) library(stringr) library(tidytext) library(broom) library(lubridate) library(tm) library(igraph) library(ggraph) theme_set(theme_bw()) The first step was to pull text from all posts in the Saint Laurent Paris thread. If you’ve read my previous analyses, this follows the same scraping procedure as I’ve outlined in my random fashion thoughts post and my what are you wearing today post.
+# scrape user posts url &lt;- &quot;https://www.
   </div>
   
   <a href="/posts/sentiment-analysis-of-fashion-enthusiasts/" class="c-article__btn p-list-article__btn">Read more</a></li>

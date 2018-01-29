@@ -9,21 +9,27 @@ tags:
   - R
   - visualization
   - webscraping
+draft: yes
 ---
 
 
 
-<p>Packages</p>
+<p>I recently completed</p>
+<p>Here’s the list of packages used..</p>
 <pre class="r"><code>library(rvest)
 library(tidyverse)
 library(stringr)
 library(tidytext)
 library(broom)
 library(lubridate)
+library(tm)
+library(igraph)
+library(ggraph)
 
 theme_set(theme_bw())</code></pre>
-<p>The first step was to</p>
-<pre class="r"><code>url &lt;- &quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&quot;
+<p>The first step was to pull text from all posts in the Saint Laurent Paris thread. If you’ve read my previous analyses, this follows the same scraping procedure as I’ve outlined in my <a href="https://functionallydefined.netlify.com/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/">random fashion thoughts post</a> and my <a href="https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/">what are you wearing today post</a>.</p>
+<pre class="r"><code># scrape user posts
+url &lt;- &quot;https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-&quot;
 page &lt;- c(2:664)
 # page &lt;- c(664:1330)
 site &lt;- paste0(url, page)
@@ -44,7 +50,9 @@ pull_posts &lt;- function(i){
 
 post_list &lt;- lapply(site, pull_posts)
 post_df &lt;- do.call(rbind, post_list)</code></pre>
-<pre class="r"><code>names(post_df) &lt;- c(&quot;doc_id&quot;, &quot;text&quot;)
+<p>To preprocess my text data, I used the text mining package to remove stop words. One problem I ran into was that the number of words in my document term matrix were too many to tidy into a tokenized data frame. To get around that I split my scrape into two parts. I saved each tidied, tokenized data frame into separate files and then bound them into one data frame.</p>
+<pre class="r"><code># preprocess data using text mining package
+names(post_df) &lt;- c(&quot;doc_id&quot;, &quot;text&quot;)
 content_source &lt;- DataframeSource(post_df)
 content_corpus &lt;- VCorpus(content_source)
 
@@ -56,7 +64,7 @@ clean_corpus &lt;- function(corpus){
                                           &quot;really&quot;, &quot;also&quot;, &quot;theyre&quot;,
                                           &quot;theres&quot;, &quot;youre&quot;, &quot;thats&quot;,
                                           &quot;just&quot;, &quot;can&quot;, &quot;get&quot;, &quot;dont&quot;,
-                                          &quot;ive&quot;, &quot;etc&quot;, &quot;cant&quot;, &quot;saint&quot;))
+                                          &quot;ive&quot;, &quot;etc&quot;, &quot;cant&quot;, &quot;saint&quot;, &quot;black&quot;))
   return(corpus)
 }
 
@@ -67,21 +75,29 @@ content_td &lt;- tidy(content_dtm)</code></pre>
 <pre class="r"><code>slp1 &lt;- readRDS(&quot;/Users/AllenChang/Desktop/functionally_defined/data/slp1_td.rds&quot;)
 slp2 &lt;- readRDS(&quot;/Users/AllenChang/Desktop/functionally_defined/data/slp2_td.rds&quot;)
 
-full_df &lt;- bind_rows(slp1, slp2)</code></pre>
+full_df &lt;- bind_rows(slp1, slp2)
+names(full_df) &lt;- c(&quot;date&quot;, &quot;term&quot;, &quot;count&quot;)
+
+full_df$date &lt;- mdy(full_df$date) 
+full_df &lt;- full_df %&gt;%
+  drop_na(date)</code></pre>
+<p>Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a first exploratory measure, I wanted to see what the top 10 words were (not yet filtering for only emotional words)</p>
 <pre><code>## # A tibble: 10 x 2
-##    term      n
+##     term     n
 ##    &lt;chr&gt; &lt;int&gt;
-##  1 one    4598
-##  2 size   4568
-##  3 look   4528
-##  4 slp    4252
-##  5 think  4244
-##  6 fit    3952
-##  7 black  3672
-##  8 jeans  3544
-##  9 boots  3324
-## 10 wear   3228</code></pre>
-<pre class="r"><code>post_sent_bing &lt;- full_df %&gt;%
+##  1   one  4558
+##  2  size  4548
+##  3  look  4483
+##  4   slp  4223
+##  5 think  4218
+##  6   fit  3920
+##  7 black  3613
+##  8 jeans  3523
+##  9 boots  3274
+## 10  wear  3193</code></pre>
+<p>It seems that jeans and boots are a popular topic in the thread. Next, it was time to filter my dataframe of words for sentiment. I found that all 3 lexicons for defining sentiments each have interesting properties for analysis, so I went ahead and just inner joined my data with each lexicon. For reference, the <a href="http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm">nrc</a> lexicon categorizes words into 10 different categories of sentiment, the <a href="https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html">bing</a> lexicon categorizes into positive and negative sentiment, and the <a href="http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010">afinn</a> lexicon categorizes words into positive and negative sentiment, but also scores by degree of sentiment.</p>
+<pre class="r"><code># get sentiments
+post_sent_bing &lt;- full_df %&gt;%
   inner_join(get_sentiments(&quot;bing&quot;), by = c(term = &quot;word&quot;))
 
 post_sent_nrc &lt;- full_df %&gt;%
@@ -89,32 +105,48 @@ post_sent_nrc &lt;- full_df %&gt;%
 
 post_sent_afinn &lt;- full_df %&gt;%
   inner_join(get_sentiments(&quot;afinn&quot;), by = c(term = &quot;word&quot;))</code></pre>
-<div id="top-words-by-sentiment" class="section level3">
-<h3>top words by sentiment</h3>
-<p>post_sent_nrc %&gt;% count(term, sentiment) %&gt;% group_by(sentiment) %&gt;% arrange(desc(n)) %&gt;% ggplot(aes(x = term, y = n)) + geom_bar(stat = “identity”) + facet_wrap(~sentiment)</p>
-</div>
-<div id="diverging-bar-chart" class="section level3">
-<h3>diverging bar chart</h3>
-<p>post_sent_bing %&gt;% count(sentiment, term, wt = count) %&gt;% ungroup() %&gt;% filter(n &gt;= 300) %&gt;% mutate(n = ifelse(sentiment == “negative”, -n, n)) %&gt;% mutate(term = reorder(term, n)) %&gt;% ggplot(aes(term, n, fill = sentiment)) + geom_bar(stat = “identity”) + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 11.5)) + ylab(“Contribution to sentiment”) + coord_flip()</p>
-<p>post_sent_bing %&gt;% count(term, sort = TRUE) %&gt;% head(10)</p>
-</div>
-<div id="section" class="section level3">
-<h3></h3>
-</div>
-<div id="nrc" class="section level3">
-<h3>NRC</h3>
-<p>post_sent_nrc %&gt;% # Filter to only choose the words associated with sadness filter(sentiment == “sadness”) %&gt;% # Group by word group_by(term) %&gt;% # Use the summarize verb to find the mean frequency summarize(count = mean(count)) %&gt;% # Arrange to sort in order of descending frequency arrange(desc(count))</p>
-<p>joy_words &lt;- post_sent_nrc %&gt;% # Filter to only choose the words associated with sadness filter(sentiment == “joy”) %&gt;% # Group by word group_by(term) %&gt;% # Use the summarize verb to find the mean frequency summarize(count = mean(count)) %&gt;% # Arrange to sort in order of descending frequency arrange(desc(count))</p>
-<p>joy_words %&gt;% top_n(20) %&gt;% mutate(word = reorder(term, count)) %&gt;% # Use aes() to put words on the x-axis and frequency on the y-axis ggplot(aes(word, count)) + # Make a bar chart with geom_col() geom_col() + coord_flip()</p>
-<p>sentiment_by_time &lt;- full_df %&gt;% # Define a new column using floor_date() mutate(date = floor_date(document, unit = “6 months”)) %&gt;% # Group by date group_by(date) %&gt;% mutate(total_words = n()) %&gt;% ungroup() %&gt;% # Implement sentiment analysis using the NRC lexicon inner_join(get_sentiments(“nrc”))</p>
-<p>test &lt;- full_df %&gt;% # Define a new column using floor_date() mutate(date = floor_date(document, unit = “3 months”)) %&gt;% # Group by date group_by(document) %&gt;% mutate(total_words = n()) %&gt;% ungroup() %&gt;% # Implement sentiment analysis using the NRC lexicon inner_join(get_sentiments(“nrc”), by = c(term = “word”))</p>
-<p>test %&gt;% # Filter for positive and negative words filter(sentiment %in% c(“positive”, “negative”)) %&gt;% # Count by date, sentiment, and total_words count(date, sentiment, total_words) %&gt;% ungroup() %&gt;% mutate(percent = n / total_words) %&gt;% group_by(date, sentiment) %&gt;% summarise(aveperc = mean(percent)) %&gt;% # Set up the plot with aes() ggplot(aes(date, aveperc, color = sentiment)) + geom_line(size = 1.5) + geom_smooth(method = “lm”, se = FALSE, lty = 2) + expand_limits(y = 0)</p>
-</div>
-<div id="afinn" class="section level3">
-<h3>afinn</h3>
-<p>sentiment_contributions &lt;- full_df %&gt;% # Count by title and word count(term, sort = TRUE) %&gt;% # Implement sentiment analysis using the “afinn” lexicon inner_join(get_sentiments(“afinn”), by = c(term = “word”)) %&gt;% # Calculate a contribution for each word in each title mutate(contribution = score * n / sum(n)) %&gt;% ungroup()</p>
-</div>
-<div id="references" class="section level3">
+<p>I continued with my exploratory data by asking what the most common words were by sentiment in the nrc lexicon.</p>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Similarly, I looked at the most popular sentiments in the bing lexicon.</p>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>After exploring the data, I shifted my focus to examining how sentiment changed across time. I summed the total number of positive and negative words every month then subtracted them from one another to get the polarity.</p>
+<p>Going into this analysis, I had a hypothesis that polarity would strongly positive until early 2016, when the head designer of SLP departed. I expected that polarity would drop sharply.</p>
+<pre class="r"><code># calculate montly polarity
+polarity_time &lt;- post_sent_bing %&gt;%
+  mutate(bymonth = floor_date(date, unit = &quot;month&quot;)) %&gt;%
+  group_by(bymonth, sentiment) %&gt;%
+  summarise(tot = sum(count)) %&gt;%
+  spread(sentiment, tot, fill = 0) %&gt;%
+  mutate(polarity = positive - negative)</code></pre>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Looking at the polarity changes over time, while there levels of positive polarity drop after the departure of Hedi, the overall polarity remains positive. In fact, prior to to the departure, polarity was at its highest.</p>
+<p>Why was my prediction so off? It occurred to me that even though Hedi Slimane leaving was a highly negative event, posters might have been singing his praises on his way out. I proceeded to plot the sum of the negative words for each month across time and sure enough, there was a sharp increase in the months prior to Slimane’s official departure (I attributed this to speculation based on the rumor mill).</p>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>As a contrast, I also plotted the number of positive words per month.</p>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>In the last section, I wanted to move past time related changes in sentiment and transition to looking at words that occured consecutively with one another. I went back and pulled raw post data that did not go through any of the corpus pre-processing.</p>
+<p>I relied heavily on Julia Silge’s tidy text mining chapter on n-grams (click <a href="https://www.tidytextmining.com/ngrams.html">here</a> for more!) to pre-process my data once again. I unnested each post, separated and filtered out stop words, then united the bigrams back together.</p>
+<pre class="r"><code>slp_bigrams &lt;- slp_raw %&gt;%
+  unnest_tokens(bigram, post, token = &quot;ngrams&quot;, n = 2)
+
+slp_bigrams_sep &lt;- slp_bigrams %&gt;%
+  separate(bigram, c(&quot;word1&quot;, &quot;word2&quot;), sep = &quot; &quot;) %&gt;%
+  filter(!word1 %in% stop_words$word) %&gt;%
+  filter(!word2 %in% stop_words$word)
+
+slp_bigrams_united &lt;- slp_bigrams_sep %&gt;%
+  unite(bigram, word1, word2, sep = &quot; &quot;)</code></pre>
+<p>As a form of exploratory analysis, I again counted the top 10 most popular bigrams across the thread.</p>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Again taking a cue from Julia’s book, I plotted the network of bigrams using igraph and ggraph. I found it particularly amusing that that the words “skin” and “tight” are connected as are the words “knee”&quot; and “rips”.</p>
+<pre class="r"><code>slp_g &lt;- slp_bigrams_sep %&gt;%
+  filter(!word1 %in% stop_words$word) %&gt;%
+  filter(!word2 %in% stop_words$word) %&gt;%
+  count(word1, word2, sort = TRUE) %&gt;%
+  filter(n &gt; 75) %&gt;%
+  graph_from_data_frame()</code></pre>
+<p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-17-1.png" width="1152" /></p>
+<section id="references" class="level3">
 <h3>REFERENCES</h3>
-<p><a href="https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html" class="uri">https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html</a></p>
-</div>
+<p><a href="https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html" class="uri">https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html</a> <a href="https://www.datacamp.com/courses/sentiment-analysis-in-r">datacamp</a> <a href="https://www.datacamp.com/courses/sentiment-analysis-in-r-the-tidy-way">datacamp</a> <a href="https://www.tidytextmining.com/">tidy text book</a></p>
+</section>
