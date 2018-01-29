@@ -21,6 +21,8 @@ library(stringr)
 library(tidytext)
 library(broom)
 library(lubridate)
+library(igraph)
+library(ggraph)
 
 theme_set(theme_bw())
 ```
@@ -82,6 +84,10 @@ slp2 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp2_td.rds
 
 full_df <- bind_rows(slp1, slp2)
 names(full_df) <- c("date", "term", "count")
+
+full_df$date <- mdy(full_df$date) 
+full_df <- full_df %>%
+  drop_na(date)
 ```
 
 Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a first exploratory measure, I wanted to see what the top 10 words were (not yet filtering for only emotional words)
@@ -112,6 +118,22 @@ post_sent_nrc %>%
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+post_sent_nrc %>%
+  count(term, sentiment, sort = TRUE) %>%
+  ungroup() %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(term = reorder(term, n)) %>%
+  ggplot(aes(term, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ sentiment, scales = "free_y") + 
+  labs(y = "Count",
+     x = "Term") +
+  coord_flip()
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 post_sent_bing %>%
   count(sentiment, term, wt = count) %>%
   ungroup() %>%
@@ -125,77 +147,106 @@ post_sent_bing %>%
   coord_flip()
 ```
 
-test <- post_sent_bing %>%
-count(sentiment, date) %>% spread(sentiment, n, fill = 0) %>%
-mutate(polarity = positive - negative)
+```{r}
+hedi_leaves <- ymd("2016-04-01")
 
-
-### NRC
-post_sent_nrc %>%
-  # Filter to only choose the words associated with sadness
-  filter(sentiment == "sadness") %>%
-  # Group by word
-  group_by(term) %>%
-  # Use the summarize verb to find the mean frequency
-  summarize(count = mean(count)) %>%
-  # Arrange to sort in order of descending frequency
-  arrange(desc(count))
-
-joy_words <- post_sent_nrc %>%
-  # Filter to only choose the words associated with sadness
-  filter(sentiment == "joy") %>%
-  # Group by word
-  group_by(term) %>%
-  # Use the summarize verb to find the mean frequency
-  summarize(count = mean(count)) %>%
-  # Arrange to sort in order of descending frequency
-  arrange(desc(count))    
-
-joy_words %>%
-  top_n(20) %>%
-  mutate(word = reorder(term, count)) %>%
-  # Use aes() to put words on the x-axis and frequency on the y-axis
-  ggplot(aes(word, count)) +
-  # Make a bar chart with geom_col()
+polarity_time <- post_sent_bing %>%
+  mutate(bymonth = floor_date(date, unit = "month")) %>%
+  group_by(bymonth, sentiment) %>%
+  summarise(tot = sum(count)) %>%
+  spread(sentiment, tot, fill = 0) %>%
+  mutate(polarity = positive - negative)
+  
+polarity_time %>%
+  ggplot(aes(x = bymonth, y = polarity)) +
   geom_col() +
-  coord_flip()
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
 
-sentiment_by_time <- full_df %>%
-  # Define a new column using floor_date()
-  mutate(date = floor_date(document, unit = "6 months")) %>%
-  # Group by date
-  group_by(date) %>%
-  mutate(total_words = n()) %>%
-  ungroup() %>%
-  # Implement sentiment analysis using the NRC lexicon
-  inner_join(get_sentiments("nrc"))
-
-test <- full_df %>%
-  # Define a new column using floor_date()
-  mutate(date = floor_date(document, unit = "3 months")) %>%
-  # Group by date
-  group_by(document) %>%
-  mutate(total_words = n()) %>%
-  ungroup() %>%
-  # Implement sentiment analysis using the NRC lexicon
-  inner_join(get_sentiments("nrc"), by = c(term = "word"))
-
-test %>%
-  # Filter for positive and negative words
+post_sent_nrc %>%
   filter(sentiment %in% c("positive", "negative")) %>%
-  # Count by date, sentiment, and total_words
-  count(date, sentiment, total_words) %>%
-  ungroup() %>%
-  mutate(percent = n / total_words) %>%
-  group_by(date, sentiment) %>%
-  summarise(aveperc = mean(percent)) %>%
-  # Set up the plot with aes()
-  ggplot(aes(date, aveperc, color = sentiment)) +
-  geom_line(size = 1.5) +
-  geom_smooth(method = "lm", se = FALSE, lty = 2) +
-  expand_limits(y = 0)
+  mutate(bymonth = floor_date(date, unit = "month")) %>%
+  group_by(bymonth, sentiment) %>%
+  summarise(tot = sum(count)) %>%
+  spread(sentiment, tot, fill = 0) %>%
+  mutate(polarity = positive - negative) %>%
+  ggplot(aes(x = bymonth, y = polarity)) +
+  geom_col() +
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
+```
+
+```{r}
+polarity_time %>% 
+  select(bymonth, negative) %>%
+  ggplot(aes(x = bymonth, y = negative)) +
+  geom_col() +
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
+```
+
+```{r}
+polarity_time %>% 
+  select(bymonth, positive) %>%
+  ggplot(aes(x = bymonth, y = positive)) +
+  geom_col() +
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
+```
+
+```{r message=FALSE, warning=FALSE}
+raw1 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp_postraw1.rds")
+raw1$date <- mdy(raw1$date)
+raw2 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp_postraw2.rds")
+raw2$date <- mdy(raw2$date)
+
+slp_raw <- bind_rows(raw1, raw2) %>%
+  drop_na(date)
+```
+
+```{r message=FALSE, warning=FALSE}
+slp_bigrams <- slp_raw %>%
+  unnest_tokens(bigram, post, token = "ngrams", n = 2)
+
+slp_bigrams_sep <- slp_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+slp_bigrams_filtered <- slp_bigrams_sep %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word)
+
+slp_bigrams_united <- slp_bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+```
+
+
+```{r}
+slp_bigrams_united %>%
+  count(bigram, sort = TRUE) %>%
+  top_n(10) %>%
+  mutate(bigram = reorder(bigram, n)) %>%
+  ggplot(aes(bigram, n)) + 
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+```{r message=FALSE, warning=FALSE}
+slp_g <- slp_bigrams_sep %>%
+  count(word1, word2, sort = TRUE) %>%
+  filter(n > 300) %>%
+  graph_from_data_frame()
+```
+
+
+```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+set.seed(2017)
+
+ggraph(slp_g, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)
+```
+
 
 ### afinn
+
 sentiment_contributions <- full_df %>%
   # Count by title and word
   count(term, sort = TRUE) %>%
@@ -208,3 +259,6 @@ sentiment_contributions <- full_df %>%
 ### REFERENCES
 
 https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html
+[datacamp]
+[datacamp]
+[tidy text book]

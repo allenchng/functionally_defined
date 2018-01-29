@@ -29,7 +29,7 @@ pull_posts <- function(i){
 
 post_list <- lapply(site, pull_posts)
 post_df <- do.call(rbind, post_list)
-# saveRDS(post_df, "slp_post.rds")
+# saveRDS(post_df, "slp_postraw1.rds")
 
 names(post_df) <- c("doc_id", "text")
 content_source <- DataframeSource(post_df)
@@ -51,7 +51,7 @@ clean_corp <- clean_corpus(content_corpus)
 content_dtm <- DocumentTermMatrix(clean_corp)
 
 content_td <- tidy(content_dtm)
-# saveRDS(content_td, "slp1_td.rds")
+saveRDS(content_td, "slp1_td.rds")
 #saveRDS(content_td, "slp2_td.rds")
 slp1 <- readRDS("slp1_td.rds")
 slp2 <- readRDS("slp2_td.rds")
