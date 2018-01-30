@@ -39,11 +39,11 @@ clean_corpus <- function(corpus){
   corpus <- tm_map(corpus, stripWhitespace)
   corpus <- tm_map(corpus, removePunctuation)
   corpus <- tm_map(corpus, content_transformer(tolower))
-  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "like", "just",
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "just",
                                           "really", "also", "theyre",
                                           "theres", "youre", "thats",
                                           "just", "can", "get", "dont",
-                                          "ive", "etc", "cant", "saint"))
+                                          "ive", "etc", "cant", "saint", "black"))
   return(corpus)
 }
 
@@ -52,7 +52,7 @@ content_dtm <- DocumentTermMatrix(clean_corp)
 
 content_td <- tidy(content_dtm)
 saveRDS(content_td, "slp1_td.rds")
-#saveRDS(content_td, "slp2_td.rds")
+saveRDS(content_td, "slp2_td.rds")
 slp1 <- readRDS("slp1_td.rds")
 slp2 <- readRDS("slp2_td.rds")
 

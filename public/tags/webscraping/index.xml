@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Sat, 27 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 30 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/webscraping/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,13 +15,11 @@
     <item>
       <title>Sentiment analysis of fashion enthusiasts</title>
       <link>/posts/sentiment-analysis-of-fashion-enthusiasts/</link>
-      <pubDate>Sat, 27 Jan 2018 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 30 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/posts/sentiment-analysis-of-fashion-enthusiasts/</guid>
-      <description>I recently completed
-Here’s the list of packages used..
-library(rvest) library(tidyverse) library(stringr) library(tidytext) library(broom) library(lubridate) library(tm) library(igraph) library(ggraph) theme_set(theme_bw()) The first step was to pull text from all posts in the Saint Laurent Paris thread. If you’ve read my previous analyses, this follows the same scraping procedure as I’ve outlined in my random fashion thoughts post and my what are you wearing today post.
-# scrape user posts url &amp;lt;- &amp;quot;https://www.</description>
+      <description>Like most hobbyists, clothing enthusiasts tend to have strong opinions. In this post I wanted to look at how these opinions changed across time using sentiment analysis and text mining. My dataset of choice was user posts from the Saint Laurent Paris thread on Styleforum. The data was comprised of text from user posts beginning in 2012 and continuing up until today.
+As usual, here’s the list of packages used.</description>
     </item>
     
   </channel>
