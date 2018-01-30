@@ -12,10 +12,9 @@ tags:
 draft: yes
 ---
 
-I recently completed 
+When thinking about running my own sentiment analysis, I had one particular dataset in mind. In recent years, the fashion house Yves Laurent has cultivated a devoted fanbase for its clothes designed by Hedi Slimane. Slimane served as the creative director from 2012-2016. As it happens, there is a thread devoted to Saint Laurent on Styleforum that coincides with the beginning of Sliman's tenure in 2012 and continues to see posts by enthusiasts to this day. I thought that this would be a good opportunity to track sentiment across time in these users. 
 
-
-Here's the list of packages used.. 
+As usual, here's the list of packages used. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(rvest)
@@ -24,16 +23,16 @@ library(stringr)
 library(tidytext)
 library(broom)
 library(lubridate)
-library(tm)
+# library(tm)
 library(igraph)
 library(ggraph)
 
 theme_set(theme_bw())
 ```
 
-The first step was to pull text from all posts in the Saint Laurent Paris thread. If you've read my previous analyses, this follows the same scraping procedure as I've outlined in my [random fashion thoughts post](https://functionallydefined.netlify.com/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/) and my [what are you wearing today post](https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/).
+The first step was to pull text from all posts in the [Saint Laurent Paris thread](https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/). If you've read my previous analyses, this follows the same scraping procedure as I've outlined in my [random fashion thoughts ](https://functionallydefined.netlify.com/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/) and my [what are you wearing today](https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/) posts.
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
+```{r scrape, eval=FALSE, message=FALSE, warning=FALSE}
 # scrape user posts
 url <- "https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/page-"
 page <- c(2:664)
@@ -58,9 +57,9 @@ post_list <- lapply(site, pull_posts)
 post_df <- do.call(rbind, post_list)
 ```
 
-To preprocess my text data, I used the text mining package to remove stop words. One problem I ran into was that the number of words in my document term matrix were too many to tidy into a tokenized data frame. To get around that I split my scrape into two parts. I saved each tidied, tokenized data frame into separate files and then bound them into one data frame. 
+To preprocess my text data, I used the text mining package to remove stop words. One problem I ran into was that the number of words in my document term matrix were too many to tidy into a tokenized data frame. To get around that I split my scrape into two parts. I saved each tidied, tokenized data frame into separate files and then bound them into one data frame (all files can be found in my [github](https://github.com/allenchng) as well). 
 
-```{r eval = FALSE, message=FALSE, warning=FALSE}
+```{r clean corpus, eval=FALSE, message=FALSE, warning=FALSE}
 # preprocess data using text mining package
 names(post_df) <- c("doc_id", "text")
 content_source <- DataframeSource(post_df)
@@ -84,7 +83,7 @@ content_dtm <- DocumentTermMatrix(clean_corp)
 content_td <- tidy(content_dtm)
 ```
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r bind data, echo=TRUE, message=FALSE, warning=FALSE}
 slp1 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp1_td.rds")
 slp2 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp2_td.rds")
 
@@ -96,29 +95,26 @@ full_df <- full_df %>%
   drop_na(date)
 ```
 
-Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a first exploratory measure, I wanted to see what the top 10 words were (not yet filtering for only emotional words)
+Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a quick first exploratory measure, I wanted to see what were the top 10 most frequently used words (not yet filtering for sentiment)
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r top10_nonsentiment, echo=FALSE, message=FALSE, warning=FALSE}
 full_df %>% count(term) %>% arrange(desc(n)) %>% top_n(10)
 ```
 
-It seems that jeans and boots are a popular topic in the thread. Next, it was time to filter my dataframe of words for sentiment. I found that all 3 lexicons for defining sentiments each have interesting properties for analysis, so I went ahead and just inner joined my data with each lexicon. For reference, the [nrc](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm) lexicon categorizes words into 10 different categories of sentiment, the [bing](https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html) lexicon categorizes into positive and negative sentiment, and the [afinn](http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010) lexicon categorizes words into positive and negative sentiment, but also scores by degree of sentiment.
+It seems that jeans and boots are a popular topic in the thread. Next, it was time to filter my dataframe of words for sentiment. In this analysis, I ended up using 2 lexicons; the nrc and bing. For reference, the [nrc](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm) lexicon categorizes words into 10 different categories of sentiment and the [bing](https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html) lexicon categorizes into positive and negative sentiment.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r join sentiment, echo=TRUE, message=FALSE, warning=FALSE}
 # get sentiments
 post_sent_bing <- full_df %>%
   inner_join(get_sentiments("bing"), by = c(term = "word"))
 
 post_sent_nrc <- full_df %>%
   inner_join(get_sentiments("nrc"), by = c(term = "word"))
-
-post_sent_afinn <- full_df %>%
-  inner_join(get_sentiments("afinn"), by = c(term = "word"))
 ```
 
 I continued with my exploratory data by asking what the most common words were by sentiment in the nrc lexicon.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r topbysentiment, echo=FALSE, message=FALSE, warning=FALSE}
 post_sent_nrc %>%
   count(term, sentiment, sort = TRUE) %>%
   ungroup() %>%
@@ -134,9 +130,9 @@ post_sent_nrc %>%
   coord_flip()
 ```
 
-Similarly, I looked at the most popular sentiments in the bing lexicon. 
+Similarly, I looked at the most popular words by sentiment in the bing lexicon. 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r posneg_count, echo=FALSE, message=FALSE, warning=FALSE}
 post_sent_bing %>%
   count(sentiment, term, wt = count) %>%
   ungroup() %>%
@@ -150,11 +146,9 @@ post_sent_bing %>%
   coord_flip()
 ```
 
-After exploring the data, I shifted my focus to examining how sentiment changed across time. I summed the total number of positive and negative words every month then subtracted them from one another to get the polarity. 
+After exploring the data, I shifted my focus to examining how sentiment changed across time. Going into this analysis, I had a hypothesis that sentiment would be strongly positive until early 2016, when Hedi departed (represented as the dashed line on the plot below). In the aftermath, I expected that sentiment would drop sharply. To test this hypothesis, I summed the total number of positive and negative words every month then subtracted them from one another to get the polarity. Then I plotted the polarity of each month across time. 
 
-Going into this analysis, I had a hypothesis that polarity would strongly positive until early 2016, when the head designer of SLP departed. I expected that polarity would drop sharply.
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r calc polarity, echo=TRUE, message=FALSE, warning=FALSE}
 # calculate montly polarity
 polarity_time <- post_sent_bing %>%
   mutate(bymonth = floor_date(date, unit = "month")) %>%
@@ -170,33 +164,33 @@ hedi_leaves <- ymd("2016-04-01")
 polarity_time %>%
   ggplot(aes(x = bymonth, y = polarity)) +
   geom_col() +
-  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
-
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, lwd = 1.25, color = "#FFC600") +
+    xlab("Time") + ylab("Polarity (positive - negative)")
 ```
 
-Looking at the polarity changes over time, while there levels of positive polarity drop after the departure of Hedi, the overall polarity remains positive. In fact, prior to to the departure, polarity was at its highest. 
+Looking at the time series of polarity, a few things jump out. In the early days, polarity was slightly positive, but around 2015 polarity started to spike upwards dramatically. The second sustained spike in polarity occurs in early 2016, in the months just before Hedi leaves the company. However, contrary to my expectation, sentiment remained positive in the years to come.  
 
-Why was my prediction so off? It occurred to me that even though Hedi Slimane leaving was a highly negative event, posters might have been singing his praises on his way out. I proceeded to plot the sum of the negative words for each month across time and sure enough, there was a sharp increase in the months prior to Slimane's official departure (I attributed this to speculation based on the rumor mill).
+Why was my prediction so off? It occurred to me that though Hedi leaving was a highly negative event, there was an equal opportunity for posters to priase his tenure, thereby increasing the number of positive words. I proceeded to plot the sum of the negative words for each month across time. Sure enough, while there was a sharp increase in the number of negative words prior to Slimane's official departure, the increase in positive words far exceeded the negative.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 polarity_time %>% 
   select(bymonth, negative) %>%
   ggplot(aes(x = bymonth, y = negative)) +
-  geom_col() +
-  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
-```
+  geom_col(fill = "#FF5240") +
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, lwd = 1.2) +
+  xlab("Time") + ylab("Number of negative words")
 
-As a contrast, I also plotted the number of positive words per month. 
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
 polarity_time %>% 
   select(bymonth, positive) %>%
   ggplot(aes(x = bymonth, y = positive)) +
-  geom_col() +
-  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, color = "steelblue")
+  geom_col(fill = "#37B6CE") +
+  geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, lwd = 1.2) +
+  xlab("Time") + ylab("Number of positive words")
 ```
 
-In the last section, I wanted to move past time related changes in sentiment and transition to looking at words that occured consecutively with one another. I went back and pulled raw post data that did not go through any of the corpus pre-processing. 
+So I was wrong in my prediction, but that's quite okay! If anything, having my expectations violated made me think harder of possible solutions. 
+
+In the last section, I wanted to move past time related changes in sentiment and transition to looking at relationships between words in the thread. I was particularly interested in words that occured consecutively with one another, or bigrams. To do this, I went back and pulled raw post data that did not go through any of the corpus pre-processing. 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 raw1 <- readRDS("/Users/AllenChang/Desktop/functionally_defined/data/slp_postraw1.rds")
@@ -223,7 +217,7 @@ slp_bigrams_united <- slp_bigrams_sep %>%
   unite(bigram, word1, word2, sep = " ")
 ```
 
-As a form of exploratory analysis, I again  counted the top 10 most popular bigrams across the thread. 
+As a form of exploratory analysis, I againcounted the top 10 most popular bigrams across the thread. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 slp_bigrams_united %>%
@@ -231,12 +225,12 @@ slp_bigrams_united %>%
   top_n(10) %>%
   mutate(bigram = reorder(bigram, n)) %>%
   ggplot(aes(bigram, n)) + 
-  geom_col() +
+  geom_col(fill = "steelblue") +
   xlab(NULL) +
   coord_flip()
 ```
 
-Again taking a cue from Julia's book, I plotted the network of bigrams using igraph and ggraph. I found it particularly amusing that that the words "skin" and "tight" are connected as are the words "knee"" and "rips". 
+Again taking a cue from Julia's book, I plotted the network of bigrams using igraph and ggraph. Looking through, the approach does a nice job of capturing connections between words. That size cluster on the left size is especially interesting to see. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 slp_g <- slp_bigrams_sep %>%
@@ -261,11 +255,10 @@ ggraph(slp_g, layout = "fr") +
   theme_void()
 ```
 
+Sentiment analysis is a lot of fun! One of the nice things about this analysis was that it forced me to utilize a number of different techniques and methods to clean and process data. I had to use text mining and web scraping methods in conjunction with sentiment and tidy data analysis. If you're interested in doing your own sentiment analysis, I would highly recommend reading Julia Silge's book on tidy text mining and/or take her datacamp class. 
 
+### References
 
-### REFERENCES
-
-https://cran.r-project.org/web/packages/tidytext/vignettes/tidying_casting.html
-[datacamp](https://www.datacamp.com/courses/sentiment-analysis-in-r)
-[datacamp](https://www.datacamp.com/courses/sentiment-analysis-in-r-the-tidy-way)
+[datacamp: sentiment analysis](https://www.datacamp.com/courses/sentiment-analysis-in-r)
+[datacamp: tidy sentiment analysis](https://www.datacamp.com/courses/sentiment-analysis-in-r-the-tidy-way)
 [tidy text book](https://www.tidytextmining.com/)
