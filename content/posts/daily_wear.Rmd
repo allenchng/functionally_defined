@@ -20,7 +20,7 @@ library(RColorBrewer)
 theme_set(theme_classic())
 ```
 
-## Prepping data
+### Prepping data
 
 I used a Google sheet to keep track my daily wears. Each day I recorded the maker and up to two colors of each article of clothing that I wore. There were 4 categories of clothes; Coat, Shirt (I collapsed sweaters into here as well), Pants, and Shoes. Since I'm almost certain that I miscapitalized a stray word here or there, I added a column changing all the maker names to upper case. Then I grouped by maker to get the total number of times that I wore each maker across all articles of clothing. 
 
@@ -48,6 +48,8 @@ To make visualizing popular makers easier, I set the maker column as an ordered 
 df$maker_up <- factor(df$maker_up, levels = df$maker_up[order(df$timesworn)])
 df$timesworn <- as.numeric(df$timesworn)
 ```
+
+### Visualizing maker preferences
 
 Then I plotted the count of the number of times I wore each maker. Wow, I really like Uniqlo. 
 
@@ -93,6 +95,8 @@ g + geom_bar(aes(fill=Article), width = 0.5) +
 ```
 
 Looking at the breakdown, it seems that I mostly wear Uniqlo shirts (a glance at an overflowing drawer in my bedroom does seem to confirm this...). Interesting to me as well is that most of these makers seem to be concentrated on one specific article of clothing. I seem to also like only a few shoe makers. 
+
+### Visualizing color selection
 
 Finally, I want to know how varied my choice of color was. Do I really prefer black above everything else?
 

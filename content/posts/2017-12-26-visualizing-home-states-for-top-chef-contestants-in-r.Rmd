@@ -30,6 +30,8 @@ library(RColorBrewer)
 library(reshape2)
 ```
 
+### Scraping contestant information
+
 Next I tried to scrape contestant information from Wikipedia. Early on, I had to make a choice of whether to use contestant hometowns or current locations. A scan through of the current locations for many of the chefs seemed to be suggest that many of them had not been updated (Lee Ann Wong's location has her listed in New York instead of Hawaii for example), so I opted to use hometowns. Unfortunately, the pages for seasons 1, 2, 8, 9, and 15 are missing hometown information so I ommitted them from the scrape. I might try and add the information manually later but for now my scrape included 10/15 (season 15 is airing right now) seasons.
 
 ```{r}
@@ -105,6 +107,8 @@ unique_states <- unique_chefs %>%
   group_by(homestate) %>%
   summarise(count = n())
 ```
+
+### Visualizing home states
 
 Finally I have a dataframe consisting of the number of Top Chef contestants from each state. Time to plot! I of course had to use Top Chef orange to fill in each state by count. Looking at the final map, I'm not surprised to see so many contestants from California and New York. More interesting to me is the "middle" range of states including Colorado, Washington, and Michigan. This map is obviously imperfect, as I'm missing 5 seasons worth of data, but it gives a rough idea of how contestant homestates are distributed.
 

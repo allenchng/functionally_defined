@@ -22,12 +22,14 @@ library(stringr)
 library(tidytext)
 library(broom)
 library(lubridate)
-library(tm)
+# library(tm)
 library(igraph)
 library(ggraph)
 
 theme_set(theme_bw())
 ```
+
+### Scraping post information
 
 The first step was to pull text from all posts in the [Saint Laurent Paris thread](https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/). If you've read my previous analyses, this follows the same scraping procedure as I've outlined in my [random fashion thoughts ](https://functionallydefined.netlify.com/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/) and my [what are you wearing today](https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/) posts.
 
@@ -94,6 +96,8 @@ full_df <- full_df %>%
   drop_na(date)
 ```
 
+### Exploring post data
+
 Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a quick first exploratory measure, I wanted to see what were the top 10 most frequently used words (not yet filtering for sentiment)
 
 ```{r top10_nonsentiment, echo=FALSE, message=FALSE, warning=FALSE}
@@ -145,6 +149,8 @@ post_sent_bing %>%
   coord_flip()
 ```
 
+### Time related changes in sentiment
+
 After exploring the data, I shifted my focus to examining how sentiment changed across time. Going into this analysis, I had a hypothesis that sentiment would be strongly positive until early 2016, when creative director Hedi Slimane departed (represented as the dashed line on the plot below) the fashion house. In the aftermath, I expected that sentiment would drop sharply. To test this hypothesis, I summed the total number of positive and negative words every month then subtracted them from one another to get the polarity. Then I plotted the polarity of each month across time. 
 
 ```{r calc polarity, echo=TRUE, message=FALSE, warning=FALSE}
@@ -191,6 +197,8 @@ polarity_time %>%
 ```
 
 So I was wrong in my prediction, but that's quite all right! 
+
+### Networks of words
 
 In the last section, I wanted to move past time related changes in sentiment and transition to looking at relationships between words in the thread. I was particularly interested in words that occured consecutively with one another, or bigrams. To do this, I went back and pulled raw post data that did not go through any of the corpus pre-processing. 
 

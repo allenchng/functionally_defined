@@ -20,6 +20,8 @@ library(reshape2)
 library(igraph)
 ```
 
+### Data pre-processing
+
 I used the same dataset as my previous analysis in which I recorded the maker and color for each article of clothing that I wore on each day. To fix possible errors in capitalization, I converted all character strings to upper case, and modified the day column to go from 1 to 93. I also filtered out rows from when it was too warm to wear a jacket.  
 
 ```{r read data, echo=TRUE, message=FALSE, warning=FALSE}
@@ -35,7 +37,9 @@ wear_mat <- wear_tbl %>%
   acast(maker_up ~ day, fun.aggregate = length)
 ```
 
-Following David Robinson, I elected to run a few visualizations to examine relationships between makers. The visualization was a  hierarchical cluster on my data using Canberra distance, which is a weighted form of the Manhattan distance. I opted to use normalized and non-normalized data to view how clustering differed. 
+### Visualizing relationships between makers
+
+Following David Robinson, I elected to run a few visualizations to examine relationships between makers. The visualization was a hierarchical cluster on my data using Canberra distance, which is a weighted form of the Manhattan distance. I opted to use normalized and non-normalized data to view how clustering differed. 
 
 ```{r normalize, echo=TRUE, message=FALSE, warning=FALSE}
 # normalize data
@@ -76,6 +80,8 @@ cooccur <- wear_mat %*% t(wear_mat)
 
 heatmap(cooccur, cexRow = 0.8, cexCol = 0.8)
 ```
+
+### Networks of makers in igraph
 
 That made tracking what connections each of my makers had and the strength of those connections much easier to see. Next, I used the igraph package as another way to plot the network. 
 

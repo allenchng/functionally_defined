@@ -21,6 +21,8 @@ library(tm)
 library(wordcloud)
 ```
 
+### Scraping text data from Styleforum
+
 The first thing I needed to do was scrape some information. Luckily, the package "rvest" and the SelectorGadget web extension made scraping easy. I simply used SelectorGadget to identify the css that I wanted and passed the information to a few functions from rvest. For this first part, I pulled username information.
 
 ```{r data prep, echo=TRUE, message=FALSE, warning=FALSE}
@@ -52,6 +54,8 @@ user_df <- do.call(rbind, user_list)
 ```{r, message=FALSE, warning=FALSE, include=FALSE}
 user_df <- readRDS("/Users/allenchang/Desktop/sf_users.rds")
 ```
+
+### Visualizing the most frequent posters
 
 With all my information in a handy dataframe, I counted the total number of posts by each user. I also converted my user column into a factor arranged by post count for easier plotting.
 
@@ -86,6 +90,8 @@ user_arranged %>%
        caption="source: SF - RFT part II") + 
   theme(axis.text.x = element_text(angle=65, vjust=0.6))
 ```
+
+### Text mining post data
 
 Moving on, I wanted to play around with analyzing the actual content of posts themselves, so I re-configured my scraping function to pull post information instead. The post information was much more complex to deal with. Part of this was due to html formatting in the posts, but there was also username information, and "quoting" formatting that I had to get rid of. To be perfectly honest, I want to be the first to say that the number of gsubs here looks particularly ugly. Hopefully, I'll get a chance to make it more elegant down the line, but for a quick scrape it did the job. 
 
@@ -167,6 +173,8 @@ post_word_freqs <- data.frame(
   num = term_frequency
 )
 ```
+
+### Visualizing text data
 
 Finally some visualizations! The "wordcloud" package has an aptly named function wordcloud.
 

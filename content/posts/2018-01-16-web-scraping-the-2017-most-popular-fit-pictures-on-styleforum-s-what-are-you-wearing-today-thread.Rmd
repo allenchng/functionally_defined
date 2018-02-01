@@ -22,6 +22,8 @@ library(purrr)
 library(ggplot2)
 ```
 
+### Scraping the most popular fits
+
 Next I set up the list of pages to scrape.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -86,6 +88,8 @@ waywt_df <- readRDS("/Users/allenchang/Desktop/waywt_df.RDS")
 top_posts <- readRDS("/Users/allenchang/Desktop/top_posts.RDS")
 ```
 
+### Visualizing "likes"
+
 After I joined my two dataframes, I wanted to see what the distribution of likes looked like. I made a density plot of all likes posts and added a dashed line for the mean number of likes 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -103,8 +107,6 @@ waywt_df %>%
        y="Density")
 ```
 
-
-
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Arrange dataframe by top posts
 top_posts <- waywt_df %>%
@@ -117,6 +119,8 @@ top_posts %>% count(user) %>% arrange(desc(n)) %>% head(., 5)
 top_posts %>% select(user, num_likes) %>% arrange(desc(num_likes)) %>% head(., 5)
 
 ```
+
+### Downloading pictures associated with top posts
 
 Here's where things got a little more complicated. Within each post, there's a separate reference to where the images are hosted. The first time I ran this, I ran into a problem where I was pulling image links from the entire page. To get around this, I used the CSS selector for the exact image post number.
 
