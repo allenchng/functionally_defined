@@ -28,7 +28,7 @@
   
   
   
-  <meta name="generator" content="Hugo 0.26" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
+  <meta name="generator" content="Hugo 0.30.2" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css" />
   <script type="text/javascript" src="/js/bundle.js"></script>
   
@@ -75,6 +75,8 @@ library(stringr)
 library(dplyr)
 library(purrr)
 library(ggplot2)</code></pre>
+<section id="scraping-the-most-popular-fits" class="level3">
+<h3>Scraping the most popular fits</h3>
 <p>Next I set up the list of pages to scrape.</p>
 <pre class="r"><code># Create vector of links to scrape data from
 url &lt;- &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-&quot;
@@ -121,6 +123,9 @@ likes_df$num_likes &lt;- as.numeric(as.character(likes_df$num_likes))
 
 # Join data frames and keep only the distinct rows
 waywt_df &lt;- left_join(user_df, likes_df, by = &quot;postnum&quot;) %&gt;% distinct()</code></pre>
+</section>
+<section id="visualizing-likes" class="level3">
+<h3>Visualizing “likes”</h3>
 <p>After I joined my two dataframes, I wanted to see what the distribution of likes looked like. I made a density plot of all likes posts and added a dashed line for the mean number of likes</p>
 <p><img src="/posts/2018-01-16-web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <pre class="r"><code># Arrange dataframe by top posts
@@ -145,6 +150,9 @@ top_posts %&gt;% count(user) %&gt;% arrange(desc(n)) %&gt;% head(., 5)</code></p
 ## 3 conceptual 4est        89
 ## 4       KamoteJoe        84
 ## 5        RegisDB9        83</code></pre>
+</section>
+<section id="downloading-pictures-associated-with-top-posts" class="level3">
+<h3>Downloading pictures associated with top posts</h3>
 <p>Here’s where things got a little more complicated. Within each post, there’s a separate reference to where the images are hosted. The first time I ran this, I ran into a problem where I was pulling image links from the entire page. To get around this, I used the CSS selector for the exact image post number.</p>
 <pre class="r"><code># Scrape image links from post numbers 
 img &lt;- top_posts$postfull
@@ -179,6 +187,7 @@ for file in *; do
 done</code></pre>
 <p>Done! The last step was to upload all the photos to an image sharing website of my choice (I prefer postimage). I’ll place the link to the album just below here. This was a handy little project for me that combined web data, regular expression practice, and even a little bit of UNIX coding to do, but the results were worth it. I can’t even imagine how boring it would be to go through 3-400 pages of posts manually. I hope you enjoy the list of photos.</p>
 <p><a href="https://postimg.org/gallery/1szjk8a92/">Styleforum’s best of 2017</a></p>
+</section>
 <section id="references" class="level3">
 <h3>References</h3>
 <p><a href="https://stackoverflow.com/questions/12152626/how-can-remove-the-extension-of-a-filename-in-a-shell-script">renaming files using unix</a></p>

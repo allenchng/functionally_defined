@@ -23,6 +23,8 @@ library(rvest)
 library(stringr)
 library(RColorBrewer)
 library(reshape2)</code></pre>
+<section id="scraping-contestant-information" class="level3">
+<h3>Scraping contestant information</h3>
 <p>Next I tried to scrape contestant information from Wikipedia. Early on, I had to make a choice of whether to use contestant hometowns or current locations. A scan through of the current locations for many of the chefs seemed to be suggest that many of them had not been updated (Lee Ann Wong’s location has her listed in New York instead of Hawaii for example), so I opted to use hometowns. Unfortunately, the pages for seasons 1, 2, 8, 9, and 15 are missing hometown information so I ommitted them from the scrape. I might try and add the information manually later but for now my scrape included 10/15 (season 15 is airing right now) seasons.</p>
 <pre class="r"><code>#--------------------------------
 # Scraping contestant information
@@ -91,8 +93,12 @@ unique_states &lt;- unique_chefs %&gt;%
   filter(homestate %in% map.states$region) %&gt;%
   group_by(homestate) %&gt;%
   summarise(count = n())</code></pre>
+</section>
+<section id="visualizing-home-states" class="level3">
+<h3>Visualizing home states</h3>
 <p>Finally I have a dataframe consisting of the number of Top Chef contestants from each state. Time to plot! I of course had to use Top Chef orange to fill in each state by count. Looking at the final map, I’m not surprised to see so many contestants from California and New York. More interesting to me is the “middle” range of states including Colorado, Washington, and Michigan. This map is obviously imperfect, as I’m missing 5 seasons worth of data, but it gives a rough idea of how contestant homestates are distributed.</p>
 <p><img src="/posts/2017-12-26-visualizing-home-states-for-top-chef-contestants-in-r_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</section>
 <section id="references" class="level3">
 <h3>References</h3>
 <p><a href="https://stackoverflow.com/questions/29614972/ggplot-us-state-map-colors-are-fine-polygons-jagged-r">Stack post on ggplot maps</a></p>

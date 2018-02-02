@@ -17,6 +17,8 @@ categories: []
 <pre class="r"><code>library(tidyverse)
 library(reshape2)
 library(igraph)</code></pre>
+<section id="data-pre-processing" class="level3">
+<h3>Data pre-processing</h3>
 <p>I used the same dataset as my previous analysis in which I recorded the maker and color for each article of clothing that I wore on each day. To fix possible errors in capitalization, I converted all character strings to upper case, and modified the day column to go from 1 to 93. I also filtered out rows from when it was too warm to wear a jacket.</p>
 <pre class="r"><code># Prepare data
 wear_tbl &lt;- read_csv(&quot;daily_wear.csv&quot;)
@@ -28,6 +30,9 @@ wear_tbl &lt;- wear_tbl %&gt;%
 
 wear_mat &lt;- wear_tbl %&gt;%
   acast(maker_up ~ day, fun.aggregate = length)</code></pre>
+</section>
+<section id="visualizing-relationships-between-makers" class="level3">
+<h3>Visualizing relationships between makers</h3>
 <p>Following David Robinson, I elected to run a few visualizations to examine relationships between makers. The visualization was a hierarchical cluster on my data using Canberra distance, which is a weighted form of the Manhattan distance. I opted to use normalized and non-normalized data to view how clustering differed.</p>
 <pre class="r"><code># normalize data
 norm &lt;- wear_mat / rowSums(wear_mat)</code></pre>
@@ -40,6 +45,9 @@ cooccur &lt;- wear_mat %*% t(wear_mat)
 
 heatmap(cooccur, cexRow = 0.8, cexCol = 0.8)</code></pre>
 <p><img src="/posts/daily_clothing_network_files/figure-html/cooccurence-1.png" width="672" /></p>
+</section>
+<section id="networks-of-makers-in-igraph" class="level3">
+<h3>Networks of makers in igraph</h3>
 <p>That made tracking what connections each of my makers had and the strength of those connections much easier to see. Next, I used the igraph package as another way to plot the network.</p>
 <pre class="r"><code>g &lt;- graph.adjacency(cooccur, weighted = TRUE, mode = &quot;undirected&quot;, diag = FALSE)
 
@@ -101,7 +109,7 @@ gl.trs &lt;- unlist(gl.tr)
 # Get summary statistics of transitivity scores
 summary(gl.trs)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##  0.2188  0.3070  0.3286  0.3284  0.3500  0.4493</code></pre>
+##  0.1777  0.3064  0.3314  0.3309  0.3546  0.4247</code></pre>
 <pre class="r"><code># Proportion of random graphs with a transitivity score higher than my maker network.
 sum(gl.trs &gt; gl.tr)/1000</code></pre>
 <pre><code>## [1] 0</code></pre>
@@ -114,6 +122,7 @@ sum(gl.trs &gt; gl.tr)/1000</code></pre>
 ##  3 10  6  6  2</code></pre>
 <p><img src="/posts/daily_clothing_network_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <p>Looking forward, I still have one more post planned for this dataset using the <a href="https://cran.rstudio.com/web/packages/threejs/index.html">threejs</a> package to create interactive networks. I’ve had a lot of fun working through this data, and I’m looking forward to continuing to track and think about my clothing choices.</p>
+</section>
 <section id="references" class="level3">
 <h3>References</h3>
 <p><a href="https://stackoverflow.com/questions/23209802/placing-vertex-label-outside-a-circular-layout-in-igraph/23210025">labels around circular layout</a></p>

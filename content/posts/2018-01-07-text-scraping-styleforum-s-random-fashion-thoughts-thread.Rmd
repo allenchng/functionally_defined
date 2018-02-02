@@ -52,7 +52,7 @@ user_df <- do.call(rbind, user_list)
 ```
 
 ```{r, message=FALSE, warning=FALSE, include=FALSE}
-user_df <- readRDS("/Users/allenchang/Desktop/sf_users.rds")
+user_df <- readRDS("/Users/allenchang/Desktop/functionally_defined/data/sf_users.rds")
 ```
 
 ### Visualizing the most frequent posters
@@ -116,7 +116,7 @@ content_df <- do.call(rbind, content_list)
 ```
 
 ```{r read data, message=FALSE, warning=FALSE, include=FALSE}
-content_list <- readRDS("/Users/allenchang/Desktop/sf_posts.rds")
+content_list <- readRDS("/Users/allenchang/Desktop/functionally_defined/data/sf_posts.rds")
 content_df <- do.call(rbind, content_list)
 ```
 

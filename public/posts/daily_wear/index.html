@@ -28,7 +28,7 @@
   
   
   
-  <meta name="generator" content="Hugo 0.26" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
+  <meta name="generator" content="Hugo 0.30.2" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css" />
   <script type="text/javascript" src="/js/bundle.js"></script>
   
@@ -74,8 +74,8 @@ library(scales)
 library(RColorBrewer)
 
 theme_set(theme_classic())</code></pre>
-<section id="prepping-data" class="level2">
-<h2>Prepping data</h2>
+<section id="prepping-data" class="level3">
+<h3>Prepping data</h3>
 <p>I used a Google sheet to keep track my daily wears. Each day I recorded the maker and up to two colors of each article of clothing that I wore. There were 4 categories of clothes; Coat, Shirt (I collapsed sweaters into here as well), Pants, and Shoes. Since I’m almost certain that I miscapitalized a stray word here or there, I added a column changing all the maker names to upper case. Then I grouped by maker to get the total number of times that I wore each maker across all articles of clothing.</p>
 <pre class="r"><code># Load in data
 
@@ -108,6 +108,9 @@ df &lt;- wear_tbl %&gt;%
 <pre class="r"><code># set makers as an ordered factor based on number of wears
 df$maker_up &lt;- factor(df$maker_up, levels = df$maker_up[order(df$timesworn)])
 df$timesworn &lt;- as.numeric(df$timesworn)</code></pre>
+</section>
+<section id="visualizing-maker-preferences" class="level3">
+<h3>Visualizing maker preferences</h3>
 <p>Then I plotted the count of the number of times I wore each maker. Wow, I really like Uniqlo.</p>
 <pre class="r"><code>df %&gt;%
   filter(timesworn &gt; 1) %&gt;%
@@ -145,6 +148,9 @@ g + geom_bar(aes(fill=Article), width = 0.5) +
   coord_flip()</code></pre>
 <p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>Looking at the breakdown, it seems that I mostly wear Uniqlo shirts (a glance at an overflowing drawer in my bedroom does seem to confirm this…). Interesting to me as well is that most of these makers seem to be concentrated on one specific article of clothing. I seem to also like only a few shoe makers.</p>
+</section>
+<section id="visualizing-color-selection" class="level3">
+<h3>Visualizing color selection</h3>
 <p>Finally, I want to know how varied my choice of color was. Do I really prefer black above everything else?</p>
 <pre class="r"><code># gather both color columns into 1 and filter out NA&#39;s
 color_tbl &lt;- wear_tbl %&gt;%
@@ -260,10 +266,10 @@ plot_slopegraph(df) +
                                                      face=&quot;bold&quot;))</code></pre>
 <p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>It looks like my preference for black did increase over time (the decrease in slope for December is due to me stopping collection due to traveling for the winter holidays). All in all, this was in interesting form of analysis for me. I got to see what makers that I bias, but also which makers and clothes I only rare put into rotation. I’m going to try and do a follow up post thinking about all these makers as vertices in a network to see whether certain makers are more often paired with one another.</p>
+</section>
 <section id="references" class="level3">
 <h3>References</h3>
 <p><a href="http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Slope%20Chart%202">Visualization examples</a></p>
-</section>
 </section>
 
   </section>

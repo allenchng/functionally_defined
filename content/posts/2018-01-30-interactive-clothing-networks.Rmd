@@ -1,0 +1,80 @@
+---
+title: Interactive clothing networks
+author: Allen Chang
+date: '2018-01-30'
+slug: interactive-clothing-networks
+categories: []
+tags:
+  - networks
+  - visualization
+  - R
+  - clothing
+draft: yes
+---
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(igraph)
+library(threejs)
+library(lubridate)
+library(stringr)
+library(reshape2)
+library(htmlwidgets)
+```
+
+```{r}
+summer <- read_csv("/Users/allenchang/Desktop/functionally_defined/data/summer.csv")
+fw <- read_csv("/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv")
+
+fw <- fw %>%
+  select(1:3)
+
+clothes_df <- rbind(summer, fw)
+clothes_df$Day <- mdy(clothes_df$Day)
+```
+
+```{r}
+clothes_df <- clothes_df %>%
+  mutate(maker_up = toupper(Maker)) %>%
+  select(Day, maker_up) %>%
+  filter(!maker_up == "NA")
+
+clothes_mat <- clothes_df %>%
+  acast(maker_up ~ Day, fun.aggregate = length)
+
+cooccur <- clothes_mat %*% t(clothes_mat)
+
+g <- graph.adjacency(cooccur, weighted = TRUE, mode = "undirected", diag = FALSE)
+```
+
+```{r}
+V(g)$vertex_degree <-  degree(g)
+```
+
+```{r}
+counts <- as.data.frame(lengths(as_adj_list(g))) %>%
+  rownames_to_column()
+
+names(counts) <- c("maker", "count")
+counts <- counts %>%
+  filter(count < 10)
+
+g2 <- delete_vertices(g, counts$maker)
+```
+
+
+```{r}
+graphjs(g2, 
+        repulsion = 6, 
+        vertex.shape = "sphere",
+        vertex.size = V(g)$vertex_degree*.5,
+        vertex.label= V(g)$name,
+        stroke = TRUE,
+        curvature = 0.2,
+        vertex.color = "#9999CC")
+        
+```
+
+### References
+
+[vertex size](https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges)

@@ -1,0 +1,90 @@
+---
+title: Interactive clothing networks
+author: Allen Chang
+date: '2018-01-30'
+slug: interactive-clothing-networks
+categories: []
+tags:
+  - networks
+  - visualization
+  - R
+  - clothing
+draft: yes
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<script src="/rmarkdown-libs/threejs/three.min.js"></script>
+<script src="/rmarkdown-libs/threejs/Detector.js"></script>
+<script src="/rmarkdown-libs/threejs/Projector.js"></script>
+<script src="/rmarkdown-libs/threejs/CanvasRenderer.js"></script>
+<script src="/rmarkdown-libs/threejs/TrackballControls.js"></script>
+<script src="/rmarkdown-libs/threejs/StateOrbitControls.js"></script>
+<script src="/rmarkdown-libs/scatterplotThree-binding/scatterplotThree.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+
+<pre class="r"><code>library(tidyverse)
+library(igraph)
+library(threejs)
+library(lubridate)
+library(stringr)
+library(reshape2)
+library(htmlwidgets)</code></pre>
+<pre class="r"><code>summer &lt;- read_csv(&quot;/Users/allenchang/Desktop/functionally_defined/data/summer.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Day = col_character(),
+##   Article = col_character(),
+##   Maker = col_character()
+## )</code></pre>
+<pre class="r"><code>fw &lt;- read_csv(&quot;/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Day = col_character(),
+##   Article = col_character(),
+##   Maker = col_character(),
+##   Color1 = col_character(),
+##   Color2 = col_character(),
+##   Month = col_character()
+## )</code></pre>
+<pre class="r"><code>fw &lt;- fw %&gt;%
+  select(1:3)
+
+clothes_df &lt;- rbind(summer, fw)
+clothes_df$Day &lt;- mdy(clothes_df$Day)</code></pre>
+<pre class="r"><code>clothes_df &lt;- clothes_df %&gt;%
+  mutate(maker_up = toupper(Maker)) %&gt;%
+  select(Day, maker_up) %&gt;%
+  filter(!maker_up == &quot;NA&quot;)
+
+clothes_mat &lt;- clothes_df %&gt;%
+  acast(maker_up ~ Day, fun.aggregate = length)</code></pre>
+<pre><code>## Using maker_up as value column: use value.var to override.</code></pre>
+<pre class="r"><code>cooccur &lt;- clothes_mat %*% t(clothes_mat)
+
+g &lt;- graph.adjacency(cooccur, weighted = TRUE, mode = &quot;undirected&quot;, diag = FALSE)</code></pre>
+<pre class="r"><code>V(g)$vertex_degree &lt;-  degree(g)</code></pre>
+<pre class="r"><code>counts &lt;- as.data.frame(lengths(as_adj_list(g))) %&gt;%
+  rownames_to_column()
+
+names(counts) &lt;- c(&quot;maker&quot;, &quot;count&quot;)
+counts &lt;- counts %&gt;%
+  filter(count &lt; 10)
+
+g2 &lt;- delete_vertices(g, counts$maker)</code></pre>
+<pre class="r"><code>graphjs(g2, 
+        repulsion = 6, 
+        vertex.shape = &quot;sphere&quot;,
+        vertex.size = V(g)$vertex_degree*.5,
+        vertex.label= V(g)$name,
+        stroke = TRUE,
+        curvature = 0.2,
+        vertex.color = &quot;#9999CC&quot;)</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="scatterplotThree html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"NROW":17,"height":null,"width":null,"axis":false,"numticks":[6,6,6],"xticklabs":null,"yticklabs":null,"zticklabs":null,"color":["#9999CC"],"size":[6.5,3.5,2,4,6,7,1,9.5,8.5,1.5,7,10.5,8.5,9.5,2.5,2,2,5,3.5,6,0.5,7,2.5,4,3,8,5,6.5,11,9.5],"stroke":true,"flipy":true,"grid":false,"renderer":"auto","signif":8,"bg":"white","cexsymbols":1,"xlim":[-1,1],"ylim":[-1,1],"zlim":[-1,1],"pch":["o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o"],"from":[[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,8,8,9,9,10,10,10,10,11,11,11,11,12,12,12,13,13,14,14,15]],"to":[[1,2,4,6,7,8,13,15,16,2,3,4,5,10,11,12,13,15,16,3,4,5,6,8,9,10,12,13,14,15,4,5,6,7,8,9,10,11,12,14,15,16,5,6,7,8,9,10,11,12,14,15,16,6,7,8,10,11,12,14,15,7,8,9,10,11,12,13,14,15,16,8,9,12,13,14,15,9,10,11,12,13,14,15,16,12,14,12,14,15,16,12,13,15,16,14,15,16,15,16,15,16,16]],"lwd":1,"linealpha":1,"center":true,"main":[""],"repulsion":6,"curvature":0.2,"labels":["BARNEYS","BURBERRY PRORSUM","CAMOSHITA","COMME DES GARCONS","COMME DES GARCONS HOMME","CONVERSE","DANA LEE","DOCUMENT","DRIES VAN NOTEN","FINAL HOME","GRP","HELMUT LANG","HESCHUNG","ISSEY MIYAKE","J. CREW","JIL SANDER","KRIS VAN ASSCHE","LANVIN","LEMAIRE","MAISON MARTIN MARGIELA","MAJESTIC","NIKE","OUR LEGACY","REIGNING CHAMP","ROBERT GELLER","SAGE DE CRET","STEPHAN SCHNEIDER","UNDERCOVER","UNIQLO","VANS"],"options":true,"alpha":[1],"vertices":[[1,-0.52967193,0.35302643,-0.17040807,0.7224877,1,-0.42419543,-0.51841077,0.48757089,-1,-0.13541335,-0.037212865,-0.30094853,0.18904452,-0.1893186,-0.91139904,0.25917242,0.44695835,0.24250679,-0.030974179,-0.58930667,-0.061372618,-1,-0.16036752,0.068408365,-0.28882242,-0.16991414,-0.53725998,-0.99960908,-1,-0.9396758,0.88996964,-0.18534158,0.21924882,1,0.29995014,-0.57271084,0.36815418,-0.74082782,0.9330516,0.095385555,0.71256285,-0.94753342,-0.25824112,-0.77690676,-0.028772834,0.085393934,0.57508449,0.34590111,0.76440211,-0.40433372]],"xticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"yticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"zticklab":["1.00","0.60","0.20","-0.20","-0.60","-1.00"],"xtick":[0,0.2,0.4,0.6,0.8,1],"ytick":[0,0.2,0.4,0.6,0.8,1],"ztick":[0,0.2,0.4,0.6,0.8,1]},"evals":[],"jsHooks":[]}</script>
+<section id="references" class="level3">
+<h3>References</h3>
+<p><a href="https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges">vertex size</a></p>
+</section>

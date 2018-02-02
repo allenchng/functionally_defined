@@ -28,7 +28,7 @@
   
   
   
-  <meta name="generator" content="Hugo 0.26" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
+  <meta name="generator" content="Hugo 0.30.2" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css" />
   <script type="text/javascript" src="/js/bundle.js"></script>
   
@@ -75,6 +75,8 @@ library(tidyverse)
 library(stringr)
 library(tm)
 library(wordcloud)</code></pre>
+<section id="scraping-text-data-from-styleforum" class="level3">
+<h3>Scraping text data from Styleforum</h3>
 <p>The first thing I needed to do was scrape some information. Luckily, the package “rvest” and the SelectorGadget web extension made scraping easy. I simply used SelectorGadget to identify the css that I wanted and passed the information to a few functions from rvest. For this first part, I pulled username information.</p>
 <pre class="r"><code># Set up website to scrape text from
 theme_set(theme_bw())
@@ -94,6 +96,9 @@ pull_users &lt;- function(i){
 <pre class="r"><code># scrape and bind to dataframe
 user_list &lt;- lapply(site, pull_users)
 user_df &lt;- do.call(rbind, user_list)</code></pre>
+</section>
+<section id="visualizing-the-most-frequent-posters" class="level3">
+<h3>Visualizing the most frequent posters</h3>
 <p>With all my information in a handy dataframe, I counted the total number of posts by each user. I also converted my user column into a factor arranged by post count for easier plotting.</p>
 <pre class="r"><code># get username counts and arrange in descending order
 names(user_df) &lt;- c(&quot;user&quot;)
@@ -114,6 +119,9 @@ user_arranged$user &lt;- factor(user_arranged$user, levels = user_arranged$user)
 ## 6           Fuuma   540</code></pre>
 <p>Then I plotted a simple lollipop chart to see what users had the most posts.</p>
 <p><img src="/posts/2018-01-07-text-scraping-styleforum-s-random-fashion-thoughts-thread_files/figure-html/post%20count%20plot-1.png" width="672" /></p>
+</section>
+<section id="text-mining-post-data" class="level3">
+<h3>Text mining post data</h3>
 <p>Moving on, I wanted to play around with analyzing the actual content of posts themselves, so I re-configured my scraping function to pull post information instead. The post information was much more complex to deal with. Part of this was due to html formatting in the posts, but there was also username information, and “quoting” formatting that I had to get rid of. To be perfectly honest, I want to be the first to say that the number of gsubs here looks particularly ugly. Hopefully, I’ll get a chance to make it more elegant down the line, but for a quick scrape it did the job.</p>
 <pre class="r"><code># pull text from posts, don&#39;t include quoted text or html formatting
 pull_content &lt;- function(i){
@@ -157,6 +165,9 @@ term_frequency[1:10]</code></pre>
   term = names(term_frequency),
   num = term_frequency
 )</code></pre>
+</section>
+<section id="visualizing-text-data" class="level3">
+<h3>Visualizing text data</h3>
 <p>Finally some visualizations! The “wordcloud” package has an aptly named function wordcloud.</p>
 <p><img src="/posts/2018-01-07-text-scraping-styleforum-s-random-fashion-thoughts-thread_files/figure-html/wordcloud%20plot-1.png" width="672" /></p>
 <p>This gave me the most popular words from the thread, but I was also interested in what words are normally associated with the actual word “fashion”. Lucky for me there was a function in the “tm” package to do that as well.</p>
@@ -170,6 +181,7 @@ associations_df &lt;- associations_df %&gt;%
 associations_df$term &lt;- factor(associations_df$term, levels = associations_df$term)</code></pre>
 <p><img src="/posts/2018-01-07-text-scraping-styleforum-s-random-fashion-thoughts-thread_files/figure-html/association_plot-1.png" width="672" /></p>
 <p>Unsurprisingly, terms like “designers” and “writers” come up fairly frequently when people talk about fashion. Somewhat more interesting though are terms like anti-sportcoat (punctuation is removed in the pre-processing) as well as workwear. All in all, this was a fun little project for me to play around with text analysis and learn more about my fellow users on styleforum. If you are interested in any of the data, I will include it on my github as well.</p>
+</section>
 <section id="references" class="level3">
 <h3>References</h3>
 <p><a href="https://stackoverflow.com/questions/30541445/r-rvest-got-hidden-text-i-dont-want">removing html formatting</a></p>
