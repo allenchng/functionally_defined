@@ -270,5 +270,7 @@ All in all I had a lot of fun working with sentiment analysis! One of the nice t
 ### References
 
 [datacamp: sentiment analysis](https://www.datacamp.com/courses/sentiment-analysis-in-r)
+
 [datacamp: tidy sentiment analysis](https://www.datacamp.com/courses/sentiment-analysis-in-r-the-tidy-way)
+
 [tidy text book](https://www.tidytextmining.com/)

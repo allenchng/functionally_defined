@@ -393,22 +393,22 @@ Day,Article,Maker,Color1,Color2,Month
 01-07-2018,Coat,NA,,,January
 01-07-2018,Top,Uniqlo,Black,,January
 01-07-2018,Top,Reigning Champ,Gray,,January
-01-07-2018,Pants,Comme des Garcons,Black,,January
+01-07-2018,Pants,Comme des Garcons Homme,Black,,January
 01-07-2018,Shoes,Vans,White,,January
 01-07-2018,Coat,NA,,,January
 01-07-2018,Top,Uniqlo,Black,,January
 01-07-2018,Top,Reigning Champ,Gray,,January
-01-07-2018,Pants,Comme des Garcons,Black,,January
+01-07-2018,Pants,Comme des Garcons Homme,Black,,January
 01-07-2018,Shoes,Nike,Navy,White,January
 01-08-2018,Coat,NA,,,January
 01-08-2018,Top,Uniqlo,Black,,January
 01-08-2018,Top,Uniqlo,Navy,Purple,January
-01-08-2018,Pants,Comme des Garcons,Black,,January
+01-08-2018,Pants,Comme des Garcons Homme,Black,,January
 01-08-2018,Shoes,Nike,Navy,White,January
 01-09-2018,Coat,NA,,,January
 01-09-2018,Top,Uniqlo,Black,,January
 01-09-2018,Top,Document,Navy,,January
-01-09-2018,Pants,Comme des Garcons,Black,,January
+01-09-2018,Pants,Comme des Garcons Homme,Black,,January
 01-09-2018,Shoes,Nike,Navy,White,January
 1-10-2018,Coat,Document,Blue,,January
 1-10-2018,Top,Uniqlo,Black,,January
@@ -418,7 +418,7 @@ Day,Article,Maker,Color1,Color2,Month
 1-11-2018,Coat,Document,Blue,,January
 1-11-2018,Top,GRP,Navy,,January
 1-11-2018,Top,Uniqlo,Black,,January
-1-11-2018,Pants,Comme Des Garcons,Black,,January
+1-11-2018,Pants,Comme Des Garcons Homme,Black,,January
 1-11-2018,Shoes,Nike,Navy,White,January
 1-12-2018,Coat,Dries Van Noten,Charcoal,,January
 1-12-2018,Top,Uniqlo,Olive,,January
@@ -458,7 +458,7 @@ Day,Article,Maker,Color1,Color2,Month
 1-20-2018,Coat,Dries Van Noten,Navy,,January
 1-20-2018,Top,Dries Van Noten,Blue,Purple,January
 1-20-2018,Top,Document,Ecru,,January
-1-20-2018,Pants,Comme Des Garcons,Black,,January
+1-20-2018,Pants,Comme Des Garcons Homme,Black,,January
 1-20-2018,Shoes,Vans,White,,January
 1-21-2018,Coat,Burberry Prorsum,Green,,January
 1-21-2018,Top,Document,Ecru,,January
@@ -467,7 +467,7 @@ Day,Article,Maker,Color1,Color2,Month
 1-22-2018,Coat,Dries Van Noten,Navy,,January
 1-22-2018,Top,Dries Van Noten,Navy,Purple,January
 1-22-2018,Top,Dries Van Noten,Navy,,January
-1-22-2018,Pants,Comme Des Garcons,Black,,January
+1-22-2018,Pants,Comme Des Garcons Homme,Black,,January
 1-22-2018,Shoes,Heschung,Black,,January
 1-23-2018,Coat,Dries Van Noten,Black,Green,January
 1-23-2018,Top,Undercover,Black,Gray,January
@@ -510,3 +510,7 @@ Day,Article,Maker,Color1,Color2,Month
 1-31-2018,Top,Uniqlo,Navy,Purple,
 1-31-2018,Pants,Helmut Lang,Navy,,
 1-31-2018,Shoes,Heschung,Brown,,
+2-1-2018,Coat,Helmut Lang,Black,,
+2-1-2018,Top,GRP,Black,,
+2-1-2018,Pants,Sage de Cret,Black,,
+2-1-2018,Shoes,Nike,Black,,

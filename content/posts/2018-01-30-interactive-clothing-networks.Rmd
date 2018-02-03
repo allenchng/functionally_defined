@@ -20,6 +20,7 @@ library(lubridate)
 library(stringr)
 library(reshape2)
 library(htmlwidgets)
+library(RColorBrewer)
 ```
 
 ```{r}
@@ -64,6 +65,21 @@ g2 <- delete_vertices(g, counts$maker)
 
 
 ```{r}
+country <- as.factor(c("USA", "United Kingdom", "Japan", "Japan", "USA", "USA", "South Korea", "Belgium", "Japan", "Italy", "Austria", "France", "Japan", "USA", "Germany", "Belgium", "France", "France", "France", "USA", "USA", "Sweden", "Canada", "Germany", "Japan", "Belgium", "Japan", "Japan", "USA"))
+
+# V(g)$country <- country
+set_vertex_attr(g, "country", index = V(g), as.factor(country))
+palpair <- c("#47949B", "#1C366F", "#6E5AAF", "#4A1B6F", "#CE5D9B", "#F66F7C", "#A64A25",
+             "#A62F00", "#FF7600", "#FFBC00", "#078600") 
+
+countrycol <- c("#078600", "#FFBC00", "#A64A25", "#A64A25", "#078600", "#078600", "#A62F00", "#1C366F", "#A64A25","#F66F7C",
+                "#47949B", "#4A1B6F", "#A64A25", "#078600", "#CE5D9B", "#1C366F", "#4A1B6F", "#4A1B6F", "#4A1B6F", "#078600", "#078600", "#FF7600", "#6E5AAF", "#CE5D9B", "#A64A25", "#1C366F", "#A64A25", "#A64A25", "#078600")
+
+# V(g)$color <- as.factor(country)
+```
+
+
+```{r}
 graphjs(g2, 
         repulsion = 6, 
         vertex.shape = "sphere",
@@ -71,10 +87,13 @@ graphjs(g2,
         vertex.label= V(g)$name,
         stroke = TRUE,
         curvature = 0.2,
-        vertex.color = "#9999CC")
+        vertex.color = countrycol)
+        # vertex.color = palpair)
         
 ```
 
 ### References
 
 [vertex size](https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges)
+
+[setting vertex attributes](https://stackoverflow.com/questions/36851569/import-of-vertices-attributes-in-igraph-in-r)

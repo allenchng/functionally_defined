@@ -26,7 +26,7 @@ library(igraph)
 library(ggraph)
 
 theme_set(theme_bw())</code></pre>
-<div id="scraping-post-information" class="section level3">
+<section id="scraping-post-information" class="level3">
 <h3>Scraping post information</h3>
 <p>The first step was to pull text from all posts in the <a href="https://www.styleforum.net/threads/saint-laurent-paris-official-thread.317702/">Saint Laurent Paris thread</a>. If you’ve read my previous analyses, this follows the same scraping procedure as I’ve outlined in my <a href="https://functionallydefined.netlify.com/posts/text-scraping-styleforum-s-random-fashion-thoughts-thread/">random fashion thoughts</a> and my <a href="https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/">what are you wearing today</a> posts.</p>
 <pre class="r"><code># scrape user posts
@@ -82,23 +82,23 @@ names(full_df) &lt;- c(&quot;date&quot;, &quot;term&quot;, &quot;count&quot;)
 full_df$date &lt;- mdy(full_df$date) 
 full_df &lt;- full_df %&gt;%
   drop_na(date)</code></pre>
-</div>
-<div id="exploring-post-data" class="section level3">
+</section>
+<section id="exploring-post-data" class="level3">
 <h3>Exploring post data</h3>
 <p>Great, once I had my full dataframe of words that appeared on each date I could do some analysis. As a quick first exploratory measure, I wanted to see what were the top 10 most frequently used words (not yet filtering for sentiment)</p>
 <pre><code>## # A tibble: 10 x 2
-##    term      n
+##     term     n
 ##    &lt;chr&gt; &lt;int&gt;
-##  1 like   6875
-##  2 one    4589
-##  3 size   4563
-##  4 look   4526
-##  5 slp    4249
+##  1  like  6875
+##  2   one  4589
+##  3  size  4563
+##  4  look  4526
+##  5   slp  4249
 ##  6 think  4245
-##  7 fit    3943
+##  7   fit  3943
 ##  8 jeans  3540
 ##  9 boots  3324
-## 10 wear   3224</code></pre>
+## 10  wear  3224</code></pre>
 <p>It seems that jeans and boots are a popular topic in the thread. Next, it was time to filter my dataframe of words for sentiment. In this analysis, I ended up using 2 lexicons; the nrc and bing. For reference, the <a href="http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm">nrc</a> lexicon categorizes words into 10 different categories of sentiment and the <a href="https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html">bing</a> lexicon categorizes into positive and negative sentiment.</p>
 <pre class="r"><code># get sentiments
 post_sent_bing &lt;- full_df %&gt;%
@@ -110,8 +110,8 @@ post_sent_nrc &lt;- full_df %&gt;%
 <p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/topbysentiment-1.png" width="672" /></p>
 <p>Similarly, I looked at the most popular words by sentiment in the bing lexicon.</p>
 <p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/posneg_count-1.png" width="672" /></p>
-</div>
-<div id="time-related-changes-in-sentiment" class="section level3">
+</section>
+<section id="time-related-changes-in-sentiment" class="level3">
 <h3>Time related changes in sentiment</h3>
 <p>After exploring the data, I shifted my focus to examining how sentiment changed across time. Going into this analysis, I had a hypothesis that sentiment would be strongly positive until early 2016, when creative director Hedi Slimane departed (represented as the dashed line on the plot below) the fashion house. In the aftermath, I expected that sentiment would drop sharply. To test this hypothesis, I summed the total number of positive and negative words every month then subtracted them from one another to get the polarity. Then I plotted the polarity of each month across time.</p>
 <pre class="r"><code># calculate montly polarity
@@ -126,8 +126,8 @@ polarity_time &lt;- post_sent_bing %&gt;%
 <p>Why was my prediction so off? It occurred to me that though Hedi leaving was a highly negative event, there was an equal opportunity for posters to priase his tenure, thereby increasing the number of positive words. I proceeded to plot the sum of the negative words for each month across time. Sure enough, while there was a sharp increase in the number of negative words prior to Slimane’s official departure, the increase in positive words far exceeded the negative.</p>
 <p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-3-1.png" width="672" /><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
 <p>So I was wrong in my prediction, but that’s quite all right!</p>
-</div>
-<div id="networks-of-words" class="section level3">
+</section>
+<section id="networks-of-words" class="level3">
 <h3>Networks of words</h3>
 <p>In the last section, I wanted to move past time related changes in sentiment and transition to looking at relationships between words in the thread. I was particularly interested in words that occured consecutively with one another, or bigrams. To do this, I went back and pulled raw post data that did not go through any of the corpus pre-processing.</p>
 <p>I relied heavily on Julia Silge’s tidy text mining chapter on n-grams (click <a href="https://www.tidytextmining.com/ngrams.html">here</a> for more!) to pre-process my data once again. I unnested each post, separated and filtered out stop words, then united the bigrams back together.</p>
@@ -152,8 +152,10 @@ slp_bigrams_united &lt;- slp_bigrams_sep %&gt;%
   graph_from_data_frame()</code></pre>
 <p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-8-1.png" width="1152" /></p>
 <p>All in all I had a lot of fun working with sentiment analysis! One of the nice things about this analysis was that it forced me to utilize a number of different techniques and methods to clean and process data. I had to use text mining and web scraping methods in conjunction with sentiment and tidy data analysis. If you’re interested in doing your own sentiment analysis, I would highly recommend reading Julia Silge’s book on tidy text mining and/or take her datacamp class.</p>
-</div>
-<div id="references" class="section level3">
+</section>
+<section id="references" class="level3">
 <h3>References</h3>
-<p><a href="https://www.datacamp.com/courses/sentiment-analysis-in-r">datacamp: sentiment analysis</a> <a href="https://www.datacamp.com/courses/sentiment-analysis-in-r-the-tidy-way">datacamp: tidy sentiment analysis</a> <a href="https://www.tidytextmining.com/">tidy text book</a></p>
-</div>
+<p><a href="https://www.datacamp.com/courses/sentiment-analysis-in-r">datacamp: sentiment analysis</a></p>
+<p><a href="https://www.datacamp.com/courses/sentiment-analysis-in-r-the-tidy-way">datacamp: tidy sentiment analysis</a></p>
+<p><a href="https://www.tidytextmining.com/">tidy text book</a></p>
+</section>
