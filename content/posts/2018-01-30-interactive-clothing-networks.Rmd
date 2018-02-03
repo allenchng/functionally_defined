@@ -75,6 +75,20 @@ palpair <- c("#47949B", "#1C366F", "#6E5AAF", "#4A1B6F", "#CE5D9B", "#F66F7C", "
 countrycol <- c("#078600", "#FFBC00", "#A64A25", "#A64A25", "#078600", "#078600", "#A62F00", "#1C366F", "#A64A25","#F66F7C",
                 "#47949B", "#4A1B6F", "#A64A25", "#078600", "#CE5D9B", "#1C366F", "#4A1B6F", "#4A1B6F", "#4A1B6F", "#078600", "#078600", "#FF7600", "#6E5AAF", "#CE5D9B", "#A64A25", "#1C366F", "#A64A25", "#A64A25", "#078600")
 
+########## WIP
+# country <- c("USA", "Japan", "USA", "South Korea", "Belgium",
+#              "Italy", "Austria", "France", "Japan", "France",
+#              "France" , "USA", "Japan", "Belgium", "Japan",
+#              "Japan", "USA")
+
+# V(g)$country <- country
+# set_vertex_attr(g2, "country", index = V(g), as.factor(country))
+# scheme <- c("#A60C00", "#1533AD", "#A60C00", "#7109AA", "#A63C00",
+#             "#007B25", "#009999", "#CB0077", "#1533AD", "#CB0077",
+#             "#CB0077", "#A60C00", "#1533AD", "#A63C00", "#1533AD",
+#             "#1533AD", "#A60C00")
+
+
 # V(g)$color <- as.factor(country)
 ```
 
