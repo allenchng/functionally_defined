@@ -89,16 +89,16 @@ full_df &lt;- full_df %&gt;%
 <pre><code>## # A tibble: 10 x 2
 ##     term     n
 ##    &lt;chr&gt; &lt;int&gt;
-##  1  like  6875
-##  2   one  4589
-##  3  size  4563
-##  4  look  4526
-##  5   slp  4249
-##  6 think  4245
-##  7   fit  3943
-##  8 jeans  3540
-##  9 boots  3324
-## 10  wear  3224</code></pre>
+##  1  like  6920
+##  2   one  4632
+##  3  size  4603
+##  4  look  4554
+##  5   slp  4293
+##  6 think  4270
+##  7   fit  3978
+##  8 jeans  3570
+##  9 boots  3348
+## 10  wear  3256</code></pre>
 <p>It seems that jeans and boots are a popular topic in the thread. Next, it was time to filter my dataframe of words for sentiment. In this analysis, I ended up using 2 lexicons; the nrc and bing. For reference, the <a href="http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm">nrc</a> lexicon categorizes words into 10 different categories of sentiment and the <a href="https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html">bing</a> lexicon categorizes into positive and negative sentiment.</p>
 <pre class="r"><code># get sentiments
 post_sent_bing &lt;- full_df %&gt;%
@@ -124,6 +124,7 @@ polarity_time &lt;- post_sent_bing %&gt;%
 <p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <p>Looking at the time series of polarity, a few things jump out. In the early days, polarity was slightly positive, but it wasn’t until around 2015 that polarity started to spike upwards dramatically. The second sustained spike in polarity occurs in early 2016, in the months just before Hedi leaves the company. However, contrary to my expectation, sentiment remained positive in the years to come.</p>
 <p>Why was my prediction so off? It occurred to me that though Hedi leaving was a highly negative event, there was an equal opportunity for posters to priase his tenure, thereby increasing the number of positive words. I proceeded to plot the sum of the negative words for each month across time. Sure enough, while there was a sharp increase in the number of negative words prior to Slimane’s official departure, the increase in positive words far exceeded the negative.</p>
+<p>Edit: On January 21st, Hedi Slimane was named the creative director of Celine. I resampled the thread to see how sentiment changed. Not surprisingly, there is an increase in polarity just prior to the announcement (most likely due to rumors). The second dashed line on each plot reflects the announcement.</p>
 <p><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-3-1.png" width="672" /><img src="/posts/2018-01-27-sentiment-analysis-of-fashion-enthusiasts_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
 <p>So I was wrong in my prediction, but that’s quite all right!</p>
 </section>

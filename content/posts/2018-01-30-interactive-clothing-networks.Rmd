@@ -12,6 +12,8 @@ tags:
 draft: yes
 ---
 
+This is part 3 of my exploration of preferences in clothing choices ([part 1](), [part 2]()) In this post I'm going to be testing out the the **threejs** package and creating interactive networks using the *graphjs* function. I also 
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(igraph)
@@ -20,11 +22,12 @@ library(lubridate)
 library(stringr)
 library(reshape2)
 library(htmlwidgets)
-library(RColorBrewer)
 library(gganimate)
 ```
 
-```{r}
+### Data pre-processing
+
+```{r message=FALSE, warning=FALSE}
 summer <- read_csv("/Users/allenchang/Desktop/functionally_defined/data/summer.csv")
 fw <- read_csv("/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv")
 
@@ -35,7 +38,7 @@ clothes_df <- rbind(summer, fw)
 clothes_df$Day <- mdy(clothes_df$Day)
 ```
 
-```{r}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 clothes_df <- clothes_df %>%
   mutate(maker_up = toupper(Maker)) %>%
   select(Day, maker_up) %>%
@@ -46,14 +49,43 @@ clothes_mat <- clothes_df %>%
 
 cooccur <- clothes_mat %*% t(clothes_mat)
 
+
+```
+
+### Animated timeline 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+h <- hclust(dist(clothes_mat, method = "canberra"))
+
+ordering <- h$labels[h$order]
+
+day_vis <- clothes_df %>%
+  ungroup() %>%
+  mutate(maker = factor(maker_up, levels = ordering)) 
+
+p <- ggplot(day_vis, aes(Day, maker)) +
+  geom_path(aes(group = Day, frame = Day, cumulative = TRUE)) +
+  geom_point(aes(frame = Day, cumulative = TRUE), color = "red", size = 1) +
+  geom_vline(aes(xintercept = as.numeric(Day), frame = as.numeric(Day)), lty = 2, color = "black") +
+  theme(axis.text.y = element_text(face="bold")) + 
+  ylab("Maker") + xlab("Time") +
+  ggtitle("7 months of clothing choices:") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  theme_bw()
+
+gganimate(p, "test.gif", ani.width = 1000, ani.height = 500, interval = 0.3)
+```
+
+![](/Users/allenchang/Desktop/timeline.gif)
+
+### Networks in igraph
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 g <- graph.adjacency(cooccur, weighted = TRUE, mode = "undirected", diag = FALSE)
-```
 
-```{r}
 V(g)$vertex_degree <-  degree(g)
-```
 
-```{r}
 counts <- as.data.frame(lengths(as_adj_list(g))) %>%
   rownames_to_column()
 
@@ -65,12 +97,7 @@ g2 <- delete_vertices(g, counts$maker)
 ```
 
 
-```{r}
-country <- as.factor(c("USA", "United Kingdom", "Japan", "Japan", "USA", "USA", "South Korea", "Belgium", "Japan", "Italy", "Austria", "France", "Japan", "USA", "Germany", "Belgium", "France", "France", "France", "USA", "USA", "Sweden", "Canada", "Germany", "Japan", "Belgium", "Japan", "Japan", "USA"))
-
-# V(g)$country <- country
-
-########## WIP
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # country <- c("USA", "Japan", "USA", "South Korea", "Belgium",
 #              "Italy", "Austria", "France", "Japan", "France",
 #              "France" , "USA", "Japan", "Belgium", "Japan",
@@ -81,41 +108,54 @@ country <- as.factor(c("USA", "United Kingdom", "Japan", "Japan", "USA", "USA", 
              "#CB0077", "#A60C00", "#1533AD", "#A63C00", "#1533AD",
              "#1533AD", "#A60C00")
 
-
-# V(g)$color <- as.factor(country)
 ```
 
+### Interactive networks using graphjs
 
 ```{r}
 graphjs(g2, 
+        layout = list(
+          layout_randomly(g2, dim = 3),
+          layout_on_sphere(g2),
+          layout_with_fr(g2, dim = 3, niter = 30),
+          layout_with_drl(g2, dim = 3),
+          layout_with_fr(g2, dim = 3, niter = 30)
+        ),
         repulsion = 6, 
         vertex.shape = "sphere",
         vertex.size = V(g2)$vertex_degree*.5,
         vertex.label= V(g2)$name,
         stroke = TRUE,
         curvature = 0.2,
-        vertex.color = scheme)
-        # vertex.color = palpair)
+        vertex.color = scheme,
+        main = c("random layout",
+                 "sphere layout",
+                 "fr layout",
+                 "dr1 layout",
+                 "fr layout"),
+        fpl = 300)
         
 ```
 
-```{r fig.height=11, fig.width=8}
-
-h <- hclust(dist(clothes_mat, method = "canberra"))
-
-ordering <- h$labels[h$order]
-
-day_vis <- clothes_df %>%
-  ungroup() %>%
-  mutate(maker = factor(maker_up, levels = ordering)) 
-
-p <- ggplot(day_vis, aes(Day, maker)) +
-  geom_path(aes(group = Day)) +
-  geom_point(aes(frame = Day), color = "red", size = 3) +
-  geom_vline(aes(xintercept = as.numeric(Day), frame = as.numeric(Day)), lty = 2, color = "black") + theme_bw()
-
-gganimate(p, ani.width = 600, ani.height = 900)
+```{r}
+N <- length(V(g2))  # number of vertices
+graphjs(g2,
+        layout=list(layout_randomly(g2, dim=3),
+                    layout_on_sphere(g2),
+                    layout_with_drl(g2, dim=3),
+                    layout_with_fr(g2, dim=3)),
+        vertex.color=list(rainbow(N),
+                          "blue",
+                          "orange",
+                          rainbow(N)),
+        vertex.label= V(g2)$name,
+        vertex.size = log(V(g2)$vertex_degree),
+        main=list("random layout", "sphere layout",
+                  "drl layout", "fr layout"),
+        fpl=300)
 ```
+
+
 
 
 ### References
@@ -123,3 +163,5 @@ gganimate(p, ani.width = 600, ani.height = 900)
 [vertex size](https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges)
 
 [setting vertex attributes](https://stackoverflow.com/questions/36851569/import-of-vertices-attributes-in-igraph-in-r)
+
+[gganimate tutorial](http://paldhous.github.io/ucb/2016/dataviz/week14.html)

@@ -165,11 +165,13 @@ polarity_time <- post_sent_bing %>%
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 hedi_leaves <- ymd("2016-04-01")
+hedi_celine <- ymd("2018-01-21")
   
 polarity_time %>%
   ggplot(aes(x = bymonth, y = polarity)) +
   geom_col() +
   geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, lwd = 1.25, color = "#FFC600") +
+  geom_vline(xintercept = as.numeric(hedi_celine), lty = 2, lwd = 1.25, color = "#FFC600") +
     xlab("Time") + ylab("Polarity (positive - negative)") +
   ggtitle("Polarity across time")
 ```
@@ -178,12 +180,15 @@ Looking at the time series of polarity, a few things jump out. In the early days
 
 Why was my prediction so off? It occurred to me that though Hedi leaving was a highly negative event, there was an equal opportunity for posters to priase his tenure, thereby increasing the number of positive words. I proceeded to plot the sum of the negative words for each month across time. Sure enough, while there was a sharp increase in the number of negative words prior to Slimane's official departure, the increase in positive words far exceeded the negative.
 
+Edit: On January 21st, Hedi Slimane was named the creative director of Celine. I resampled the thread to see how sentiment changed. Not surprisingly, there is an increase in polarity just prior to the announcement (most likely due to rumors). The second dashed line on each plot reflects the announcement. 
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 polarity_time %>% 
   select(bymonth, negative) %>%
   ggplot(aes(x = bymonth, y = negative)) +
   geom_col(fill = "#FF5240") +
   geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, lwd = 1.2) +
+  geom_vline(xintercept = as.numeric(hedi_celine), lty = 2, lwd = 1.2) +
   xlab("Time") + ylab("Number of negative words") +
   ggtitle("Negative words across time")
 
@@ -192,6 +197,7 @@ polarity_time %>%
   ggplot(aes(x = bymonth, y = positive)) +
   geom_col(fill = "#37B6CE") +
   geom_vline(xintercept = as.numeric(hedi_leaves), lty = 2, lwd = 1.2) +
+  geom_vline(xintercept = as.numeric(hedi_celine), lty = 2, lwd = 1.2) +
   xlab("Time") + ylab("Number of positive words") +
   ggtitle("Positive words across time")
 ```
@@ -200,7 +206,7 @@ So I was wrong in my prediction, but that's quite all right!
 
 ### Networks of words
 
-In the last section, I wanted to move past time related changes in sentiment and transition to looking at relationships between words in the thread. I was particularly interested in words that occured consecutively with one another, or bigrams. To do this, I went back and pulled raw post data that did not go through any of the corpus pre-processing. 
+In the last section, I wanted to move past time related changes in sentiment and transition to looking at relationships between words in the thread. I was particularly interested in words that occured consecutively with one another, or bigrams. To do this, I went back and pulled raw post data that did not go through any of the corpus pre-processing.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 raw1 <- readRDS("slp_postraw1.rds")

@@ -60,7 +60,8 @@
     </p>
   </header>
   <div class="c-article__summary">
-    library(tidyverse) library(igraph) library(threejs) library(lubridate) library(stringr) library(reshape2) library(htmlwidgets) summer &lt;- read_csv(&quot;/Users/allenchang/Desktop/functionally_defined/data/summer.csv&quot;) ## Parsed with column specification: ## cols( ## Day = col_character(), ## Article = col_character(), ## Maker = col_character() ## ) fw &lt;- read_csv(&quot;/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv&quot;) ## Parsed with column specification: ## cols( ## Day = col_character(), ## Article = col_character(), ## Maker = col_character(), ## Color1 = col_character(), ## Color2 = col_character(), ## Month = col_character() ## ) fw &lt;- fw %&gt;% select(1:3) clothes_df &lt;- rbind(summer, fw) clothes_df$Day &lt;- mdy(clothes_df$Day) clothes_df &lt;- clothes_df %&gt;% mutate(maker_up = toupper(Maker)) %&gt;% select(Day, maker_up) %&gt;% filter(!
+    This is part 3 of my exploration of preferences in clothing choices (part 1, part 2) In this post I’m going to be testing out the the threejs package and creating interactive networks using the graphjs function. I also
+library(tidyverse) library(igraph) library(threejs) library(lubridate) library(stringr) library(reshape2) library(htmlwidgets) library(gganimate) Data pre-processing summer &lt;- read_csv(&quot;/Users/allenchang/Desktop/functionally_defined/data/summer.csv&quot;) fw &lt;- read_csv(&quot;/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv&quot;) fw &lt;- fw %&gt;% select(1:3) clothes_df &lt;- rbind(summer, fw) clothes_df$Day &lt;- mdy(clothes_df$Day) clothes_df &lt;- clothes_df %&gt;% mutate(maker_up = toupper(Maker)) %&gt;% select(Day, maker_up) %&gt;% filter(!
   </div>
   
   <a href="/posts/interactive-clothing-networks/" class="c-article__btn p-list-article__btn">Read more</a></li>
