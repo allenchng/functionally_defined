@@ -84,10 +84,10 @@ p <- ggplot(day_vis, aes(Day, maker)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-gganimate(p, "test.gif", ani.width = 1000, ani.height = 500, interval = 0.3)
+gganimate(p, "timeline.gif", ani.width = 1000, ani.height = 500, interval = 0.3)
 ```
 
-![](../../static/images/timeline.gif)
+![](https://github.com/allenchng/functionally_defined/blob/master/static/images/timeline.gif)
 
 ### Networks in igraph
 
