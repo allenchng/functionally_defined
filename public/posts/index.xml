@@ -18,8 +18,8 @@
       <pubDate>Tue, 30 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/posts/interactive-clothing-networks/</guid>
-      <description>This is part 3 of my exploration of preferences in clothing choices (part 1, part 2) In this post I’m going to be testing out the the threejs package and creating interactive networks using the graphjs function. I also
-library(tidyverse) library(igraph) library(threejs) library(lubridate) library(stringr) library(reshape2) library(htmlwidgets) library(gganimate) Data pre-processing summer &amp;lt;- read_csv(&amp;quot;/Users/allenchang/Desktop/functionally_defined/data/summer.csv&amp;quot;) fw &amp;lt;- read_csv(&amp;quot;/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv&amp;quot;) fw &amp;lt;- fw %&amp;gt;% select(1:3) clothes_df &amp;lt;- rbind(summer, fw) clothes_df$Day &amp;lt;- mdy(clothes_df$Day) clothes_df &amp;lt;- clothes_df %&amp;gt;% mutate(maker_up = toupper(Maker)) %&amp;gt;% select(Day, maker_up) %&amp;gt;% filter(!</description>
+      <description>This is the 3rd part of my analysis on daily clothing choices (part 1 and part 2). In this post I’m going to be testing out the the threejs package and creating interactive networks using the graphjs function. I will also be using David Robinson’s gganimate package to create an animated timeline of my clothing choices.
+As usual, here’s the packages used.</description>
     </item>
     
     <item>

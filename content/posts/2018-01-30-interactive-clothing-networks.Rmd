@@ -1,18 +1,18 @@
 ---
 title: Interactive clothing networks
 author: Allen Chang
-date: '2018-01-30'
-slug: interactive-clothing-networks
-categories: []
+date: '2018-02-08'
 tags:
-  - networks
-  - visualization
-  - R
   - clothing
-draft: yes
+  - networks
+  - R
+  - visualization
+slug: interactive-clothing-networks
 ---
 
-This is part 3 of my exploration of preferences in clothing choices ([part 1](), [part 2]()) In this post I'm going to be testing out the the **threejs** package and creating interactive networks using the *graphjs* function. I also 
+This is the 3rd part of my analysis on daily clothing choices ([part 1](https://functionallydefined.netlify.com/posts/daily_wear/) and [part 2](https://functionallydefined.netlify.com/posts/daily_clothing_network/)). In this post I'm going to be testing out the the **threejs** package and creating interactive networks using the *graphjs* function. I will also be using David Robinson's **gganimate** package to create an animated timeline of my clothing choices. 
+
+As usual, here's the packages used. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -27,16 +27,26 @@ library(gganimate)
 
 ### Data pre-processing
 
+Since my last post, I have continued to track my clothing choices everyday. All together, I have around 7 months of data, less a few weeks when I was on vacation and forgot to record (oops). Currently, the data are held in two csv files; one for summer and one for fall/winter. 
+
+I read in each csv file, then combined the datasets together. My fall/winter dataset contained records about the color of each article of clothing that my summer dataset did not so I had to select only the first 3 columns of fall/winter. These corresponded to date, article of clothing, and maker information. Since my last analysis, I've learned how to convert character strings into date using lubridate, so I changed my date column into month-day-year format. 
+
 ```{r message=FALSE, warning=FALSE}
-summer <- read_csv("/Users/allenchang/Desktop/functionally_defined/data/summer.csv")
-fw <- read_csv("/Users/allenchang/Desktop/functionally_defined/data/fallwinter.csv")
+summer <- read_csv("../../data/summer.csv")
+fw <- read_csv("../../data/fallwinter.csv")
 
 fw <- fw %>%
   select(1:3)
 
-clothes_df <- rbind(summer, fw)
+clothes_df <- bind_rows(summer, fw)
 clothes_df$Day <- mdy(clothes_df$Day)
 ```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+head(clothes_df)
+```
+
+Next I created a new column where I capitalized all text to amend capitalization typos and then cast my dataframe into a matrix. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 clothes_df <- clothes_df %>%
@@ -48,11 +58,11 @@ clothes_mat <- clothes_df %>%
   acast(maker_up ~ Day, fun.aggregate = length)
 
 cooccur <- clothes_mat %*% t(clothes_mat)
-
-
 ```
 
 ### Animated timeline 
+
+To get the ordering of my maker's, I ran a quick hierarchical clustering. This approach was borrowed from David Robinson's post on networks in Love Actually (see a link in references for more information). After ordering the makers from most popular to least, I plotted my timeline. The gganimate package allowed me to create animations by adding **frame** to denote the dimension along which I wanted to animate. To keep the prior frames, I set the cumulative argument to TRUE. The result was a pretty cool animation showing my choices for each day.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
 
@@ -77,9 +87,11 @@ p <- ggplot(day_vis, aes(Day, maker)) +
 gganimate(p, "test.gif", ani.width = 1000, ani.height = 500, interval = 0.3)
 ```
 
-![](/Users/allenchang/Desktop/timeline.gif)
+![](../../static/images/timeline.gif)
 
 ### Networks in igraph
+
+Next came the network component. I passed my adjacency matrix to the graph.adjacency function in igraph to create a network object. Then I made that into a sparse network by deleting vertices that had less than 10 counts. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 g <- graph.adjacency(cooccur, weighted = TRUE, mode = "undirected", diag = FALSE)
@@ -96,23 +108,16 @@ counts <- counts %>%
 g2 <- delete_vertices(g, counts$maker)
 ```
 
+### Interactive networks using graphjs
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# country <- c("USA", "Japan", "USA", "South Korea", "Belgium",
-#              "Italy", "Austria", "France", "Japan", "France",
-#              "France" , "USA", "Japan", "Belgium", "Japan",
-#              "Japan", "USA")
+Finally it was time to make my interactive network. I wanted to color my vertices by the country of origin so I loaded each color into an object that I passed to the actual graphing function. To denote more frequently worn makers I scaled the vertex size by degree and labeled each vertex with the maker name. Lastly, there's an option within the graphjs function that allowed me to animate different layouts. I liked the Fruchterman-Reingold layout the best, so I opted to have it be the final "resting" layout. Hovering over each vertex displays the maker and the edges are colored based on the vertex. 
 
+```{r}
  scheme <- c("#A60C00", "#1533AD", "#A60C00", "#7109AA", "#A63C00",
              "#007B25", "#009999", "#CB0077", "#1533AD", "#CB0077",
              "#CB0077", "#A60C00", "#1533AD", "#A63C00", "#1533AD",
              "#1533AD", "#A60C00")
 
-```
-
-### Interactive networks using graphjs
-
-```{r}
 graphjs(g2, 
         layout = list(
           layout_randomly(g2, dim = 3),
@@ -137,6 +142,8 @@ graphjs(g2,
         
 ```
 
+I also used the original graphjs example included in the documentation because I liked the colors a lot better than my version. The only downside was though that these vertices did not have coloring relative to countries of origin and for some reason were harder to hover to get the maker information. Nevertheless, watching the colors change across layouts was a lot of fun! 
+
 ```{r}
 N <- length(V(g2))  # number of vertices
 graphjs(g2,
@@ -155,12 +162,17 @@ graphjs(g2,
         fpl=300)
 ```
 
+### Conclusion
 
-
+That concludes my current set of analyses on clothing data. As I mentioned, I am still collecting data daily and plan to revisit my preferences after a full year has passed. I've enjoyed visualizing and using this data to explore different techniques and packages. Hopefully the results have been interesting for anyone reading this to see.
 
 ### References
 
-[vertex size](https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges)
+[bryan lewis rstudio talk on threejs](https://www.rstudio.com/resources/videos/interactive-network-visualization-with-threejs-and-r/)
+
+[david robinson love actually network](http://varianceexplained.org/r/love-actually-network/)
+
+[help on setting vertex size ](https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges)
 
 [setting vertex attributes](https://stackoverflow.com/questions/36851569/import-of-vertices-attributes-in-igraph-in-r)
 
