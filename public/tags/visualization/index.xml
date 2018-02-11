@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Tue, 30 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 08 Feb 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/visualization/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,7 +15,7 @@
     <item>
       <title>Interactive clothing networks</title>
       <link>/posts/interactive-clothing-networks/</link>
-      <pubDate>Tue, 30 Jan 2018 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 08 Feb 2018 00:00:00 +0000</pubDate>
       
       <guid>/posts/interactive-clothing-networks/</guid>
       <description>This is the 3rd part of my analysis on daily clothing choices (part 1 and part 2). In this post I’m going to be testing out the the threejs package and creating interactive networks using the graphjs function. I will also be using David Robinson’s gganimate package to create an animated timeline of my clothing choices.

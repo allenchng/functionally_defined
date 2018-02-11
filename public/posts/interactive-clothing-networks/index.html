@@ -53,18 +53,18 @@
     <div>
       <div class="c-time">
         Posted on
-        <time datetime="2018-01-30T00:00:00Z">
-          Jan 30, 2018
+        <time datetime="2018-02-08T00:00:00Z">
+          Feb 8, 2018
         </time>
       </div>
       
-      <a href="/tags/networks" class="c-tag">networks</a>
+      <a href="/tags/clothing" class="c-tag">clothing</a>
       
-      <a href="/tags/visualization" class="c-tag">visualization</a>
+      <a href="/tags/networks" class="c-tag">networks</a>
       
       <a href="/tags/r" class="c-tag">R</a>
       
-      <a href="/tags/clothing" class="c-tag">clothing</a>
+      <a href="/tags/visualization" class="c-tag">visualization</a>
       
     </div>
   </header>
@@ -93,7 +93,7 @@ library(stringr)
 library(reshape2)
 library(htmlwidgets)
 library(gganimate)</code></pre>
-<section id="data-pre-processing" class="level3">
+<div id="data-pre-processing" class="section level3">
 <h3>Data pre-processing</h3>
 <p>Since my last post, I have continued to track my clothing choices everyday. All together, I have around 7 months of data, less a few weeks when I was on vacation and forgot to record (oops). Currently, the data are held in two csv files; one for summer and one for fall/winter.</p>
 <p>I read in each csv file, then combined the datasets together. My fall/winter dataset contained records about the color of each article of clothing that my summer dataset did not so I had to select only the first 3 columns of fall/winter. These corresponded to date, article of clothing, and maker information. Since my last analysis, I’ve learned how to convert character strings into date using lubridate, so I changed my date column into month-day-year format.</p>
@@ -106,14 +106,14 @@ fw &lt;- fw %&gt;%
 clothes_df &lt;- bind_rows(summer, fw)
 clothes_df$Day &lt;- mdy(clothes_df$Day)</code></pre>
 <pre><code>## # A tibble: 6 x 3
-##          Day Article                   Maker
-##       &lt;date&gt;   &lt;chr&gt;                   &lt;chr&gt;
-## 1 2017-06-06    Coat         Dries Van Noten
-## 2 2017-06-06   Shirt         Dries Van Noten
-## 3 2017-06-06   Pants Comme Des Garcons Homme
-## 4 2017-06-06   Shoes                    Vans
-## 5 2017-06-07    Coat                    &lt;NA&gt;
-## 6 2017-06-07   Shirt                 Barneys</code></pre>
+##   Day        Article Maker                  
+##   &lt;date&gt;     &lt;chr&gt;   &lt;chr&gt;                  
+## 1 2017-06-06 Coat    Dries Van Noten        
+## 2 2017-06-06 Shirt   Dries Van Noten        
+## 3 2017-06-06 Pants   Comme Des Garcons Homme
+## 4 2017-06-06 Shoes   Vans                   
+## 5 2017-06-07 Coat    &lt;NA&gt;                   
+## 6 2017-06-07 Shirt   Barneys</code></pre>
 <p>Next I created a new column where I capitalized all text to amend capitalization typos and then cast my dataframe into a matrix.</p>
 <pre class="r"><code>clothes_df &lt;- clothes_df %&gt;%
   mutate(maker_up = toupper(Maker)) %&gt;%
@@ -124,8 +124,8 @@ clothes_mat &lt;- clothes_df %&gt;%
   acast(maker_up ~ Day, fun.aggregate = length)
 
 cooccur &lt;- clothes_mat %*% t(clothes_mat)</code></pre>
-</section>
-<section id="animated-timeline" class="level3">
+</div>
+<div id="animated-timeline" class="section level3">
 <h3>Animated timeline</h3>
 <p>To get the ordering of my maker’s, I ran a quick hierarchical clustering. This approach was borrowed from David Robinson’s post on networks in Love Actually (see a link in references for more information). After ordering the makers from most popular to least, I plotted my timeline. The gganimate package allowed me to create animations by adding <strong>frame</strong> to denote the dimension along which I wanted to animate. To keep the prior frames, I set the cumulative argument to TRUE. The result was a pretty cool animation showing my choices for each day.</p>
 <pre class="r"><code>h &lt;- hclust(dist(clothes_mat, method = &quot;canberra&quot;))
@@ -146,10 +146,12 @@ p &lt;- ggplot(day_vis, aes(Day, maker)) +
   scale_x_date(date_breaks = &quot;1 month&quot;, date_labels = &quot;%b&quot;) +
   theme_bw()
 
-gganimate(p, &quot;test.gif&quot;, ani.width = 1000, ani.height = 500, interval = 0.3)</code></pre>
-<p><img src="../../static/images/timeline.gif" /></p>
-</section>
-<section id="networks-in-igraph" class="level3">
+gganimate(p, ani.width = 800, ani.height = 500, interval = 0.3)</code></pre>
+<video width="672"  controls loop>
+<source src="2018-01-30-interactive-clothing-networks_files/figure-html4/unnamed-chunk-5.webm" />
+</video>
+</div>
+<div id="networks-in-igraph" class="section level3">
 <h3>Networks in igraph</h3>
 <p>Next came the network component. I passed my adjacency matrix to the graph.adjacency function in igraph to create a network object. Then I made that into a sparse network by deleting vertices that had less than 10 counts.</p>
 <pre class="r"><code>g &lt;- graph.adjacency(cooccur, weighted = TRUE, mode = &quot;undirected&quot;, diag = FALSE)
@@ -164,8 +166,8 @@ counts &lt;- counts %&gt;%
   filter(count &lt; 10)
 
 g2 &lt;- delete_vertices(g, counts$maker)</code></pre>
-</section>
-<section id="interactive-networks-using-graphjs" class="level3">
+</div>
+<div id="interactive-networks-using-graphjs" class="section level3">
 <h3>Interactive networks using graphjs</h3>
 <p>Finally it was time to make my interactive network. I wanted to color my vertices by the country of origin so I loaded each color into an object that I passed to the actual graphing function. To denote more frequently worn makers I scaled the vertex size by degree and labeled each vertex with the maker name. Lastly, there’s an option within the graphjs function that allowed me to animate different layouts. I liked the Fruchterman-Reingold layout the best, so I opted to have it be the final “resting” layout. Hovering over each vertex displays the maker and the edges are colored based on the vertex.</p>
 <pre class="r"><code> scheme &lt;- c(&quot;#A60C00&quot;, &quot;#1533AD&quot;, &quot;#A60C00&quot;, &quot;#7109AA&quot;, &quot;#A63C00&quot;,
@@ -195,7 +197,7 @@ graphjs(g2,
                  &quot;fr layout&quot;),
         fpl = 300)</code></pre>
 <div id="htmlwidget-1" style="width:672px;height:480px;" class="scatterplotThree html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"NROW":17,"height":null,"width":null,"axis":false,"numticks":[6,6,6],"xticklabs":null,"yticklabs":null,"zticklabs":null,"color":[["#A60C00","#1533AD","#A60C00","#7109AA","#A63C00","#007B25","#009999","#CB0077","#1533AD","#CB0077","#CB0077","#A60C00","#1533AD","#A63C00","#1533AD","#1533AD","#A60C00"]],"size":[6.5,7,7,9,8,6.5,10.5,8.5,9.5,5,6,6.5,8,5,6.5,10.5,9],"stroke":true,"flipy":true,"grid":false,"renderer":"auto","signif":8,"bg":"white","cexsymbols":1,"xlim":[-1,1],"ylim":[-1,1],"zlim":[-1,1],"pch":["o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o"],"from":[[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,8,8,9,9,10,10,10,10,11,11,11,11,12,12,12,13,13,14,14,15]],"to":[[1,2,4,6,7,8,13,15,16,2,3,4,5,7,10,11,12,13,15,16,3,4,5,6,8,9,10,12,13,14,15,4,5,6,7,8,9,10,11,12,14,15,16,5,6,7,8,9,10,11,12,14,15,16,6,7,8,10,11,12,14,15,7,8,9,10,11,12,13,14,15,16,8,9,12,13,14,15,9,10,11,12,13,14,15,16,12,14,12,14,15,16,12,13,15,16,14,15,16,15,16,15,16,16]],"lwd":1,"linealpha":1,"center":true,"main":["random layout","sphere layout","fr layout","dr1 layout","fr layout"],"repulsion":6,"curvature":0.2,"fpl":300,"labels":["BARNEYS","COMME DES GARCONS HOMME","CONVERSE","DOCUMENT","DRIES VAN NOTEN","GRP","HELMUT LANG","HESCHUNG","ISSEY MIYAKE","LANVIN","MAISON MARTIN MARGIELA","NIKE","SAGE DE CRET","STEPHAN SCHNEIDER","UNDERCOVER","UNIQLO","VANS"],"options":true,"alpha":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],"vertices":[[-0.55365344,0.87405484,0.73910387,0.54773191,-0.0019424195,0.70958264,-0.28497315,0.097220157,0.84661263,-0.22221102,-0.99415823,0.74125321,-0.58132023,1,-0.22445661,0.096612447,-0.0085947953,-0.21778919,0.53612961,0.47364464,-1,1,-0.64179061,0.28576868,-0.84543406,0.59802366,-0.27661495,-1,-0.63459075,0.95551654,0.096345307,0.36368054,0.83573193,-0.89397926,-1,0.99636346,0.76136699,0.14825169,1,0.52006199,0.82173374,-0.64367399,-0.44976798,0.17914645,0.093764281,0.38648965,-0.054580448,-0.62722309,-0.99214939,-0.49793381,0.29981768],[0.01282092,-1,0.042969381,-0.10657434,-0.875,-0.45581106,-0.69435234,-0.75,0.030349249,-0.36545654,-0.625,0.77976943,0.48725847,-0.5,0.83045547,1,-0.375,0.13221823,0.72616913,-0.25,-0.70007218,-0.11412809,-0.125,-1,-0.88295678,0,-0.53527186,-1,0.125,0.35573377,-0.3584197,0.25,1,0.55202887,0.375,0.8666098,0.93880561,0.5,0.0314704,0.36818438,0.625,-0.70493203,-0.53244391,0.75,-0.40309987,-0.21597136,0.875,0.50279047,0.01282092,1,0.042969381],[1,1,0.58586181,0.69952553,-0.4977451,-0.20448573,0.52010406,0.48597163,-0.65464913,-0.42387631,-0.40112289,-0.18206543,0.081515667,0.63264885,-0.31496505,-0.50320339,0.39209301,-0.81430471,-0.24432249,0.395927,0.37621197,0.10482229,0.92163896,0.1439246,-0.00057875534,-0.045195673,0.21452697,-1,0.4497464,-0.16919856,0.2130137,-1,-0.66103773,-0.32571754,-0.83019606,0.56142024,-0.16164016,-0.59035925,-0.4931317,0.67640189,0.14069749,1,-0.17620678,-0.28702837,-1,0.67516534,0.11320276,-0.02036885,0.45716418,-0.9935861,0.37003734],[-0.56248898,0.35751543,-0.12942955,-0.11831567,-1,-0.1340178,0.92969742,0.16644667,-0.15278986,0.48522585,-0.67469725,-0.16203004,0.14423631,-0.40017653,0.45975267,0.3278477,0.19861345,-0.96817485,0.20706147,0.11013325,-0.012264779,-0.22451249,-0.24054576,0.82241444,-0.53747351,-0.71247887,1,1,1,0.82003954,0.41695484,0.41513775,0.84651006,-0.11140904,-0.31810456,-1,-0.085482753,-0.83002156,-0.54162501,-1,-0.35584427,-0.31889821,0.407276,-0.26982836,0.94892987,0.11663109,-0.22136323,-0.4209713,-0.15100661,-0.015239607,0.22791321],[0.55864357,0.62802286,0.7128825,-0.70025588,0.39744266,0.70647623,1,0.26492171,-0.077454168,-0.7997784,-0.39909025,-0.29912645,-0.46861124,-0.54983421,0.0053045649,-0.066571143,-1,0.12430443,0.67012801,-0.54620176,0.33076269,0.44883423,-0.088964559,-0.41664785,0.62108571,-0.59864351,-0.10444735,0.49830905,-0.69998995,-1,0.17896613,1,0.095722401,-1,-0.93448905,0.75748642,-0.66221087,0.16943273,-0.28076196,0.74946937,0.021322679,1,0.21486952,0.5872457,-0.60129311,-0.57494294,0.48978912,0.18344887,-0.75290379,-0.035351437,0.56620683]],"xticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"yticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"zticklab":["1.00","0.60","0.20","-0.20","-0.60","-1.00"],"xtick":[0,0.2,0.4,0.6,0.8,1],"ytick":[0,0.2,0.4,0.6,0.8,1],"ztick":[0,0.2,0.4,0.6,0.8,1]},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"NROW":17,"height":null,"width":null,"axis":false,"numticks":[6,6,6],"xticklabs":null,"yticklabs":null,"zticklabs":null,"color":[["#A60C00","#1533AD","#A60C00","#7109AA","#A63C00","#007B25","#009999","#CB0077","#1533AD","#CB0077","#CB0077","#A60C00","#1533AD","#A63C00","#1533AD","#1533AD","#A60C00"]],"size":[6.5,7,7,9,8,6.5,10.5,8.5,9.5,5,6,6.5,8,5,6.5,10.5,9],"stroke":true,"flipy":true,"grid":false,"renderer":"auto","signif":8,"bg":"white","cexsymbols":1,"xlim":[-1,1],"ylim":[-1,1],"zlim":[-1,1],"pch":["o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o","o"],"from":[[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,8,8,9,9,10,10,10,10,11,11,11,11,12,12,12,13,13,14,14,15]],"to":[[1,2,4,6,7,8,13,15,16,2,3,4,5,7,10,11,12,13,15,16,3,4,5,6,8,9,10,12,13,14,15,4,5,6,7,8,9,10,11,12,14,15,16,5,6,7,8,9,10,11,12,14,15,16,6,7,8,10,11,12,14,15,7,8,9,10,11,12,13,14,15,16,8,9,12,13,14,15,9,10,11,12,13,14,15,16,12,14,12,14,15,16,12,13,15,16,14,15,16,15,16,15,16,16]],"lwd":1,"linealpha":1,"center":true,"main":["random layout","sphere layout","fr layout","dr1 layout","fr layout"],"repulsion":6,"curvature":0.2,"fpl":300,"labels":["BARNEYS","COMME DES GARCONS HOMME","CONVERSE","DOCUMENT","DRIES VAN NOTEN","GRP","HELMUT LANG","HESCHUNG","ISSEY MIYAKE","LANVIN","MAISON MARTIN MARGIELA","NIKE","SAGE DE CRET","STEPHAN SCHNEIDER","UNDERCOVER","UNIQLO","VANS"],"options":true,"alpha":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],"vertices":[[-0.42222271,0.59632843,-0.92506381,-0.19907264,-0.06108252,0.94055127,-0.12808361,-0.7162768,1,-0.90647303,0.54205635,0.40215364,1,0.52371699,-0.59617613,-0.48581701,0.96318608,0.85773121,0.29622167,0.45236497,-0.19717934,-0.68209122,0.76866509,-1,-0.9804177,0.67899601,0.6452153,0.6403598,-0.31170905,0.39357873,0.089770596,-0.85082684,-0.0037470248,0.55520082,-0.46352496,-0.78450215,-0.98885914,-0.81250628,-0.47684681,0.093357591,1,-0.32941957,0.097673406,0.62907289,0.74269534,-1,-1,-0.99705026,-0.51902595,0.5753857,0.087068299],[0.01282092,-1,0.042969381,-0.10657434,-0.875,-0.45581106,-0.69435234,-0.75,0.030349249,-0.36545654,-0.625,0.77976943,0.48725847,-0.5,0.83045547,1,-0.375,0.13221823,0.72616913,-0.25,-0.70007218,-0.11412809,-0.125,-1,-0.88295678,0,-0.53527186,-1,0.125,0.35573377,-0.3584197,0.25,1,0.55202887,0.375,0.8666098,0.93880561,0.5,0.0314704,0.36818438,0.625,-0.70493203,-0.53244391,0.75,-0.40309987,-0.21597136,0.875,0.50279047,0.01282092,1,0.042969381],[-0.34701086,1,0.37870664,-0.35096898,-0.15208077,0.7607142,1,-0.069596254,0.20058194,-0.13544787,-0.5730184,0.26221015,-0.018086017,0.029560677,0.4820979,0.4395891,-0.4774725,0.90467231,-0.077554635,0.21746965,0.17379961,-0.34089055,-0.081144426,-0.13757451,-0.5497698,0.35823033,0.13192566,0.66046291,-0.19154216,-1,0.23432134,-0.98705198,1,-0.47211079,-0.36011491,0.68778451,0.17870244,-0.66456643,0.44155177,-1,0.31028449,0.003634599,0.48113848,-1,-0.017758235,-0.32940464,0.042618905,0.29895233,-0.41779901,0.38682607,0.44125879],[0.99140577,0.28295253,1,1,0.42195809,-0.27233442,-1,0.14490993,0.15224897,0.59557419,0.21088277,-1,0.3500175,-0.37218151,0.33107128,-0.18773164,-0.34794147,-0.41507895,-0.052844974,-0.40245689,0.085686247,0.33251058,-0.13979731,-0.00099370815,0.32424377,0.67337278,0.78298536,0.3269383,-1,0.98486246,0.57822747,0.47901866,-0.1195851,-0.38939266,0.53128564,-0.37658742,0.35548046,0.23895688,-0.72218484,-0.50879661,1,0.40582282,0.6825979,-0.59462723,-0.48499577,0.17477892,0.30767802,0.095006869,0.16583998,0.061935232,0.65541008],[-1,-0.98320758,-0.35302984,-0.72021585,0.28146676,-0.53475329,0.57539094,0.64482708,0.089766685,0.080076229,0.11240785,-0.35949648,-0.24366264,0.27755894,0.013906129,-0.17961264,1,-0.48324718,-0.28645856,-0.19437641,0.15314877,-0.16453425,-0.43457053,0.11442033,-0.60903423,-0.43877072,0.29206131,0.97179114,-0.38153595,1,0.025088618,0.66542644,-1,-0.36362181,-0.028296299,-0.61168796,0.16428113,0.038227126,-0.31249991,-0.53409637,-1,-0.026871913,1,0.22401604,-0.16478131,-0.42419283,-0.35487243,-0.30979436,-0.86608292,-0.33520083,-0.078004159]],"xticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"yticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"zticklab":["1.00","0.60","0.20","-0.20","-0.60","-1.00"],"xtick":[0,0.2,0.4,0.6,0.8,1],"ytick":[0,0.2,0.4,0.6,0.8,1],"ztick":[0,0.2,0.4,0.6,0.8,1]},"evals":[],"jsHooks":[]}</script>
 <p>I also used the original graphjs example included in the documentation because I liked the colors a lot better than my version. The only downside was though that these vertices did not have coloring relative to countries of origin and for some reason were harder to hover to get the maker information. Nevertheless, watching the colors change across layouts was a lot of fun!</p>
 <pre class="r"><code>N &lt;- length(V(g2))  # number of vertices
 graphjs(g2,
@@ -213,20 +215,20 @@ graphjs(g2,
                   &quot;drl layout&quot;, &quot;fr layout&quot;),
         fpl=300)</code></pre>
 <div id="htmlwidget-2" style="width:672px;height:480px;" class="scatterplotThree html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"NROW":17,"height":null,"width":null,"axis":false,"numticks":[6,6,6],"xticklabs":null,"yticklabs":null,"zticklabs":null,"color":[["#FF0000","#FF5A00","#FFB400","#F0FF00","#96FF00","#3CFF00","#00FF1E","#00FF78","#00FFD2","#00D2FF","#0078FF","#001EFF","#3C00FF","#9600FF","#F000FF","#FF00B4","#FF005A"],"#0000FF","#FFA500",["#FF0000","#FF5A00","#FFB400","#F0FF00","#96FF00","#3CFF00","#00FF1E","#00FF78","#00FFD2","#00D2FF","#0078FF","#001EFF","#3C00FF","#9600FF","#F000FF","#FF00B4","#FF005A"]],"size":[2.56494935746154,2.63905732961526,2.63905732961526,2.89037175789616,2.77258872223978,2.56494935746154,3.04452243772342,2.83321334405622,2.94443897916644,2.30258509299405,2.484906649788,2.56494935746154,2.77258872223978,2.30258509299405,2.56494935746154,3.04452243772342,2.89037175789616],"stroke":"black","flipy":true,"grid":false,"renderer":"auto","signif":8,"bg":"white","cexsymbols":1,"xlim":[-1,1],"ylim":[-1,1],"zlim":[-1,1],"pch":["@","@","@","@","@","@","@","@","@","@","@","@","@","@","@","@","@"],"from":[[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,8,8,9,9,10,10,10,10,11,11,11,11,12,12,12,13,13,14,14,15]],"to":[[1,2,4,6,7,8,13,15,16,2,3,4,5,7,10,11,12,13,15,16,3,4,5,6,8,9,10,12,13,14,15,4,5,6,7,8,9,10,11,12,14,15,16,5,6,7,8,9,10,11,12,14,15,16,6,7,8,10,11,12,14,15,7,8,9,10,11,12,13,14,15,16,8,9,12,13,14,15,9,10,11,12,13,14,15,16,12,14,12,14,15,16,12,13,15,16,14,15,16,15,16,15,16,16]],"lwd":1,"linealpha":1,"center":true,"main":["random layout","sphere layout","drl layout","fr layout"],"fpl":300,"labels":["BARNEYS","COMME DES GARCONS HOMME","CONVERSE","DOCUMENT","DRIES VAN NOTEN","GRP","HELMUT LANG","HESCHUNG","ISSEY MIYAKE","LANVIN","MAISON MARTIN MARGIELA","NIKE","SAGE DE CRET","STEPHAN SCHNEIDER","UNDERCOVER","UNIQLO","VANS"],"options":true,"alpha":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],1,1,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],"vertices":[[-0.78610871,0.13335323,0.80076631,1,-0.80502526,0.26551329,0.28166683,-0.12882545,0.21075902,0.82565269,-0.74858498,0.82520805,-1,1,-0.86437651,-0.78321458,-1,-0.56277642,-0.52585352,-0.47564856,0.87538938,-0.071396589,0.97462364,0.32117566,0.20336301,0.38924427,0.90859445,0.46068875,0.55957361,-0.90091171,0.52453975,0.65575243,0.91056136,-0.60330882,0.33135854,0.62344485,0.83180742,0.41676675,-1,-0.82493729,0.36244078,1,0.47610786,-0.02489661,0.77891931,-0.73101829,-0.71635878,0.00099573709,-0.99809117,-0.61978827,-0.44358828],[0.01282092,-1,0.042969381,-0.10657434,-0.875,-0.45581106,-0.69435234,-0.75,0.030349249,-0.36545654,-0.625,0.77976943,0.48725847,-0.5,0.83045547,1,-0.375,0.13221823,0.72616913,-0.25,-0.70007218,-0.11412809,-0.125,-1,-0.88295678,0,-0.53527186,-1,0.125,0.35573377,-0.3584197,0.25,1,0.55202887,0.375,0.8666098,0.93880561,0.5,0.0314704,0.36818438,0.625,-0.70493203,-0.53244391,0.75,-0.40309987,-0.21597136,0.875,0.50279047,0.01282092,1,0.042969381],[1,-0.008056105,0.21813732,-0.0046685519,-0.43319371,0.61322522,-1,-0.16243724,0.29159074,-0.64846084,-0.11811966,-0.3451214,0.085415362,0.16230513,0.63617035,-0.52617278,-0.25145349,0.74174052,0.47380755,-0.22137287,0.18064682,-0.40942474,0.35198839,0.66171053,0.10483677,-0.27584866,-0.82959551,-0.26361054,1,-0.55834623,-0.27545435,-0.39890557,-0.34712654,0.17337091,-0.74087421,0.50165555,-0.29157697,-0.10291798,1,-0.22327673,-1,0.73573526,-0.36673975,0.17186866,-1,0.43849521,-0.53300188,0.024541539,0.48101601,0.15550232,-0.25720486],[0.35669617,1,0.83562768,1,-0.35106401,0.34159881,-0.19238255,-0.053566192,0.8125371,-0.023207028,-0.89816007,-0.19470801,0.061027716,-0.33103019,0.13287577,0.49843965,-0.89959913,-0.53383022,-0.25281172,0.30283264,0.11297806,0.12967259,0.31402073,-1,0.041407134,0.33977107,-0.30112697,-1,-0.087076122,-0.75139098,0.13587113,-1,0.837214,0.99580033,-0.075115741,-0.72467305,-0.01249743,-0.5125118,-0.78141332,0.87632264,0.97932549,0.12789736,-0.6187672,-0.60328213,0.098344249,0.58474006,0.056685465,0.12831217,0.50447773,-0.076386143,1]],"xticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"yticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"zticklab":["1.00","0.60","0.20","-0.20","-0.60","-1.00"],"xtick":[0,0.2,0.4,0.6,0.8,1],"ytick":[0,0.2,0.4,0.6,0.8,1],"ztick":[0,0.2,0.4,0.6,0.8,1]},"evals":[],"jsHooks":[]}</script>
-</section>
-<section id="conclusion" class="level3">
+<script type="application/json" data-for="htmlwidget-2">{"x":{"NROW":17,"height":null,"width":null,"axis":false,"numticks":[6,6,6],"xticklabs":null,"yticklabs":null,"zticklabs":null,"color":[["#FF0000","#FF5A00","#FFB400","#F0FF00","#96FF00","#3CFF00","#00FF1E","#00FF78","#00FFD2","#00D2FF","#0078FF","#001EFF","#3C00FF","#9600FF","#F000FF","#FF00B4","#FF005A"],"#0000FF","#FFA500",["#FF0000","#FF5A00","#FFB400","#F0FF00","#96FF00","#3CFF00","#00FF1E","#00FF78","#00FFD2","#00D2FF","#0078FF","#001EFF","#3C00FF","#9600FF","#F000FF","#FF00B4","#FF005A"]],"size":[2.56494935746154,2.63905732961526,2.63905732961526,2.89037175789616,2.77258872223978,2.56494935746154,3.04452243772342,2.83321334405622,2.94443897916644,2.30258509299405,2.484906649788,2.56494935746154,2.77258872223978,2.30258509299405,2.56494935746154,3.04452243772342,2.89037175789616],"stroke":"black","flipy":true,"grid":false,"renderer":"auto","signif":8,"bg":"white","cexsymbols":1,"xlim":[-1,1],"ylim":[-1,1],"zlim":[-1,1],"pch":["@","@","@","@","@","@","@","@","@","@","@","@","@","@","@","@","@"],"from":[[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,8,8,9,9,10,10,10,10,11,11,11,11,12,12,12,13,13,14,14,15]],"to":[[1,2,4,6,7,8,13,15,16,2,3,4,5,7,10,11,12,13,15,16,3,4,5,6,8,9,10,12,13,14,15,4,5,6,7,8,9,10,11,12,14,15,16,5,6,7,8,9,10,11,12,14,15,16,6,7,8,10,11,12,14,15,7,8,9,10,11,12,13,14,15,16,8,9,12,13,14,15,9,10,11,12,13,14,15,16,12,14,12,14,15,16,12,13,15,16,14,15,16,15,16,15,16,16]],"lwd":1,"linealpha":1,"center":true,"main":["random layout","sphere layout","drl layout","fr layout"],"fpl":300,"labels":["BARNEYS","COMME DES GARCONS HOMME","CONVERSE","DOCUMENT","DRIES VAN NOTEN","GRP","HELMUT LANG","HESCHUNG","ISSEY MIYAKE","LANVIN","MAISON MARTIN MARGIELA","NIKE","SAGE DE CRET","STEPHAN SCHNEIDER","UNDERCOVER","UNIQLO","VANS"],"options":true,"alpha":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],1,1,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],"vertices":[[-0.93997119,-0.61619384,-0.26062069,1,-0.71719392,-0.29452784,0.2836872,-0.036009123,0.16341972,0.71379717,-0.1670047,-0.49459277,0.28264608,-0.089765668,-0.42208907,0.46028862,0.68148304,-0.72122635,-0.21167893,-0.09062306,0.56041045,-0.30158653,1,-0.25169794,-0.97677877,-0.8820184,1,-1,0.32946089,-0.083758016,-0.48099559,-1,0.43951561,0.91252977,0.9091307,-0.65458014,0.69098463,-0.67600396,-1,-0.9823032,-0.59173243,0.22960895,0.4632137,-0.31675264,0.69081377,0.83663767,-0.13647926,-0.74673308,-0.10163184,-0.44228889,-0.94908318],[0.01282092,-1,0.042969381,-0.10657434,-0.875,-0.45581106,-0.69435234,-0.75,0.030349249,-0.36545654,-0.625,0.77976943,0.48725847,-0.5,0.83045547,1,-0.375,0.13221823,0.72616913,-0.25,-0.70007218,-0.11412809,-0.125,-1,-0.88295678,0,-0.53527186,-1,0.125,0.35573377,-0.3584197,0.25,1,0.55202887,0.375,0.8666098,0.93880561,0.5,0.0314704,0.36818438,0.625,-0.70493203,-0.53244391,0.75,-0.40309987,-0.21597136,0.875,0.50279047,0.01282092,1,0.042969381],[1,-0.71150347,0.38265369,-0.67249209,0.051507815,-1,-1,-0.89203727,-0.018041274,-0.24557852,0.26118969,0.61108362,-0.0061168187,0.023007131,-0.71926239,0.19165312,0.55051125,-0.75822246,-0.21115851,-0.87267198,-0.40923989,0.61667146,0.074082093,0.18535848,0.74454398,-0.33094866,-0.86878883,0.47366328,-1,1,-0.88420067,1,-0.82484693,-0.46582221,-0.21431549,-0.18167446,0.24245208,-0.44522428,0.49802597,0.92349746,-0.67735654,-0.084694575,-0.20964187,-0.39461226,-0.97771445,-0.00019042394,-0.27147412,-0.059393228,0.3378411,-0.61762361,-0.42390914],[-1,0.51157355,0.044198014,-0.336226,-0.11612568,-0.78220527,0.61647557,-1,-0.38625752,0.20364965,0.36788143,-0.33943975,-0.01465288,-0.36341046,-0.29611511,0.41650895,0.082692661,-1,-0.20929111,0.44313197,-0.032193602,-0.045345428,-0.17390101,0.2066841,-0.35137731,-0.40531159,0.013937036,0.72940113,-0.46488304,1,0.39507425,1,-0.78178341,-0.17109455,0.3494747,-0.68382562,0.45806567,-0.062976823,-0.42123028,-0.85389138,-0.52901422,-0.053672192,1,0.10756241,-0.11052032,-0.33026042,0.046038616,-0.32190229,-0.57164424,0.11829665,-0.20561606]],"xticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"yticklab":["-1.00","-0.60","-0.20","0.20","0.60","1.00"],"zticklab":["1.00","0.60","0.20","-0.20","-0.60","-1.00"],"xtick":[0,0.2,0.4,0.6,0.8,1],"ytick":[0,0.2,0.4,0.6,0.8,1],"ztick":[0,0.2,0.4,0.6,0.8,1]},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="conclusion" class="section level3">
 <h3>Conclusion</h3>
 <p>That concludes my current set of analyses on clothing data. As I mentioned, I am still collecting data daily and plan to revisit my preferences after a full year has passed. I’ve enjoyed visualizing and using this data to explore different techniques and packages. Hopefully the results have been interesting for anyone reading this to see.</p>
-</section>
-<section id="references" class="level3">
+</div>
+<div id="references" class="section level3">
 <h3>References</h3>
 <p><a href="https://www.rstudio.com/resources/videos/interactive-network-visualization-with-threejs-and-r/">bryan lewis rstudio talk on threejs</a></p>
 <p><a href="http://varianceexplained.org/r/love-actually-network/">david robinson love actually network</a></p>
 <p><a href="https://stackoverflow.com/questions/40181355/network-graph-using-r-node-size-based-on-number-of-connected-edges">help on setting vertex size</a></p>
 <p><a href="https://stackoverflow.com/questions/36851569/import-of-vertices-attributes-in-igraph-in-r">setting vertex attributes</a></p>
 <p><a href="http://paldhous.github.io/ucb/2016/dataviz/week14.html">gganimate tutorial</a></p>
-</section>
+</div>
 
   </section>
   <footer>

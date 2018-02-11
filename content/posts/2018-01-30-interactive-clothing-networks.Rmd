@@ -8,6 +8,8 @@ tags:
   - R
   - visualization
 slug: interactive-clothing-networks
+header-includes:
+   - \usepackage{gganimate}
 ---
 
 This is the 3rd part of my analysis on daily clothing choices ([part 1](https://functionallydefined.netlify.com/posts/daily_wear/) and [part 2](https://functionallydefined.netlify.com/posts/daily_clothing_network/)). In this post I'm going to be testing out the the **threejs** package and creating interactive networks using the *graphjs* function. I will also be using David Robinson's **gganimate** package to create an animated timeline of my clothing choices. 
@@ -64,7 +66,7 @@ cooccur <- clothes_mat %*% t(clothes_mat)
 
 To get the ordering of my maker's, I ran a quick hierarchical clustering. This approach was borrowed from David Robinson's post on networks in Love Actually (see a link in references for more information). After ordering the makers from most popular to least, I plotted my timeline. The gganimate package allowed me to create animations by adding **frame** to denote the dimension along which I wanted to animate. To keep the prior frames, I set the cumulative argument to TRUE. The result was a pretty cool animation showing my choices for each day.
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.show='animate'}
 
 h <- hclust(dist(clothes_mat, method = "canberra"))
 
@@ -84,10 +86,9 @@ p <- ggplot(day_vis, aes(Day, maker)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-gganimate(p, "timeline.gif", ani.width = 1000, ani.height = 500, interval = 0.3)
+gganimate(p, ani.width = 800, ani.height = 500, interval = 0.3)
 ```
 
-![](https://github.com/allenchng/functionally_defined/blob/master/static/images/timeline.gif)
 
 ### Networks in igraph
 
