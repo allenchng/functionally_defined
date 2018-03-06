@@ -66,7 +66,7 @@ cooccur <- clothes_mat %*% t(clothes_mat)
 
 To get the ordering of my maker's, I ran a quick hierarchical clustering. This approach was borrowed from David Robinson's post on networks in Love Actually (see a link in references for more information). After ordering the makers from most popular to least, I plotted my timeline. The gganimate package allowed me to create animations by adding **frame** to denote the dimension along which I wanted to animate. To keep the prior frames, I set the cumulative argument to TRUE. The result was a pretty cool animation showing my choices for each day.
 
-```{r echo=TRUE, message=FALSE, warning=FALSE, fig.show='animate'}
+```{r echo=TRUE, message=FALSE, warning=FALSE, fig.show='animate', results=FALSE}
 
 h <- hclust(dist(clothes_mat, method = "canberra"))
 
@@ -86,7 +86,8 @@ p <- ggplot(day_vis, aes(Day, maker)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   theme_bw()
 
-gganimate(p, ani.width = 800, ani.height = 500, interval = 0.3)
+gganimate(p, ani.width = 400, ani.height = 250, interval = 0.3)
+
 ```
 
 

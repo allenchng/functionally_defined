@@ -1,0 +1,66 @@
+---
+title: 'Using the forcats package to easily reorder factors '
+author: Allen Chang
+date: '2018-03-04'
+slug: using-the-forcats-package-to-easily-reorder-factors
+categories: []
+tags:
+  - R
+  - thingstoremember
+---
+
+
+
+<p>Like all programmers, I strive to make my code efficient and easily readable. I hope that the results are somewhat close to those two ideals, but I know that there are always better ways to code things (this xkcd hits alarmingly close to home for me…)</p>
+<p><img src="https://imgs.xkcd.com/comics/good_code.png" /></p>
+<p>(source: <a href="https://xkcd.com/844/">xkcd</a>)</p>
+<p>That being said, I’m always happy to stumble into R packages or snippets of code that can help me become more efficient in writing code and I do my best to remind myself to try and use these methods in the future. To that end, I thought I would write a short post today about a package that I recently learned about, forcats. The focats package is based around working with factors and integrates easily with the tidyverse. In particular, it has a nice function called fct_reorder that lets you reorder the levels of one factor using the rank order of another variable. When I saw this, my mind immediately jumped back to trying to order factor levels for plotting and how clunky my code had been at the time. I decided to go back and just rewrite some lines of my code to integrate the <strong>fct_reorder</strong> function into my coding bag of tricks.</p>
+<p>I’m going to be revisiting some code I wrote in my second ever <a href="https://functionallydefined.netlify.com/posts/daily_wear/">post</a> looking at my clothing trends.</p>
+<pre class="r"><code>library(dplyr)
+library(readr)
+library(forcats)
+library(ggplot2)</code></pre>
+<p>In the original post, you can see that I first summarised the number of times each clothing maker was worn, then reordered the maker variable outside of my dplyr chain.</p>
+<pre class="r"><code>wear_tbl &lt;- read_csv(&quot;../../data/daily_wear.csv&quot;)
+
+df &lt;- wear_tbl %&gt;% 
+  filter(!Maker == &quot;NA&quot;) %&gt;%
+  mutate(maker_up = toupper(Maker)) %&gt;%
+  group_by(maker_up) %&gt;%
+  summarise(timesworn = n()) %&gt;%
+  arrange(desc(timesworn))
+
+df$maker_up &lt;- factor(df$maker_up, levels = df$maker_up[order(df$timesworn)])
+df$timesworn &lt;- as.numeric(df$timesworn)</code></pre>
+<p>To eliminate that step, I can just add one line mutating the maker variable and reordering it based on the number of timesworn.</p>
+<pre class="r"><code>wear_tbl &lt;- read_csv(&quot;../../data/daily_wear.csv&quot;)
+
+g &lt;- wear_tbl %&gt;% 
+  filter(!Maker == &quot;NA&quot;) %&gt;%
+  mutate(maker_up = toupper(Maker)) %&gt;%
+  group_by(maker_up) %&gt;%
+  summarise(timesworn = n()) %&gt;%
+  mutate(maker_up = fct_reorder(factor(maker_up), timesworn, .desc = TRUE)) 
+
+g %&gt;%
+  ggplot(aes(x=maker_up, y=timesworn)) + 
+  geom_point(col=&quot;tomato3&quot;, size=3) +   # Draw points
+  geom_segment(aes(x=maker_up, 
+                  xend=maker_up, 
+                   y=min(timesworn), 
+                   yend=max(timesworn)), 
+               linetype=&quot;dashed&quot;, 
+               size=0.1) +   # Draw dashed lines
+  labs(title=&quot;Number of wears for each maker&quot;, 
+       subtitle=&quot;Sep. 15, 2017 - Dec. 15, 2017&quot;, 
+       caption=&quot;source: me&quot;,
+       x = &quot;Maker&quot;,
+       y = &quot;Count&quot;) +  
+  coord_flip()</code></pre>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-3-1.png" width="672" /></p>
+<p>That’s it! The fct_reorder function can also be used with other summary measures as well. I’m going to do my best to make sure that I use this the next time I’m working with factors.</p>
+<div id="references" class="section level3">
+<h3>References</h3>
+<p><a href="https://www.datacamp.com/courses/communicating-with-data-in-the-tidyverse">datacamp - communicating with data</a></p>
+<p><a href="https://github.com/tidyverse/forcats">forcats documentation</a></p>
+</div>

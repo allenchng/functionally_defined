@@ -7,10 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Thu, 08 Feb 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 04 Mar 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Using the forcats package to easily reorder factors </title>
+      <link>/posts/using-the-forcats-package-to-easily-reorder-factors/</link>
+      <pubDate>Sun, 04 Mar 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/using-the-forcats-package-to-easily-reorder-factors/</guid>
+      <description>Like all programmers, I strive to make my code efficient and easily readable. I hope that the results are somewhat close to those two ideals, but I know that there are always better ways to code things (this xkcd hits alarmingly close to home for me…)
+(source: xkcd)
+That being said, I’m always happy to stumble into R packages or snippets of code that can help me become more efficient in writing code and I do my best to remind myself to try and use these methods in the future.</description>
+    </item>
     
     <item>
       <title>Interactive clothing networks</title>

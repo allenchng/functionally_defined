@@ -18,29 +18,29 @@ library(scales)
 library(RColorBrewer)
 
 theme_set(theme_classic())</code></pre>
-<section id="prepping-data" class="level3">
+<div id="prepping-data" class="section level3">
 <h3>Prepping data</h3>
 <p>I used a Google sheet to keep track my daily wears. Each day I recorded the maker and up to two colors of each article of clothing that I wore. There were 4 categories of clothes; Coat, Shirt (I collapsed sweaters into here as well), Pants, and Shoes. Since I’m almost certain that I miscapitalized a stray word here or there, I added a column changing all the maker names to upper case. Then I grouped by maker to get the total number of times that I wore each maker across all articles of clothing.</p>
 <pre class="r"><code># Load in data
 
-wear_tbl &lt;- read_csv(&quot;daily_wear.csv&quot;)
+wear_tbl &lt;- read_csv(&quot;../../data/daily_wear.csv&quot;)
 
 head(wear_tbl, 4)</code></pre>
 <pre><code>## # A tibble: 4 x 6
-##         Day Article                   Maker Color1 Color2     Month
-##       &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;
-## 1 9-15-2017    Coat       Stephan Schneider   Navy   &lt;NA&gt; September
-## 2 9-15-2017   Shirt                  Uniqlo   Navy   &lt;NA&gt; September
-## 3 9-15-2017   Pants Comme Des Garcons Homme  Black   &lt;NA&gt; September
-## 4 9-15-2017   Shoes                    Vans  Black   &lt;NA&gt; September</code></pre>
+##   Day       Article Maker                   Color1 Color2 Month    
+##   &lt;chr&gt;     &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;    
+## 1 9-15-2017 Coat    Stephan Schneider       Navy   &lt;NA&gt;   September
+## 2 9-15-2017 Shirt   Uniqlo                  Navy   &lt;NA&gt;   September
+## 3 9-15-2017 Pants   Comme Des Garcons Homme Black  &lt;NA&gt;   September
+## 4 9-15-2017 Shoes   Vans                    Black  &lt;NA&gt;   September</code></pre>
 <pre class="r"><code>tail(wear_tbl, 4)</code></pre>
 <pre><code>## # A tibble: 4 x 6
-##          Day Article        Maker Color1 Color2    Month
-##        &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;
-## 1 12-15-2017    Coat     Document   Blue   &lt;NA&gt; December
-## 2 12-15-2017   Shirt     Document   Navy   &lt;NA&gt; December
-## 3 12-15-2017   Pants Sage de Cret  Black   Gray December
-## 4 12-15-2017   Shoes     Heschung  Black   &lt;NA&gt; December</code></pre>
+##   Day        Article Maker        Color1 Color2 Month   
+##   &lt;chr&gt;      &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   
+## 1 12-15-2017 Coat    Document     Blue   &lt;NA&gt;   December
+## 2 12-15-2017 Shirt   Document     Navy   &lt;NA&gt;   December
+## 3 12-15-2017 Pants   Sage de Cret Black  Gray   December
+## 4 12-15-2017 Shoes   Heschung     Black  &lt;NA&gt;   December</code></pre>
 <pre class="r"><code># filter out times when I did not wear a coat, convert case to upper
 df &lt;- wear_tbl %&gt;% 
   filter(!Maker == &quot;NA&quot;) %&gt;%
@@ -52,8 +52,8 @@ df &lt;- wear_tbl %&gt;%
 <pre class="r"><code># set makers as an ordered factor based on number of wears
 df$maker_up &lt;- factor(df$maker_up, levels = df$maker_up[order(df$timesworn)])
 df$timesworn &lt;- as.numeric(df$timesworn)</code></pre>
-</section>
-<section id="visualizing-maker-preferences" class="level3">
+</div>
+<div id="visualizing-maker-preferences" class="section level3">
 <h3>Visualizing maker preferences</h3>
 <p>Then I plotted the count of the number of times I wore each maker. Wow, I really like Uniqlo.</p>
 <pre class="r"><code>df %&gt;%
@@ -72,7 +72,7 @@ df$timesworn &lt;- as.numeric(df$timesworn)</code></pre>
        x = &quot;Maker&quot;,
        y = &quot;Count&quot;) +  
   coord_flip()</code></pre>
-<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-3-1.png" width="672" /></p>
 <p>But I can go deeper! It’s clear that I wear a lot Uniqlo, but Uniqlo makes all sorts of clothes. Do I happen to favor specific articles of clothing in particular?</p>
 <pre class="r"><code>category_df &lt;- wear_tbl %&gt;% 
   filter(!Maker == &quot;NA&quot;) %&gt;%
@@ -90,10 +90,10 @@ g + geom_bar(aes(fill=Article), width = 0.5) +
     scale_fill_brewer(palette = &quot;RdGy&quot;) + 
   scale_y_continuous(breaks = c(0,20,40,60), labels = c(&quot;0&quot;,&quot;20&quot;,&quot;40&quot;,&quot;60&quot;)) +
   coord_flip()</code></pre>
-<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-4-1.png" width="672" /></p>
 <p>Looking at the breakdown, it seems that I mostly wear Uniqlo shirts (a glance at an overflowing drawer in my bedroom does seem to confirm this…). Interesting to me as well is that most of these makers seem to be concentrated on one specific article of clothing. I seem to also like only a few shoe makers.</p>
-</section>
-<section id="visualizing-color-selection" class="level3">
+</div>
+<div id="visualizing-color-selection" class="section level3">
 <h3>Visualizing color selection</h3>
 <p>Finally, I want to know how varied my choice of color was. Do I really prefer black above everything else?</p>
 <pre class="r"><code># gather both color columns into 1 and filter out NA&#39;s
@@ -118,7 +118,7 @@ g + geom_bar(stat = &quot;identity&quot;, width = 0.5, fill = rev(fill_colors), 
        y = &quot;Count&quot;) +
   coord_flip() +
   scale_y_continuous(breaks = c(0,40, 80, 120), labels = c(&quot;0&quot;, &quot;40&quot;, &quot;80&quot;, &quot;120&quot;))</code></pre>
-<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-5-1.png" width="672" /></p>
 <p>It seems that while I do seem to prefer wearing black, that I also have a preference for Navy and White. Maybe I should keep this in mind next time I think about buying more black clothes… Lastly, I wanted to ask if my color preferences change as a function of time. As the days get colder and gloomier in Boston, does my color selection get similarly dark?</p>
 <pre class="r"><code># Define functions. Source: https://github.com/jkeirstead/r-slopegraph
 
@@ -208,10 +208,10 @@ plot_slopegraph(df) +
                                                       face=&quot;bold&quot;),
                             axis.text = element_text(family = &quot;Helvetica&quot;,
                                                      face=&quot;bold&quot;))</code></pre>
-<p><img src="/posts/daily_wear_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-6-1.png" width="672" /></p>
 <p>It looks like my preference for black did increase over time (the decrease in slope for December is due to me stopping collection due to traveling for the winter holidays). All in all, this was in interesting form of analysis for me. I got to see what makers that I bias, but also which makers and clothes I only rare put into rotation. I’m going to try and do a follow up post thinking about all these makers as vertices in a network to see whether certain makers are more often paired with one another.</p>
-</section>
-<section id="references" class="level3">
+</div>
+<div id="references" class="section level3">
 <h3>References</h3>
 <p><a href="http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Slope%20Chart%202">Visualization examples</a></p>
-</section>
+</div>

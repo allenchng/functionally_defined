@@ -1,9 +1,13 @@
 +++
 title = "Things I like"
-date = "2018-01-19"
+date = "2018-03-02"
 +++
 
 Also known as my bookmarks bar substitute
+
+## Essential reading
+
+[on the use of cognitive maps](http://redishlab.neuroscience.umn.edu/Papers/PHD%20Thesis%202008%20Adam%20Johnson.pdf)
 
 ## R
 

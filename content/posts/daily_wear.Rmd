@@ -27,7 +27,7 @@ I used a Google sheet to keep track my daily wears. Each day I recorded the make
 ```{r cars, echo=TRUE, message=FALSE, warning=FALSE}
 # Load in data
 
-wear_tbl <- read_csv("daily_wear.csv")
+wear_tbl <- read_csv("../../data/daily_wear.csv")
 
 head(wear_tbl, 4)
 tail(wear_tbl, 4)
