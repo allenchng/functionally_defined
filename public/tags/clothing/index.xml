@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Thu, 08 Feb 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 01 Apr 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/clothing/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Visualizing color frequency of clothing choices</title>
+      <link>/posts/visualizing-color-frequency-of-clothing-choices/</link>
+      <pubDate>Sun, 01 Apr 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/visualizing-color-frequency-of-clothing-choices/</guid>
+      <description>Data Preprocessing Constructing a grid of colors Visualizing color frequencies References   In a preivous post, I visualizled color choices in clothing using slope charts and histograms. This time I wanted to get a bit more creative. In this post I’m going to explore how color frequencies in my clothing choices change across months by using waffle charts.
+As usual, to start here’s a list of the packages that I used in this post.</description>
+    </item>
     
     <item>
       <title>Interactive clothing networks</title>

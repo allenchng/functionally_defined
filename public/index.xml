@@ -7,10 +7,29 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Sun, 04 Mar 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 01 Apr 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Visualizing color frequency of clothing choices</title>
+      <link>/posts/visualizing-color-frequency-of-clothing-choices/</link>
+      <pubDate>Sun, 01 Apr 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/visualizing-color-frequency-of-clothing-choices/</guid>
+      <description>Data Preprocessing Constructing a grid of colors Visualizing color frequencies References   In a preivous post, I visualizled color choices in clothing using slope charts and histograms. This time I wanted to get a bit more creative. In this post I’m going to explore how color frequencies in my clothing choices change across months by using waffle charts.
+As usual, to start here’s a list of the packages that I used in this post.</description>
+    </item>
+    
+    <item>
+      <title>Making a ggplot theme for my scientific publications</title>
+      <link>/posts/making-a-ggplot-theme-for-my-scientific-publications/</link>
+      <pubDate>Tue, 06 Mar 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/making-a-ggplot-theme-for-my-scientific-publications/</guid>
+      <description>library(ggplot2) library(ggthemes) library(grid) theme_pub &amp;lt;- function(base_size=10, base_family=&amp;quot;helvetica&amp;quot;) { library(grid) library(ggthemes) (theme_foundation(base_size=base_size, base_family=base_family) + theme(plot.title = element_text(face = &amp;quot;bold&amp;quot;, size = rel(1.2), hjust = 0.5), text = element_text(), panel.background = element_rect(colour = NA), plot.background = element_rect(colour = NA), panel.border = element_rect(colour = NA), axis.title = element_text(face = &amp;quot;bold&amp;quot;, size = rel(1)), axis.title.y = element_text(angle=90,vjust =2), axis.title.x = element_text(vjust = -0.2), axis.text = element_text(), axis.line = element_line(colour=&amp;quot;black&amp;quot;), axis.ticks = element_line(), panel.grid.major = element_line(colour=&amp;quot;#f0f0f0&amp;quot;), panel.</description>
+    </item>
     
     <item>
       <title>Using the forcats package to easily reorder factors </title>

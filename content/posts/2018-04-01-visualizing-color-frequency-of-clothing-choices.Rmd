@@ -1,0 +1,126 @@
+---
+title: Visualizing color frequency of clothing choices
+author: Allen Chang
+date: '2018-04-01'
+slug: visualizing-color-frequency-of-clothing-choices
+categories: []
+tags:
+  - clothing
+  - visualization
+  - R
+output:
+  blogdown::html_page:
+    toc: true
+
+---
+
+In a preivous post, I visualizled color choices in clothing using slope charts and histograms. This time I wanted to get a bit more creative. In this post I'm going to explore how color frequencies in my clothing choices change across months by using waffle charts.
+
+As usual, to start here's a list of the packages that I used in this post. 
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+### Data Preprocessing
+
+The first step was to load in a csv of my clothing choices and the associated colors of each article of clothing. All I was interested this time was just the primary and secondary colors worn, so I selected those from my data and gathered them into one column. Before breaking up color counts by month, I wanted to see what the overall counts were over the accumulated September-March time periods.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+file_path <- "../../data/colors_3_2018.csv"
+
+data <- read_csv(file_path)
+
+color_tbl <- data %>%
+  select(Color1, Color2) %>%
+  gather(key, color) %>%
+  filter(!color == "NA") %>%
+  group_by(color) %>%
+  summarise(color_count = n()) %>% 
+  arrange(desc(color_count))
+
+head(color_tbl, 10)
+```
+
+Woah, black is my most worn color with over time the number of wears than the next color white. As I move into thinking about frequencies of colors per month though, I wanted to make sure that I excluded colors that were only worn a few time. I created a dataframe of colors in each month that were worn less than 4 times and then anti-joined them with a dataframe of monthly color counts. 
+
+```{r}
+exclude_colors <- data %>%
+  select(Color1, Color2, Day) %>%
+  gather(key, color, -Day) %>%
+  filter(!color == "NA") %>%
+  mutate(Day = mdy(.$Day), month = floor_date(Day, unit = "month")) %>%
+  group_by(month, color) %>%
+  summarise(color_count = n()) %>%
+  filter(color_count < 4)
+
+head(exclude_colors)
+
+color_tbl_month <- data %>%
+  select(Color1, Color2, Day) %>%
+  gather(key, color, -Day) %>%
+  filter(!color == "NA") %>%
+  mutate(Day = mdy(.$Day), month = floor_date(Day, unit = "month")) %>%
+  select(month, color) 
+
+color_tbl_final <- anti_join(color_tbl_month, exclude_colors, by = c("month", "color"))
+
+head(color_tbl_final, 8)
+```
+
+### Constructing a grid of colors
+
+Next I had to create the grid with which to plot my colors. I wrote a small function that calculated the frequencies of colors in each month and filled in a 10 x 10 grid. The resulting dataframe had columns corresponding to the month, the x and y coordinates, and the color for each box within the grid.
+
+```{r}
+color_freq_month <- plyr::ddply(color_tbl_final, .variables = c("month"), function(x){
+  nrows <- 10
+  df <- expand.grid(y = 1:nrows, x = 1:nrows)
+  color_table <- data.frame(ceiling(table(x$color) * ((nrows*nrows)/(length(x$color)))))
+  color <- rep(color_table$Var1, color_table$Freq)[1:100]
+  cat_table <- table(color)
+  df$color <- factor(rep(names(cat_table), cat_table))
+  df
+})
+
+head(color_freq_month, 8)
+```
+
+### Visualizing color frequencies
+
+Finally it was time to visualize my frequencies. I plotted my waffle chart using a geom_tile layer and manually assigned fill color using a vector of hexadecimal values I chose. 
+
+```{r color_by_months, echo=TRUE, message=FALSE, warning=FALSE}
+color_vec <- c("#000000", "#8C510A", "#08306B", "#FFFFFF", "#F6E8C3",
+           "#4292C6", "#4D4D4D","#BABABA", "#006D2C", "#54278F", "#A50F15", "#F3EFE0", "#BF5120")
+
+ggplot(color_freq_month, aes(x = x, y = y, fill = color)) +
+  geom_tile(color = "gray18", size = 0.5) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0), trans = 'reverse') +
+  scale_fill_manual(name = "colors",
+                    values = color_vec) +
+  labs(title="Frequency distribution of colors worn") +
+  theme(panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(color = "black", size = 1),
+        plot.title = element_text(size = rel(1.2)),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "right") +
+  facet_wrap(~month)
+```
+
+Waffle charts are a nice way of visualizing color because you can see they visualize proportions in a cleaner way than something like pie charts. If I was interested in seeing what percentage of my clothes worn in September of 2017 were black, all I would have to do is tally up the number of sqaares (4 x 10). Hopefully as it starts to warm in Boston though I might start trending back more towards lighter colors!
+
+## References
+
+[waffle charts](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Waffle%20Chart)
+
+[waffle package -not used here but a good reference-](https://github.com/hrbrmstr/waffle)
+

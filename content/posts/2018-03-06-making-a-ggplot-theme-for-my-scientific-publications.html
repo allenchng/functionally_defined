@@ -1,0 +1,59 @@
+---
+title: Making a ggplot theme for my scientific publications
+author: Allen Chang
+date: '2018-03-06'
+slug: making-a-ggplot-theme-for-my-scientific-publications
+categories: []
+tags:
+  - R
+  - ggplot
+  - customization
+---
+
+
+
+<pre class="r"><code>library(ggplot2)
+library(ggthemes)
+library(grid)</code></pre>
+<pre class="r"><code>theme_pub &lt;- function(base_size=10, base_family=&quot;helvetica&quot;) {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family=base_family)
+       + theme(plot.title = element_text(face = &quot;bold&quot;,
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = &quot;bold&quot;, size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line = element_line(colour=&quot;black&quot;),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour=&quot;#f0f0f0&quot;),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = &quot;bottom&quot;,
+               legend.direction = &quot;horizontal&quot;,
+               legend.key.size= unit(0.2, &quot;cm&quot;),
+               legend.margin = unit(0, &quot;cm&quot;),
+               legend.title = element_text(face=&quot;italic&quot;),
+               plot.margin=unit(c(10,5,5,5),&quot;mm&quot;),
+               strip.background=element_rect(colour=&quot;#f0f0f0&quot;,fill=&quot;#f0f0f0&quot;),
+               strip.text = element_text(face=&quot;bold&quot;)
+          ))
+      
+}
+
+scale_fill_Publication &lt;- function(...){
+      library(scales)
+      discrete_scale(&quot;fill&quot;,&quot;pub&quot;,manual_pal(values = c(&quot;#386cb0&quot;,&quot;#fdb462&quot;,&quot;#7fc97f&quot;,&quot;#ef3b2c&quot;,&quot;#662506&quot;,&quot;#a6cee3&quot;,&quot;#fb9a99&quot;,&quot;#984ea3&quot;,&quot;#ffff33&quot;)), ...)
+
+}
+
+scale_colour_Publication &lt;- function(...){
+      library(scales)
+      discrete_scale(&quot;colour&quot;,&quot;Publication&quot;,manual_pal(values = c(&quot;#386cb0&quot;,&quot;#fdb462&quot;,&quot;#7fc97f&quot;,&quot;#ef3b2c&quot;,&quot;#662506&quot;,&quot;#a6cee3&quot;,&quot;#fb9a99&quot;,&quot;#984ea3&quot;,&quot;#ffff33&quot;)), ...)
+
+}</code></pre>
