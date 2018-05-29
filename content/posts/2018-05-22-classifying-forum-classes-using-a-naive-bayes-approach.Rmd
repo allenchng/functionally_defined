@@ -1,0 +1,248 @@
+---
+title: Classifying styleforum posts using a Naive Bayes approach
+author: Allen Chang
+date: '2018-05-22'
+slug: classifying-forum-classes-using-a-naive-bayes-approach
+categories: []
+tags:
+  - clothing
+  - R
+  - textscraping
+  - bayes
+output:
+  blogdown::html_page:
+    toc: true
+    toc_float: false
+    df_print: kable
+
+---
+
+### Introduction
+The ways in which people talk about clothing can vary across different sub-populations. On styleforum, the two largest sub-populations are those that are interested in classic menswear versus those that are interested in streetwear. The forum itself is actually divided into these two sides. This posed an interesting question to me to determine if differences in the way that these two sides of the forum discuss clothes could be used to classify posts. I decided to mine some text data from the forum and use a Naive Bayes approach to do my classification. I owe a lot of inspiration for the analysis methods to this post by [Rohit Katti](https://rpubs.com/cen0te/naivebayes-sentimentpolarity), with additional help from references below.
+
+```{r packages, message=FALSE, warning=FALSE, include=FALSE}
+library(rvest)
+library(stringr)
+library(dplyr)
+library(tm)
+library(caret)
+library(e1071)
+#library(doMC)
+library(ROCR)
+
+#registerDoMC(cores=detectCores() - 1)
+```
+
+### Text scraping
+
+The first step was to choose what text to scrape from styleforum. The forum itself can be broken down into different 'threads', each of which loosely encapsulates a different topic of interest. I wanted to make sure that the subject matter in the threads that I scraped was identical across sides of the forum. Luckily, the most popular thread on each side of the forum is the "what are you wearing today" thread, which also addressed my original intent to understand differences in how people talk about clothing. I utilized a text scraping function from previous analyses and proceeded to scrape 3,000 pages of posts from the streetwear and denim / classic menswear threads (6,000 pages in total). Each page contained 15 posts, so in total I had 90,000 posts with which to work. I stored the text from each post in a tidy dataframe.
+
+```{r scrape, eval=FALSE, message=FALSE, warning=FALSE}
+# function to scrape text from each post
+pull_posts <- function(i){
+  html <- read_html(i)
+  date <- html_nodes(html, ".datePermalink .DateTime") %>% html_text()
+  post <- html_nodes(html, ".SelectQuoteContainer") %>%
+    html_text() %>%
+    gsub('[\r\n\t]', '', .) %>%
+    gsub(".*:", "", .) %>% 
+    gsub("↑.*Click to expand...", "", .) %>%
+    gsub("//.*Click to expand...", "", .) %>%
+    str_trim()
+  
+  cbind(date, post) %>% as.data.frame()
+}
+
+# scrape posts from the streetwear and denim side of the forum
+url <- "https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-"
+page <- c(2:3052)
+site <- paste0(url, page)
+
+swd_post_list <- lapply(site, pull_posts)
+swd_post_df <- do.call(rbind, swd_post_list)
+swd_post_df$class <- factor(rep(c("swd"), length(swd_post_df)))
+
+# scrape posts from the classic menswear side of the forum
+url <- "https://www.styleforum.net/threads/hof-what-are-you-wearing-right-now-part-iv-starting-may-2014.394373/page-"
+page <- c(2:3052)
+site <- paste0(url, page)
+
+cm_post_list <- lapply(site, pull_posts)
+cm_post_df <- do.call(rbind, cm_post_list)
+cm_post_df$class <- factor(rep(c("cm"), length(cm_post_df)))
+```
+
+```{r read in posts, echo=FALSE, message=FALSE, warning=FALSE}
+swd_post_df <- readRDS("../../data/sf_classifier/swd_posts.rds")
+cm_post_df <- readRDS("../../data/sf_classifier/cm_posts.rds")
+```
+
+Next, I bound the two dataframes together and randomized the order of rows.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# bind swd and cm posts into one dataframe
+df <- bind_rows(swd_post_df, cm_post_df) 
+
+### randomize the order of posts in the dataframe
+set.seed(2018)
+df <- df[sample(nrow(df)), ]
+df <- df[sample(nrow(df)), ]
+
+glimpse(df)
+
+df$class <- as.factor(df$class)
+
+tail(df, 10) %>% knitr::kable()
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+dtm <- readRDS("../../data/sf_classifier/cm_swd_dtm.rds")
+```
+
+### Text mining
+
+Before I could create my Naive Bayes classifier, though, I had to some pre-processing on my data. In particular, I only wanted to train my classifier on meaningful words that could be used to label a post. The text mining package (tm) has a number of functions that are useful for cleaning text like punctuation, numbers, and common words. I cleaned my corpus of text posts and converted each of the remaining words into a document term matrix (a sparse matrix consisting of the full length of words)
+
+```{r eval=FALSE}
+# text mining pre-processing
+corpus <- Corpus(VectorSource(df$post))
+
+corpus.clean <- corpus %>%
+  tm_map(content_transformer(tolower)) %>% 
+  tm_map(removePunctuation) %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removeWords, stopwords(kind="en")) %>%
+  tm_map(stripWhitespace)
+
+dtm <- DocumentTermMatrix(corpus.clean)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# divide into train and test sets
+cut <- nrow(dtm)*.75
+
+df.train <- df[1:cut,]
+df.test <- df[(cut+1):nrow(df),]
+
+dtm.train <- dtm[1:cut,]
+dtm.test <- dtm[(cut+1):nrow(dtm),]
+```
+
+To further subset the set of words to train my classifier, I filtered out words that appeared in less than 100 posts (~.1% of posts). Then I divided my dataset into training and test sets.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+# divide corpus into training and test sets
+corpus.clean.train <- corpus.clean[1:cut]
+corpus.clean.test <- corpus.clean[(cut+1):length(corpus.clean)]
+
+# only use words that appear in 100 posts or more
+hundfreq <- findFreqTerms(dtm.train, lowfreq = 100)
+
+# divide document term matrix into training and test sets
+dtm.train.nb <- DocumentTermMatrix(corpus.clean.train, control=list(dictionary = hundreq))
+dtm.test.nb <- DocumentTermMatrix(corpus.clean.test, control=list(dictionary = hundfreq))
+```
+
+Moving forward I had to make an important choice about the probabilistic models of documents that I wanted to use for my Naive Bayes classifier. I could have chosen to use a Bernoulli document model or a multinomial model. The difference between the two was based on my assumptions about the relevance of word frequency. Because my main concern was the presence of words and not the frequency of words, I selected the Bernoulli model. This meant that each document was represented by a vector in which words took on a binary value if present in the document. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+# create binary vector, 1 if word is present and 0 if not present
+convert_count <- function(x) {
+  y <- ifelse(x > 0, 1,0)
+  y <- factor(y, levels=c(0,1), labels=c("No", "Yes"))
+  y
+}
+
+trainNB <- apply(dtm.train.nb, 2, convert_count)
+testNB <- apply(dtm.test.nb, 2, convert_count)
+```
+
+### Building the classifier
+
+```{r include=FALSE}
+classifier <- readRDS("../../data/sf_classifier/swd_cm_classifier.rds")
+pred <- readRDS("../../data/sf_classifier/pred.rds")
+raw_pred <- readRDS("../../data/sf_classifier/raw_pred.rds")
+```
+
+After pre-processing my text data, I trained a Naive Bayes classifier using the e1071 package. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+classifier <- naiveBayes(trainNB, df.train$class, laplace = 1)
+```
+
+A nice thing about the classifier is that I was able to view the prior probabilities of words across the two sides of the forum in my training set. Look at how frequently suits and ties are discussed in the classic menswear side (no duh allen...)!
+
+```{r message=FALSE, warning=FALSE}
+# prior probabilities of features
+classifier$tables$margiela
+classifier$tables$suit
+classifier$tables$tie
+classifier$tables$denim
+classifier$tables$leather
+```
+
+### Assessing classifier performance
+
+With my classifier built, I assessed its performance on my held out test set. I used the classifier to get the predicted labels as well as the probabilities of each label for each post. 
+
+```{r eval=FALSE,message=FALSE, warning=FALSE}
+
+pred <- predict(classifier, newdata=testNB)
+raw_pred <- predict(classifier, testNB,type="raw")
+```
+
+Then I compared the predicted labels against the true labels of the test set.
+
+```{r message=FALSE, warning=FALSE}
+# assess the accuracy of our classifier
+table("Predictions"= pred,  "Actual" = df.test$class)
+
+conf.mat <- confusionMatrix(pred, df.test$class)
+
+conf.mat
+
+conf.mat$byClass
+conf.mat$overall
+conf.mat$overall['Accuracy']
+
+```
+
+I'm actually quite happy with the results of the classifier! Annecdotally, I'd say a fair number of posts in these "what are you wearing today" threads say something like "great post" or "I like this picture", which obviously are ambiguous and difficult for a classifier to label. Around 75% accuracy with about equal sensitivity and specificity struck me as pretty good performance. 
+
+To get a more visual sense of performance, I plotted an ROC curve...
+
+```{r message=FALSE, warning=FALSE}
+
+### ROC curve
+predvec <- ifelse(pred=="swd", 1, 0)
+realvec <- ifelse(df.test$class=="swd", 1, 0)
+
+pr <- prediction(predvec, realvec)
+
+# Make a performance object: perf
+perf <- performance(pr, "tpr", "fpr")
+
+# Plot this curve
+plot(perf)
+```
+
+As well as calculated the area under the curve.
+
+```{r message=FALSE, warning=FALSE}
+perf_auc <- performance(pr, "auc")
+perf_auc@y.values[[1]]
+```
+
+All in all, I'm fairly happy with the results of this analysis. I think that I could possibly increase classifier by being more selective with words during training. I was also thinking it might be interesting to pull posts from more than one thread to get more distribution of words. That might also allow the classifier to generalize better, as an ultimate goal would be to have the classifier correctly predict what side a post comes no matter what thread it's pulled from.
+
+### Referencess
+[Naive Bayes: Toy example](https://rpubs.com/dvorakt/144238)
+
+[Naive Bayes in R Tutorial](http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/)
+
+[Naive Bayes Classification for Sentiment Analysis of Movie Reviews](https://rpubs.com/cen0te/naivebayes-sentimentpolarity)
+
+[SPAM/HAM SMS classification using caret and Naive Bayes](http://rstudio-pubs-static.s3.amazonaws.com/52625_d7617c3ae5474a2b96f358e8862150e8.html)
+
+[Text Classification using Naive Bayes](https://www.inf.ed.ac.uk/teaching/courses/inf2b/learnnotes/inf2b-learn-note07-2up.pdf)

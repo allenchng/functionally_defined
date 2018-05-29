@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Sun, 01 Apr 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 22 May 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Classifying styleforum posts using a Naive Bayes approach</title>
+      <link>/posts/classifying-forum-classes-using-a-naive-bayes-approach/</link>
+      <pubDate>Tue, 22 May 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/classifying-forum-classes-using-a-naive-bayes-approach/</guid>
+      <description>Introduction Text scraping Text mining Building the classifier Assessing classifier performance Referencess   Introduction The ways in which people talk about clothing can vary across different sub-populations. On styleforum, the two largest sub-populations are those that are interested in classic menswear versus those that are interested in streetwear. The forum itself is actually divided into these two sides. This posed an interesting question to me to determine if differences in the way that these two sides of the forum discuss clothes could be used to classify posts.</description>
+    </item>
     
     <item>
       <title>Visualizing color frequency of clothing choices</title>

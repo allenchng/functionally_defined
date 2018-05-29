@@ -1,0 +1,323 @@
+---
+title: Classifying styleforum posts using a Naive Bayes approach
+author: Allen Chang
+date: '2018-05-22'
+slug: classifying-forum-classes-using-a-naive-bayes-approach
+categories: []
+tags:
+  - clothing
+  - R
+  - textscraping
+  - bayes
+output:
+  blogdown::html_page:
+    toc: true
+    toc_float: false
+    df_print: kable
+
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#text-scraping">Text scraping</a></li>
+<li><a href="#text-mining">Text mining</a></li>
+<li><a href="#building-the-classifier">Building the classifier</a></li>
+<li><a href="#assessing-classifier-performance">Assessing classifier performance</a></li>
+<li><a href="#referencess">Referencess</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level3">
+<h3>Introduction</h3>
+<p>The ways in which people talk about clothing can vary across different sub-populations. On styleforum, the two largest sub-populations are those that are interested in classic menswear versus those that are interested in streetwear. The forum itself is actually divided into these two sides. This posed an interesting question to me to determine if differences in the way that these two sides of the forum discuss clothes could be used to classify posts. I decided to mine some text data from the forum and use a Naive Bayes approach to do my classification. I owe a lot of inspiration for the analysis methods to this post by <a href="https://rpubs.com/cen0te/naivebayes-sentimentpolarity">Rohit Katti</a>, with additional help from references below.</p>
+</div>
+<div id="text-scraping" class="section level3">
+<h3>Text scraping</h3>
+<p>The first step was to choose what text to scrape from styleforum. The forum itself can be broken down into different ‘threads’, each of which loosely encapsulates a different topic of interest. I wanted to make sure that the subject matter in the threads that I scraped was identical across sides of the forum. Luckily, the most popular thread on each side of the forum is the “what are you wearing today” thread, which also addressed my original intent to understand differences in how people talk about clothing. I utilized a text scraping function from previous analyses and proceeded to scrape 3,000 pages of posts from the streetwear and denim / classic menswear threads (6,000 pages in total). Each page contained 15 posts, so in total I had 90,000 posts with which to work. I stored the text from each post in a tidy dataframe.</p>
+<pre class="r"><code># function to scrape text from each post
+pull_posts &lt;- function(i){
+  html &lt;- read_html(i)
+  date &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;) %&gt;% html_text()
+  post &lt;- html_nodes(html, &quot;.SelectQuoteContainer&quot;) %&gt;%
+    html_text() %&gt;%
+    gsub(&#39;[\r\n\t]&#39;, &#39;&#39;, .) %&gt;%
+    gsub(&quot;.*:&quot;, &quot;&quot;, .) %&gt;% 
+    gsub(&quot;↑.*Click to expand...&quot;, &quot;&quot;, .) %&gt;%
+    gsub(&quot;//.*Click to expand...&quot;, &quot;&quot;, .) %&gt;%
+    str_trim()
+  
+  cbind(date, post) %&gt;% as.data.frame()
+}
+
+# scrape posts from the streetwear and denim side of the forum
+url &lt;- &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-&quot;
+page &lt;- c(2:3052)
+site &lt;- paste0(url, page)
+
+swd_post_list &lt;- lapply(site, pull_posts)
+swd_post_df &lt;- do.call(rbind, swd_post_list)
+swd_post_df$class &lt;- factor(rep(c(&quot;swd&quot;), length(swd_post_df)))
+
+# scrape posts from the classic menswear side of the forum
+url &lt;- &quot;https://www.styleforum.net/threads/hof-what-are-you-wearing-right-now-part-iv-starting-may-2014.394373/page-&quot;
+page &lt;- c(2:3052)
+site &lt;- paste0(url, page)
+
+cm_post_list &lt;- lapply(site, pull_posts)
+cm_post_df &lt;- do.call(rbind, cm_post_list)
+cm_post_df$class &lt;- factor(rep(c(&quot;cm&quot;), length(cm_post_df)))</code></pre>
+<p>Next, I bound the two dataframes together and randomized the order of rows.</p>
+<pre class="r"><code># bind swd and cm posts into one dataframe
+df &lt;- bind_rows(swd_post_df, cm_post_df) 
+
+### randomize the order of posts in the dataframe
+set.seed(2018)
+df &lt;- df[sample(nrow(df)), ]
+df &lt;- df[sample(nrow(df)), ]
+
+glimpse(df)</code></pre>
+<pre><code>## Observations: 175,770
+## Variables: 3
+## $ date  &lt;chr&gt; &quot;Dec 15, 2016&quot;, &quot;Aug 29, 2014&quot;, &quot;Jul 18, 2014&quot;, &quot;May 21,...
+## $ post  &lt;chr&gt; &quot;cpc / br / gap / cpc / apc / gap / paraboot / s2a  -- (...
+## $ class &lt;chr&gt; &quot;swd&quot;, &quot;cm&quot;, &quot;cm&quot;, &quot;swd&quot;, &quot;cm&quot;, &quot;cm&quot;, &quot;cm&quot;, &quot;cm&quot;, &quot;cm&quot;, ...</code></pre>
+<pre class="r"><code>df$class &lt;- as.factor(df$class)
+
+tail(df, 10) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">date</th>
+<th align="left">post</th>
+<th align="left">class</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>115695</td>
+<td align="left">Feb 28, 2015</td>
+<td align="left">1 of March and spring is here. But vintage season is all around the year. I celebrate the spring with a silk boutonnier.</td>
+<td align="left">cm</td>
+</tr>
+<tr class="even">
+<td>118436</td>
+<td align="left">Mar 22, 2015</td>
+<td align="left">….. theres no point in asking, youlll get no reply.The women at my office hate my ties. Bet theyd like that one tho.</td>
+<td align="left">cm</td>
+</tr>
+<tr class="odd">
+<td>62627</td>
+<td align="left">Nov 9, 2017</td>
+<td align="left">AgeOfAdz,This photo attachment shows you wearing a pair of blue Nikes, the likes of which, I have never seen anything before. Could you provide me/us with some more info and photos of them? What are they called, how long ago did you buy them? - Marco</td>
+<td align="left">swd</td>
+</tr>
+<tr class="even">
+<td>93095</td>
+<td align="left">Jul 30, 2014</td>
+<td align="left">Please to explain…(?)</td>
+<td align="left">cm</td>
+</tr>
+<tr class="odd">
+<td>108426</td>
+<td align="left">Dec 31, 2014</td>
+<td align="left">Spoiler!Click to expand…Hmmm, the shoulder is extended and the sleeve length is a bit long. I think you should post a video to show how it looks in real life Seriously though, I like it very much. I was going off the idea of a db sportscoat but this makes me reconsider.A very Happy New Year to you all from Australia!</td>
+<td align="left">cm</td>
+</tr>
+<tr class="even">
+<td>133924</td>
+<td align="left">Aug 11, 2015</td>
+<td align="left">And a less matchy PS.</td>
+<td align="left">cm</td>
+</tr>
+<tr class="odd">
+<td>146342</td>
+<td align="left">Jan 5, 2016</td>
+<td align="left">Sorry if i didn’t comments fit everytime, but there is so much wonderful outfit here.</td>
+<td align="left">cm</td>
+</tr>
+<tr class="even">
+<td>79440</td>
+<td align="left">May 21, 2018 at 7:34 AM</td>
+<td align="left">Been a moment. Our Legacy | Paul Smith | EG | Paraboots</td>
+<td align="left">swd</td>
+</tr>
+<tr class="odd">
+<td>164829</td>
+<td align="left">Aug 2, 2016</td>
+<td align="left">Today, my favorite suit for this summer so far.* Suitsupply* Tyrwhitt* tie by Dignito* ps from Poszetka* Yanko</td>
+<td align="left">cm</td>
+</tr>
+<tr class="even">
+<td>52841</td>
+<td align="left">Dec 3, 2016</td>
+<td align="left">those pents are turrible</td>
+<td align="left">swd</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="text-mining" class="section level3">
+<h3>Text mining</h3>
+<p>Before I could create my Naive Bayes classifier, though, I had to some pre-processing on my data. In particular, I only wanted to train my classifier on meaningful words that could be used to label a post. The text mining package (tm) has a number of functions that are useful for cleaning text like punctuation, numbers, and common words. I cleaned my corpus of text posts and converted each of the remaining words into a document term matrix (a sparse matrix consisting of the full length of words)</p>
+<pre class="r"><code># text mining pre-processing
+corpus &lt;- Corpus(VectorSource(df$post))
+
+corpus.clean &lt;- corpus %&gt;%
+  tm_map(content_transformer(tolower)) %&gt;% 
+  tm_map(removePunctuation) %&gt;%
+  tm_map(removeNumbers) %&gt;%
+  tm_map(removeWords, stopwords(kind=&quot;en&quot;)) %&gt;%
+  tm_map(stripWhitespace)
+
+dtm &lt;- DocumentTermMatrix(corpus.clean)</code></pre>
+<pre class="r"><code># divide into train and test sets
+cut &lt;- nrow(dtm)*.75
+
+df.train &lt;- df[1:cut,]
+df.test &lt;- df[(cut+1):nrow(df),]
+
+dtm.train &lt;- dtm[1:cut,]
+dtm.test &lt;- dtm[(cut+1):nrow(dtm),]</code></pre>
+<p>To further subset the set of words to train my classifier, I filtered out words that appeared in less than 100 posts (~.1% of posts). Then I divided my dataset into training and test sets.</p>
+<pre class="r"><code># divide corpus into training and test sets
+corpus.clean.train &lt;- corpus.clean[1:cut]
+corpus.clean.test &lt;- corpus.clean[(cut+1):length(corpus.clean)]
+
+# only use words that appear in 100 posts or more
+hundfreq &lt;- findFreqTerms(dtm.train, lowfreq = 100)
+
+# divide document term matrix into training and test sets
+dtm.train.nb &lt;- DocumentTermMatrix(corpus.clean.train, control=list(dictionary = hundreq))
+dtm.test.nb &lt;- DocumentTermMatrix(corpus.clean.test, control=list(dictionary = hundfreq))</code></pre>
+<p>Moving forward I had to make an important choice about the probabilistic models of documents that I wanted to use for my Naive Bayes classifier. I could have chosen to use a Bernoulli document model or a multinomial model. The difference between the two was based on my assumptions about the relevance of word frequency. Because my main concern was the presence of words and not the frequency of words, I selected the Bernoulli model. This meant that each document was represented by a vector in which words took on a binary value if present in the document.</p>
+<pre class="r"><code># create binary vector, 1 if word is present and 0 if not present
+convert_count &lt;- function(x) {
+  y &lt;- ifelse(x &gt; 0, 1,0)
+  y &lt;- factor(y, levels=c(0,1), labels=c(&quot;No&quot;, &quot;Yes&quot;))
+  y
+}
+
+trainNB &lt;- apply(dtm.train.nb, 2, convert_count)
+testNB &lt;- apply(dtm.test.nb, 2, convert_count)</code></pre>
+</div>
+<div id="building-the-classifier" class="section level3">
+<h3>Building the classifier</h3>
+<p>After pre-processing my text data, I trained a Naive Bayes classifier using the e1071 package.</p>
+<pre class="r"><code>classifier &lt;- naiveBayes(trainNB, df.train$class, laplace = 1)</code></pre>
+<p>A nice thing about the classifier is that I was able to view the prior probabilities of words across the two sides of the forum in my training set. Look at how frequently suits and ties are discussed in the classic menswear side (no duh allen…)!</p>
+<pre class="r"><code># prior probabilities of features
+classifier$tables$margiela</code></pre>
+<pre><code>##               margiela
+## df.train$class           No          Yes
+##            cm  0.9999783606 0.0000216394
+##            swd 0.9793651138 0.0206348862</code></pre>
+<pre class="r"><code>classifier$tables$suit</code></pre>
+<pre><code>##               suit
+## df.train$class         No        Yes
+##            cm  0.92726997 0.07273003
+##            swd 0.98721982 0.01278018</code></pre>
+<pre class="r"><code>classifier$tables$tie</code></pre>
+<pre><code>##               tie
+## df.train$class          No         Yes
+##            cm  0.895286938 0.104713062
+##            swd 0.995204722 0.004795278</code></pre>
+<pre class="r"><code>classifier$tables$denim</code></pre>
+<pre><code>##               denim
+## df.train$class          No         Yes
+##            cm  0.998225569 0.001774431
+##            swd 0.986351900 0.013648100</code></pre>
+<pre class="r"><code>classifier$tables$leather</code></pre>
+<pre><code>##               leather
+## df.train$class          No         Yes
+##            cm  0.996537696 0.003462304
+##            swd 0.984963222 0.015036778</code></pre>
+</div>
+<div id="assessing-classifier-performance" class="section level3">
+<h3>Assessing classifier performance</h3>
+<p>With my classifier built, I assessed its performance on my held out test set. I used the classifier to get the predicted labels as well as the probabilities of each label for each post.</p>
+<pre class="r"><code>pred &lt;- predict(classifier, newdata=testNB)
+raw_pred &lt;- predict(classifier, testNB,type=&quot;raw&quot;)</code></pre>
+<p>Then I compared the predicted labels against the true labels of the test set.</p>
+<pre class="r"><code># assess the accuracy of our classifier
+table(&quot;Predictions&quot;= pred,  &quot;Actual&quot; = df.test$class)</code></pre>
+<pre><code>##            Actual
+## Predictions    cm   swd
+##         cm  16913  5553
+##         swd  6022 15454</code></pre>
+<pre class="r"><code>conf.mat &lt;- confusionMatrix(pred, df.test$class)
+
+conf.mat</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    cm   swd
+##        cm  16913  5553
+##        swd  6022 15454
+##                                           
+##                Accuracy : 0.7366          
+##                  95% CI : (0.7324, 0.7407)
+##     No Information Rate : 0.5219          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.4726          
+##  Mcnemar&#39;s Test P-Value : 1.362e-05       
+##                                           
+##             Sensitivity : 0.7374          
+##             Specificity : 0.7357          
+##          Pos Pred Value : 0.7528          
+##          Neg Pred Value : 0.7196          
+##              Prevalence : 0.5219          
+##          Detection Rate : 0.3849          
+##    Detection Prevalence : 0.5113          
+##       Balanced Accuracy : 0.7365          
+##                                           
+##        &#39;Positive&#39; Class : cm              
+## </code></pre>
+<pre class="r"><code>conf.mat$byClass</code></pre>
+<pre><code>##          Sensitivity          Specificity       Pos Pred Value 
+##            0.7374319            0.7356595            0.7528265 
+##       Neg Pred Value            Precision               Recall 
+##            0.7195940            0.7528265            0.7374319 
+##                   F1           Prevalence       Detection Rate 
+##            0.7450497            0.5219380            0.3848937 
+## Detection Prevalence    Balanced Accuracy 
+##            0.5112648            0.7365457</code></pre>
+<pre class="r"><code>conf.mat$overall</code></pre>
+<pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+##   7.365846e-01   4.726479e-01   7.324392e-01   7.406987e-01   5.219380e-01 
+## AccuracyPValue  McnemarPValue 
+##   0.000000e+00   1.361618e-05</code></pre>
+<pre class="r"><code>conf.mat$overall[&#39;Accuracy&#39;]</code></pre>
+<pre><code>##  Accuracy 
+## 0.7365846</code></pre>
+<p>I’m actually quite happy with the results of the classifier! Annecdotally, I’d say a fair number of posts in these “what are you wearing today” threads say something like “great post” or “I like this picture”, which obviously are ambiguous and difficult for a classifier to label. Around 75% accuracy with about equal sensitivity and specificity struck me as pretty good performance.</p>
+<p>To get a more visual sense of performance, I plotted an ROC curve…</p>
+<pre class="r"><code>### ROC curve
+predvec &lt;- ifelse(pred==&quot;swd&quot;, 1, 0)
+realvec &lt;- ifelse(df.test$class==&quot;swd&quot;, 1, 0)
+
+pr &lt;- prediction(predvec, realvec)
+
+# Make a performance object: perf
+perf &lt;- performance(pr, &quot;tpr&quot;, &quot;fpr&quot;)
+
+# Plot this curve
+plot(perf)</code></pre>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-12-1.png" width="672" /></p>
+<p>As well as calculated the area under the curve.</p>
+<pre class="r"><code>perf_auc &lt;- performance(pr, &quot;auc&quot;)
+perf_auc@y.values[[1]]</code></pre>
+<pre><code>## [1] 0.7365457</code></pre>
+<p>All in all, I’m fairly happy with the results of this analysis. I think that I could possibly increase classifier by being more selective with words during training. I was also thinking it might be interesting to pull posts from more than one thread to get more distribution of words. That might also allow the classifier to generalize better, as an ultimate goal would be to have the classifier correctly predict what side a post comes no matter what thread it’s pulled from.</p>
+</div>
+<div id="referencess" class="section level3">
+<h3>Referencess</h3>
+<p><a href="https://rpubs.com/dvorakt/144238">Naive Bayes: Toy example</a></p>
+<p><a href="http://www.learnbymarketing.com/tutorials/naive-bayes-in-r/">Naive Bayes in R Tutorial</a></p>
+<p><a href="https://rpubs.com/cen0te/naivebayes-sentimentpolarity">Naive Bayes Classification for Sentiment Analysis of Movie Reviews</a></p>
+<p><a href="http://rstudio-pubs-static.s3.amazonaws.com/52625_d7617c3ae5474a2b96f358e8862150e8.html">SPAM/HAM SMS classification using caret and Naive Bayes</a></p>
+<p><a href="https://www.inf.ed.ac.uk/teaching/courses/inf2b/learnnotes/inf2b-learn-note07-2up.pdf">Text Classification using Naive Bayes</a></p>
+</div>
