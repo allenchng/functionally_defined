@@ -1,0 +1,103 @@
+---
+title: Mapping korean fried chicken restaurants
+author: Allen Chang
+date: '2018-06-02'
+slug: mapping-korean-fried-chicken-restaurants
+categories: []
+tags:
+  - R
+  - visualization
+  - chicken
+output:
+  blogdown::html_page:
+    toc: true
+    toc_float: false
+    df_print: kable
+
+---
+
+### Introduction
+
+A change of pace! I realized that almost all of my posts thus far have been clothing related, so I decided to pivot and work with another of my interests; fried chicken. Fried chicken is irresistable, and my apartment in Boston is close to a number of korean fried chicken restaurants. For this analysis, I wanted to visualize how a specific chain of korean fried chicken restaurants, Bonchon, were distributed across the United States. Some of the inspiration behind this work comes from Charlotte Wickham's spatial analysis course on [datacamp](https://www.datacamp.com/courses/working-with-geospatial-data-in-r).
+
+### Data pre-processing
+
+Here's the packages I used in the visualization. The main package of interest here is going to be leaflet, which is used to create interactive maps using the leaflet javascript library. 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(readr)
+library(stringr)
+library(magrittr)
+library(tidyr)
+library(dplyr)
+library(leaflet)
+library(htmltools)
+```
+
+The geographical coordinates for Bonchon restaurant locations was downloaded from the [Points of Interest factory](http://www.poi-factory.com/) and originally compiled by the user mahoney. Since the data was in csv format I was able to easily load it into R using the read_csv function from the readr package (which nicely converts my object into a dataframe)
+
+```{r read in data, echo=TRUE, message=FALSE, warning=FALSE}
+bonchon <- read_csv("../../data/chicken_map/Bonchon_Chicken.csv", col_names=FALSE)
+```
+
+Pre-processing for this data was minimal. I added column names to my dataframe and split the long string of address information into smaller strings using the separate function.
+
+```{r}
+names(bonchon) <- c("long", "lat", "location", "address")
+head(bonchon, 3) %>%  knitr::kable()
+
+bonchon_df <- bonchon %>%
+  separate(address, c("street", "city", "state", "phone"), ",")
+
+head(bonchon_df, 3) %>% knitr::kable()
+```
+
+### Mapping the data
+
+Creating a leaflet map was as easy as passing my dataframe of locations to the leaflet function. The function automatically tries to detect whether your columns are labeled with longitude and latitude information, but you can also specify them within the function call like if you're using ggplot.
+
+```{r message=FALSE, warning=FALSE}
+
+leaflet(data = bonchon_df) %>%
+  addTiles %>% # Add default OpenStreetMap map tiles
+  addMarkers()
+```
+
+This is a nice start, but it's a bit plain and it's not that interactive. A great thing about the leaflet package, though, is that you can customize almost any feature on your map.
+
+### Map customization
+
+There were two feautures of interest that I wanted to change in my map. The first was the the marker icon and the second was to add address information when a marker was hovered. I changed my markers to be chickens using an emoji from the [emojidex](https://github.com/emojidex/). I also added the location and phone number for each restaurant as a label that was visible when the cursor was hovered over.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+chickenIcon <- makeIcon(
+  iconUrl = "../../data/chicken_map/emojidex_chicken.png",
+  iconWidth = 35, iconHeight = 33,
+  iconAnchorX = 0
+)
+
+labs <- lapply(seq(nrow(bonchon_df)), function(i) {
+  paste0( '<p>', bonchon_df[i, "street"], '<p></p>', 
+          bonchon_df[i, "city"], ', ', 
+          bonchon_df[i, "state"],'</p><p>', 
+          bonchon_df[i, "phone"], '</p>' ) 
+})
+```
+
+```{r}
+leaflet(data = bonchon_df) %>%
+  addTiles %>% # Add default OpenStreetMap map tiles
+  addMarkers(~long, ~lat, icon = chickenIcon,
+             # label = ~address,
+             label = lapply(labs, HTML),
+            labelOptions = labelOptions(noHide = F, 
+                                textsize = "14px"))
+```
+
+That looks more like it! You can clearly see that Bonchon's expansion has mainly been on the East coast but extends to California and even Hawaii. Moving forward, I have plans to continue working with Leaflet maps. My next goal is to turn my interactive map into a shiny application with a toggle for different fried chicken restaurants like KFC, Popeyes, Chick-Fil-A, and more.
+
+### Refs
+
+[wrapping labels](https://stackoverflow.com/questions/43144596/r-and-leaflet-how-to-arrange-label-text-across-multiple-lines)
+
+[leaflet documentation](https://rstudio.github.io/leaflet/)

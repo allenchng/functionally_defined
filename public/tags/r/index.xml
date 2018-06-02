@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Tue, 22 May 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 02 Jun 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Mapping korean fried chicken restaurants</title>
+      <link>/posts/mapping-korean-fried-chicken-restaurants/</link>
+      <pubDate>Sat, 02 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/mapping-korean-fried-chicken-restaurants/</guid>
+      <description>Introduction Data pre-processing Mapping the data Map customization Refs   Introduction A change of pace! I realized that almost all of my posts thus far have been clothing related, so I decided to pivot and work with another of my interests; fried chicken. Fried chicken is irresistable, and my apartment in Boston is close to a number of korean fried chicken restaurants. For this analysis, I wanted to visualize how a specific chain of korean fried chicken restaurants, Bonchon, were distributed across the United States.</description>
+    </item>
     
     <item>
       <title>Classifying styleforum posts using a Naive Bayes approach</title>
