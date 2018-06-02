@@ -59,7 +59,7 @@ Creating a leaflet map was as easy as passing my dataframe of locations to the l
 ```{r message=FALSE, warning=FALSE}
 
 leaflet(data = bonchon_df) %>%
-  addTiles %>% # Add default OpenStreetMap map tiles
+  addTiles() %>% # Add default OpenStreetMap map tiles
   addMarkers()
 ```
 
