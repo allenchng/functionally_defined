@@ -37,15 +37,18 @@ library(htmltools)
 The geographical coordinates for Bonchon restaurant locations was downloaded from the [Points of Interest factory](http://www.poi-factory.com/) and originally compiled by the user mahoney. Since the data was in csv format I was able to easily load it into R using the read_csv function from the readr package (which nicely converts my object into a dataframe)
 
 ```{r read in data, echo=TRUE, message=FALSE, warning=FALSE}
+# read in data
 bonchon <- read_csv("../../data/chicken_map/Bonchon_Chicken.csv", col_names=FALSE)
 ```
 
 Pre-processing for this data was minimal. I added column names to my dataframe and split the long string of address information into smaller strings using the separate function.
 
 ```{r}
+# set column names
 names(bonchon) <- c("long", "lat", "location", "address")
 head(bonchon, 3) %>%  knitr::kable()
 
+# separate address column into smaller strings with their own columns
 bonchon_df <- bonchon %>%
   separate(address, c("street", "city", "state", "phone"), ",")
 
@@ -57,9 +60,9 @@ head(bonchon_df, 3) %>% knitr::kable()
 Creating a leaflet map was as easy as passing my dataframe of locations to the leaflet function. The function automatically tries to detect whether your columns are labeled with longitude and latitude information, but you can also specify them within the function call like if you're using ggplot.
 
 ```{r message=FALSE, warning=FALSE}
-
+# make a basic leaflet plot with circles denoting locations
 leaflet(data = bonchon_df) %>%
-  addTiles() %>% # Add default OpenStreetMap map tiles
+  addTiles() %>% 
   addCircleMarkers(~long, ~lat)
 ```
 
@@ -70,12 +73,14 @@ This is a nice start, but it's a bit plain and it's not that interactive. A grea
 There were two feautures of interest that I wanted to change in my map. The first was the the marker icon and the second was to add address information when a marker was hovered. I changed my markers to be chickens using an emoji from the [emojidex](https://github.com/emojidex/). I also added the location and phone number for each restaurant as a label that was visible when the cursor was hovered over.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# custom marker
 chickenIcon <- makeIcon(
   iconUrl = "../../data/chicken_map/emojidex_chicken.png",
   iconWidth = 35, iconHeight = 33,
   iconAnchorX = 0
 )
 
+# function to format HTML text to make each string it's own line
 labs <- lapply(seq(nrow(bonchon_df)), function(i) {
   paste0( '<p>', bonchon_df[i, "street"], '<p></p>', 
           bonchon_df[i, "city"], ', ', 
@@ -85,12 +90,12 @@ labs <- lapply(seq(nrow(bonchon_df)), function(i) {
 ```
 
 ```{r}
+# add custom marker and customized label to leaflet plot
 leaflet(data = bonchon_df) %>%
-  addTiles %>% # Add default OpenStreetMap map tiles
+  addTiles %>%
   addMarkers(~long, ~lat, icon = chickenIcon,
-             # label = ~address,
              label = lapply(labs, HTML),
-            labelOptions = labelOptions(noHide = F, 
+             labelOptions = labelOptions(noHide = F, 
                                 textsize = "14px"))
 ```
 

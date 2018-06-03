@@ -8,8 +8,9 @@ tags:
   - R
   - ggplot
   - customization
-draft: true
 ---
+
+Inspired by [Koundinya Desiraju](https://rpubs.com/Koundy/71792). This is a place for me to store themes so I have a convenient place to look when I inevitably forget.
 
 ```{r}
 library(ggplot2)
