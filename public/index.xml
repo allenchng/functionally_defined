@@ -7,10 +7,33 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Sat, 02 Jun 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 02 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Things I like</title>
+      <link>/links/</link>
+      <pubDate>Tue, 02 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/links/</guid>
+      <description>Because bookmarks bars get too full
+Essential reading on the use of cognitive maps
+R ggplot visualization examples
+arranging multiple plots - useful for scientific figures
+picking visualization colors
+wes anderson movie color palletes
+alternative to tikz diagrams
+functions for lists! + associated tutorial
+Emacs keybindings references
+Bayes fast AB testing
+linear regression with gibbs
+intro to bayes with stan
+Books my bible
+Statistics probability cheatsheet
+0 math intro to mcmc</description>
+    </item>
     
     <item>
       <title>Mapping korean fried chicken restaurants</title>
@@ -59,28 +82,6 @@ library(ggplot2) library(ggthemes) library(grid) theme_pub &amp;lt;- function(ba
       <description>Like all programmers, I strive to make my code efficient and easily readable. I hope that the results are somewhat close to those two ideals, but I know that there are always better ways to code things (this xkcd hits alarmingly close to home for me…)
 (source: xkcd)
 That being said, I’m always happy to stumble into R packages or snippets of code that can help me become more efficient in writing code and I do my best to remind myself to try and use these methods in the future.</description>
-    </item>
-    
-    <item>
-      <title>Things I like</title>
-      <link>/links/</link>
-      <pubDate>Fri, 02 Mar 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/links/</guid>
-      <description>Also known as my bookmarks bar substitute
-Essential reading on the use of cognitive maps
-R ggplot visualization examples
-arranging multiple plots - useful for scientific figures
-picking visualization colors
-wes anderson movie color palletes
-alternative to tikz diagrams
-functions for lists! + associated tutorial
-Emacs keybindings references
-Bayes fast AB testing
-linear regression with gibbs
-intro to bayes with stan
-Books my bible
-Stats probability cheatsheet</description>
     </item>
     
     <item>

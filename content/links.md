@@ -1,9 +1,9 @@
 +++
 title = "Things I like"
-date = "2018-03-02"
+date = "2018-10-02"
 +++
 
-Also known as my bookmarks bar substitute
+Because bookmarks bars get too full
 
 ## Essential reading
 
@@ -40,6 +40,25 @@ Also known as my bookmarks bar substitute
 
 [my bible](http://www-bcf.usc.edu/~gareth/ISL/)
 
-## Stats
+## Statistics
 
 [probability cheatsheet](https://static1.squarespace.com/static/54bf3241e4b0f0d81bf7ff36/t/55e9494fe4b011aed10e48e5/1441352015658/probability_cheatsheet.pdf)
+
+[0 math intro to mcmc](https://towardsdatascience.com/a-zero-math-introduction-to-markov-chain-monte-carlo-methods-dcba889e0c50)
+
+[review of probability basics](https://towardsdatascience.com/probabiliy-theory-basics-4ef523ae0820)
+
+
+## Machine Learning
+
+[ml cheatsheet](https://ml-cheatsheet.readthedocs.io/en/latest/)
+
+[tensorflow pre-built models](https://github.com/tensorflow/models/tree/master/official)
+
+[ml videos list](http://dustintran.com/blog/video-resources-for-machine-learning)
+
+
+
+## Python
+
+[style guide](https://github.com/google/styleguide/blob/gh-pages/pyguide.md)
