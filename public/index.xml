@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Tue, 02 Oct 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 05 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Probabilistic Models for Ad Conversion Prediction</title>
+      <link>/posts/a-summer-of-data-science/</link>
+      <pubDate>Fri, 05 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/a-summer-of-data-science/</guid>
+      <description>This summer I had the opportunity to do an internship in data science at the advertising technology company MediaMath. The experience was challenging, educational, and a lot of fun. My project was to investigate methods of probabilistic programming for ad conversion prediction and to deliver a viable method that could be used for production. I also had the chance to write about the outcomes of my work and to be the first post in MediaMath&amp;rsquo;s new data science blog.</description>
+    </item>
     
     <item>
       <title>Things I like</title>
