@@ -31,9 +31,18 @@
     </item>
     
     <item>
+      <title>Classification</title>
+      <link>/tags/classification/</link>
+      <pubDate>Mon, 22 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/classification/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Clothing</title>
       <link>/tags/clothing/</link>
-      <pubDate>Tue, 22 May 2018 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 22 Oct 2018 00:00:00 +0000</pubDate>
       
       <guid>/tags/clothing/</guid>
       <description></description>
@@ -99,6 +108,15 @@
       <pubDate>Fri, 05 Oct 2018 00:00:00 +0000</pubDate>
       
       <guid>/tags/regression/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Tensorflow</title>
+      <link>/tags/tensorflow/</link>
+      <pubDate>Mon, 22 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/tensorflow/</guid>
       <description></description>
     </item>
     
