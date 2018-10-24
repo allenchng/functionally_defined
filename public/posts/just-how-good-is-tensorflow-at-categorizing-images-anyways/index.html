@@ -72,7 +72,7 @@
 
 <h2 id="introduction">Introduction</h2>
 
-<p>Okay, that title is a bit of a rhetorical question. Everyone knows that TensorFlow is great at cat<del>strikethrough text</del>egorizing images. For the purposes of my self-interest and curiosity though, I wanted to see the magic with my own eyes.</p>
+<p>Okay, that title is a bit of a rhetorical question. Everyone knows that TensorFlow is great at categorizing images. For the purposes of my self-interest and curiosity though, I wanted to see the magic with my own eyes.</p>
 
 <p>I should say straight from the start that this post won&rsquo;t contain any new code, and the overall goal is more for me to play around in the sandbox and learn more about how image classification models work (which I think is equally as fun!). What I&rsquo;ll be doing instead is utilizing code released by the TensorFlow team.  The TensorFlow team has an <a href="https://www.tensorflow.org/hub/tutorials/image_retraining">excellent tutorial</a> on how to take a pre-trained image classifier model and adapt it to identify images from new categories. In the tutorial, the TensorFlow team provides scripts to do retraining and model evaluation, which is what I&rsquo;ll be implementing.</p>
 
@@ -105,7 +105,7 @@ Suit
 
 <h2 id="retraining-models">Retraining models</h2>
 
-<p>Model retraining is conducted by taking a pre-trained neural network model and then training a new layer on top. The model retraining process has 2 steps; adding bottleneck layers and training. Bottleneck layers help reduce the number of parameters by using a mixture of convolutions along with fewer output channels. Bottlenecks are important because they need to compress information, but also must generalize well enough to allow the classifier to make good choices. The retraining script recalculates the bottleneck layer for the retraining images and then stores them for use in the training phase.</p>
+<p>Model retraining is conducted by taking a pre-trained neural network model and then training a new layer on top. The model retraining process has 2 steps; recalculating bottleneck layers and training. The retraining script sets the top layers of the neural network to be trainable and recalculates the bottleneck layer and then stores the weights for use in the training phase. Bottleneck layers help reduce the number of parameters by using a mixture of convolutions along with fewer output channels. Bottlenecks are important because they need to compress information, but also must generalize well enough to allow the classifier to make good choices.</p>
 
 <p>During the training phase, a new classification layer is added to the network. The script iterates through batches of training images and displays the training accuracy, accuracy on held out validation data, and the cross entropy loss. The training procedure attempts to maximize accuracy and minimize the loss on each batch of data.</p>
 
