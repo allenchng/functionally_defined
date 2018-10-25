@@ -33,14 +33,23 @@ I wanted to select pictures with uniform size and high quality photography for r
 For retraining classifiers, the TensorFlow  team recommends that you have at least 100 samples to train on. I organized the photos into 5 categories; Pants, Shoes, Outerwear, Tops, and Suits. A representative picture from each category is labeled below.
 
 Pants
+
 ![Pants](https://lh3.googleusercontent.com/KCiO_bF0IF1Pd0yXokVSlMA0FEi4HxR9NXPlajxOZNVoDrplu2pSzmfU5MBFUrNfMLXpObt7T57T)
+
 Shoes
+
 ![Shoes](https://lh3.googleusercontent.com/q0T3FvYhK_cYxCY5bUTGO-RIyt9V3pagWpbW3cVh0Ou-1asB1jskZ07qX2rvPdM1uNTYckmjWDum "Shoes")
+
 Outerwear
+
 ![Outerwear](https://lh3.googleusercontent.com/m7JAm9isB-Gs2jL8N-Gftkqm-6tlSrmDWhjnvOTZzAkN26gwZXcKcvMuzVtFmGn1uGfCdxNjr66y "Outerwear")
+
 Top
+
 ![Shirt](https://lh3.googleusercontent.com/Fzl3wS4C5RzjretCtc5r4U2y4EaTt5-t212rFXvXjDXcdzw8xEAQe3076qauw_ILdo6VBMJxszIQ)
+
 Suit
+
 ![Suit](https://lh3.googleusercontent.com/qZfHd_R5zrSUjiexlGzMkltjHUwp3rd1ICZJyBCDLYUDENwKZ7zcDIBzsqmuBV2YbLZZfSQCOD4L)
 
 ## Retraining models
