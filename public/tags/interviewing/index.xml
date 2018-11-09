@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Python on Functionally Defined</title>
-    <link>/tags/python/</link>
-    <description>Recent content in Python on Functionally Defined</description>
+    <title>Interviewing on Functionally Defined</title>
+    <link>/tags/interviewing/</link>
+    <description>Recent content in Interviewing on Functionally Defined</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
     <lastBuildDate>Fri, 09 Nov 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/python/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/interviewing/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -20,15 +20,6 @@
       <guid>/posts/making-interview-practice-more-effective/</guid>
       <description>I&amp;rsquo;m in the middle of a job hunt for a data science position and that means lots of studying for interviews. To help me study, I&amp;rsquo;ve enlisted the help of friends and family to quiz me by &amp;lsquo;randomly&amp;rsquo; selecting questions from lists. Asking them to scroll through lists though, is somewhat cumbersome and annoying.
 With that in mind, I wrote a small Python module that would randomly select interview questions across a number of different categories related to data science and print them one by one to the screen.</description>
-    </item>
-    
-    <item>
-      <title>Probabilistic Models for Ad Conversion Prediction</title>
-      <link>/posts/a-summer-of-data-science/</link>
-      <pubDate>Fri, 05 Oct 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/a-summer-of-data-science/</guid>
-      <description>This summer I had the opportunity to do an internship in data science at the advertising technology company MediaMath. The experience was challenging, educational, and a lot of fun. My project was to investigate methods of probabilistic programming for ad conversion prediction and to deliver a viable method that could be used for production. I had the chance to write about the outcomes of my work and to be the first post in MediaMath&amp;rsquo;s new data science blog.</description>
     </item>
     
   </channel>
