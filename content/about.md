@@ -1,8 +1,8 @@
 +++
 title = "About me"
-date = "2017-11-05"
+date = "2018-12-05"
 +++
 
 I am a Ph.D. candidate in Cognitive Neuroscience at Boston University. Inside the lab, I think about why humans learn differently from one another. Outside the lab, I scour the internet for vintage clothes and eat as much Korean fried chicken as I can afford after buying vintage clothes.
 
-This site is a work in progress, so please forgive any and all broken things.
+The name of this site is dedicated to a [friend, colleague, and mentor](/static/pdf/Legacy-Adam-Johnson.pdf).

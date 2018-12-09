@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Sat, 02 Jun 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 15 Nov 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Forecasting forum activity the Bayesian way</title>
+      <link>/posts/forecasting-forum-activity-the-bayesian-way/</link>
+      <pubDate>Thu, 15 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/forecasting-forum-activity-the-bayesian-way/</guid>
+      <description>Introduction   Introduction I was reading through Google’s unofficial data science blog and came upon a post about Bayesian Structural Time Series Modeling and their bsts R package. I wanted to familiarize myself with time series approaches, as they’re relevant for business. I realized I had all the forum data that I had been scraping for the last year contained time series information built into it.
+During my participation in the forum, I’ve noticed that the number of posts</description>
+    </item>
     
     <item>
       <title>Mapping korean fried chicken restaurants</title>

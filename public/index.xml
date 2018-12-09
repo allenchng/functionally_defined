@@ -7,10 +7,30 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Fri, 09 Nov 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 05 Dec 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>About me</title>
+      <link>/about/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/about/</guid>
+      <description>I am a Ph.D. candidate in Cognitive Neuroscience at Boston University. Inside the lab, I think about why humans learn differently from one another. Outside the lab, I scour the internet for vintage clothes and eat as much Korean fried chicken as I can afford after buying vintage clothes.
+The name of this site is dedicated to a friend, colleague, and mentor.</description>
+    </item>
+    
+    <item>
+      <title>Forecasting forum activity the Bayesian way</title>
+      <link>/posts/forecasting-forum-activity-the-bayesian-way/</link>
+      <pubDate>Thu, 15 Nov 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/forecasting-forum-activity-the-bayesian-way/</guid>
+      <description>Introduction   Introduction I was reading through Google’s unofficial data science blog and came upon a post about Bayesian Structural Time Series Modeling and their bsts R package. I wanted to familiarize myself with time series approaches, as they’re relevant for business. I realized I had all the forum data that I had been scraping for the last year contained time series information built into it.
+During my participation in the forum, I’ve noticed that the number of posts</description>
+    </item>
     
     <item>
       <title>Making interview practice more effective</title>
@@ -177,16 +197,6 @@ As per usual, these were the packages used.</description>
       
       <guid>/posts/visualizing-home-states-for-top-chef-contestants-in-r/</guid>
       <description>Each season of Top Chef is something that I look forward to every year and it’s one of the only shows that my girlfriend and I will make an hour of time for every week to watch. To my delight, this season two of my favorite writers Tom Haberstroh and Kevin Arnovitz have started a weekly podcast called Pack Your Knives to discuss each episode and share their love of Top Chef.</description>
-    </item>
-    
-    <item>
-      <title>About me</title>
-      <link>/about/</link>
-      <pubDate>Sun, 05 Nov 2017 00:00:00 +0000</pubDate>
-      
-      <guid>/about/</guid>
-      <description>I am a Ph.D. candidate in Cognitive Neuroscience at Boston University. Inside the lab, I think about why humans learn differently from one another. Outside the lab, I scour the internet for vintage clothes and eat as much Korean fried chicken as I can afford after buying vintage clothes.
-This site is a work in progress, so please forgive any and all broken things.</description>
     </item>
     
   </channel>
