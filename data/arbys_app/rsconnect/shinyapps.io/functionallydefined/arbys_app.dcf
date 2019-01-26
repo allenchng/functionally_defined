@@ -1,0 +1,13 @@
+name: arbys_app
+title:
+username:
+account: functionallydefined
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 666446
+bundleId: 1837742
+url: https://functionallydefined.shinyapps.io/arbys_app/
+when: 1548461503.62683
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: arbsys_data.RDS|Arbys_USA_CAN.csv|process.R

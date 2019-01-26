@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Mon, 22 Oct 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 02 Jan 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/clothing/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The 2018 Best of Styleforum’s What Are You Wearing Today Thread</title>
+      <link>/posts/the-2018-best-of-styleforum-s-what-are-you-wearing-today-thread/</link>
+      <pubDate>Wed, 02 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/the-2018-best-of-styleforum-s-what-are-you-wearing-today-thread/</guid>
+      <description>Introduction Data Scraping Analyzing thumbs in 2017 and 2018 Hypothesis Testing   Introduction Happy New Year! For the second year now, I’ve returned to compile the most popular pictures from Styleforum’s ‘What Are You Wearing Today (WAYWT)’ thread. As a primer if you didn’t read last year’s post, the WAYWT thread is one of the most active and popular areas on the site. In it, users get to show off their clothes and style in ‘fit pictures’ (commonly shortened to fits) and can receive ‘thumbs / likes’ from other users demonstrating approval.</description>
+    </item>
     
     <item>
       <title>Just how good is TensorFlow at categorizing images anyways?</title>

@@ -1,0 +1,311 @@
+---
+title: The 2018 Best of Styleforum’s What Are You Wearing Today Thread
+author: Allen Chang
+date: '2019-01-02'
+slug: the-2018-best-of-styleforum-s-what-are-you-wearing-today-thread
+categories: []
+tags:
+  - R
+  - clothing
+  - bayes
+  - webscraping
+output:
+  blogdown::html_page:
+    toc: true
+    toc_float: false
+    df_print: kable
+draft: true
+---
+
+## Introduction
+
+Happy New Year! For the second year now, I've returned to compile the most popular pictures from Styleforum's 'What Are You Wearing Today (WAYWT)' thread. As a primer if you didn't read [last year's post](https://functionallydefined.netlify.com/posts/web-scraping-the-2017-most-popular-fit-pictures-on-styleforum-s-what-are-you-wearing-today-thread/), the WAYWT thread is one of the most active and popular areas on the site. In it, users get to show off their clothes and style in 'fit pictures' (commonly shortened to fits) and can receive 'thumbs / likes' from other users demonstrating approval. Last year I wrote code to pull the fits with the highest number of thumbs and organized them into albums to demonstrate the best fits of the year. 
+
+The approach this year was to do something similar, though now that I'm a year wiser, I've added some updates to my code and ran a few more statistics to reflect some hypotheses that I had. I'll start by talking about the web scraping procedure then ask whether the number of likes for fit pics changed between 2017 and 2018.
+
+## Data Scraping
+
+The bulk of my web scraping script remained the same as last year's version. For this year's script, I added additional information to indicate whether a post contains an image in it and whether the post contains a 'quote' (users can quote posts from other users to reply to). I added this information because later on I'm going to look at how the average number of thumbs differed between 2017 and 2018 and I wanted my analysis to take into account only posts with fit pictures embedded within them.
+
+Web scraping only requires a few packages. Rvest does the heavy lifting while dplyr and stringr are used for piping and string manipulation repsectively.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+library(rvest)
+library(stringr)
+library(dplyr)
+```
+
+First, I specify the list of pages that I want to scrape. These pages correspond to all the posts made in 2018.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+base <- "https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-"
+page <- c(2139:2486)
+site <- paste0(base, page)
+```
+
+Next I set up my scraping function. The scrape will be performed in two parts. The first part contains post and user information while the second part contains thumb information. The parts are split because while every post has date, username, and join date information, some posts do not get thumbs. That means I have to do a separate scrape for thumb information and join that with my user information.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+PullUserData <- function(i){
+  html <- read_html(i)
+  
+  post.href <- html_nodes(html, ".hashPermalink")
+  post.num <- html_attr(post.href, "href") %>% str_sub(., start= -7)
+  thread.post <- html_nodes(html, ".hashPermalink") %>% html_text()
+  post.link <- html_attr(post_href, "href")
+  
+  date.href <- html_nodes(html, ".datePermalink .DateTime")
+  date <- html_attr(date_href, "title") %>% data.frame(stringsAsFactors = FALSE)
+  toDelete <- seq(2, nrow(date), 2)
+  date.proc <- date[-toDelete,]
+  
+  user <- html_nodes(html, ".userText .username") %>% html_text()
+  
+  image <- html_node(html_nodes(html, '.primaryContent'), '.LbImage')
+  image.df <- bind_rows(lapply(xml_attrs(image), function(x) 
+                data.frame(as.list(x), stringsAsFactors=FALSE))) %>%
+    filter(row_number() > 8 & row_number() < 24) %>% 
+    mutate(image = ifelse(is.na(src), 0, 1)) %>%
+    select(image)
+  
+  quote <- html_node(html_nodes(html, '.primaryContent'), ".SelectQuoteContainer .quote")
+  quote.df <- bind_rows(lapply(xml_attrs(quote), function(x) 
+                data.frame(as.list(x), stringsAsFactors=FALSE))) %>%
+    filter(row_number() > 8 & row_number() < 24) %>% 
+    mutate(quote = ifelse(is.na(class), 0, 1)) %>%
+    select(quote)
+  
+  join_date <- html_nodes(html, ".xbJoinDate dd") %>% html_text()
+  
+  cbind(thread_post,
+        user, 
+        date.proc, 
+        image.df, 
+        post.num, 
+        post.link,
+        quote.df,
+        join.date) %>% as.data.frame()
+}
+```
+
+The function to pull thumbs simply extracts the post number and number of thumbs.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+PullThumbData <- function(i){
+  html <- read_html(i)
+  likes <- html_nodes(html, ".likesTotal") %>% html_text()
+  post.num <- html_nodes(html, ".likesTotal") %>% html_attr("href") %>% str_extract(., "(?<=\\/)[^/]+(?=\\/)")
+  
+  cbind(post.num, likes) %>% as.data.frame()
+}
+```
+
+Now that I've written out my functions, I apply them across my list of pages to scrape. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+user.list <- lapply(url, PullUserData)
+user.df <- do.call(rbind, user.list)
+
+thumbs.list <- lapply(url, PullThumbData)
+thumbs.df <- do.call(rbind, thumbs.list)
+```
+
+Before I can join my user and thumb information together, I need to convert post number information from character to numeric values. After that, a left join makes it easy to get a data frame with all information.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+user.df$post.num <- as.numeric(as.character(user.df$post.num))
+thumbs.df$post.num <- as.numeric(as.character(thumbs.df$post.num))
+thumb.df$likes <- as.numeric(as.character(thumbs.df$likes))
+
+waywt.df <- left_join(fits_df, likes_df, by = "post.num") %>% distinct()
+```
+
+For my album, I want to get the top 100 posts from the year. I filter out all posts without any thumbs, arrange posts by descending number of thumbs, then get the top 100. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+top.posts <- waywt.df %>%
+  filter(!is.na(num_thumbs)) %>%
+  arrange(desc(num_thumbs)) %>%
+  top_n(100, wt = num_thumbs)
+```
+
+Now that I've filtered out the top posts, it's time to get the actual pictures themselves. Users can upload pictures in multiple ways. They can hyperlink them from other image sharing websites or upload them into styleforum directly. That means within each post, there are embedded links for pictures that I need to extract. 
+
+To extract the image links, I wrote a small function to access each post and copy the image link into a table. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+img <- top_posts$post.link
+base <- "https://www.styleforum.net/"
+img_url <- paste0(base, img)
+```
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+PullImages <- function(i){
+  html <- read_html(i)
+  # take last part of i and paste
+  base <- str_extract(i, "#.*")
+  node <- paste(base, ".LbImage", sep = " ")
+  img.node <- html_nodes(html, node)
+  link <- img.node %>% html_attr(., "src")
+  
+  link
+}
+```
+
+Like I've done above, I apply the function across all 100 posts, then write out the image links to a text file.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+img.list <- lapply(img_url, PullImages)
+img.vec <- unlist(img.list)
+
+write(img.vec, 'urls.txt')
+```
+
+I use wget to download the files for each post link in my text file. Wget is a command line program that retrieves content from web servers. The -w flag means wait 3 seconds between requests and the -A flag specifies that I only want to download image files.
+
+```{bash eval=FALSE, include=TRUE}
+wget -i urls.txt -w 3 -A .jpg,.png,.gif,.jpeg
+```
+
+One problem I ran into was that files hosted on styleforum were downloaded in html format and stripped of their image extensions. 
+
+![htmls](../../data/2018_best_of_waywt/htmls.png)
+
+Rather than manually add an image extension to each file, I wrote a simple for loop in unix to add a .jpg extension.
+
+```{bash eval=FALSE, include=TRUE}
+for file in *; do
+    if [ -f ${file} ]; then
+        mv ${file} ${file}.jpg
+    fi
+done
+```
+
+Finally, I renamed the files to be in sequential numeric order ([ref](https://stackoverflow.com/questions/3211595/renaming-files-in-a-folder-to-sequential-numbers). 
+
+```{bash eval=FALSE, include=TRUE}
+a=1
+for i in *.jpg; do
+  new=$(printf "%04d.jpg" "$a") #04 pad to length of 4
+  mv -i -- "$i" "$new"
+  let a=a+1
+done
+```
+
+That's it! All I did then was upload the fits to the image hosting site of my choice. This year, I opted to host the files on Google after noticing the imagepost album from last year was deleted.
+
+[Best of SF 2018](https://photos.app.goo.gl/b7GKFg6hTauRXgNGA)
+
+[Best of SF 2017](https://photos.app.goo.gl/jf3y9C73GxCNAeAN7)
+
+## Analyzing thumbs in 2017 and 2018
+
+Over the course of 2018, I began to notice that the number of thumbs for fits on the site appeared to be lower than they were in previous years. Now that the year has concluded, I can dive into some of the data to determine whether my intuition is correct. In addition to the classic frequentist T-test, I'm also going to use this opportunity to explore Bayesian approaches to hypothesis testing using the [BayesFactor package](https://richarddmorey.github.io/BayesFactor/).
+
+The package list is your standard array from the tidyverse with the addition of BayesFactor.
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(ggplot2)
+library(BayesFactor)
+library(tidyr)
+library(dplyr)
+```
+
+First I'm going to read in my data from 2017 and 2018.
+
+```{r message=FALSE, warning=FALSE}
+sf2017 <- read_csv('../../data/2018_best_of_waywt/2017_waywt_stats.csv')
+sf2018 <- read_csv('../../data/2018_best_of_waywt/2018_waywt_stats.csv')
+```
+
+Here is where the updates to my scraping script come into play. I filter each dataset to only contain posts with images embedded in them that were not quoted by another member. I exclude quoted posts with images because it's common for users to comment on the fits of other by quoting.
+
+```{r message=FALSE, warning=FALSE}
+fits.2017 <- sf2017 %>% 
+  select(-X1, -X1_1) %>%
+  filter(nonquote_image == 1) %>%
+  mutate(likes = replace_na(likes, 0)) %>%
+  select(year, likes)
+
+fits.2018 <- sf2018 %>%
+  select(-X1) %>%
+  filter(nonquote_image == 1) %>%
+  mutate(year = rep(c('2018'), nrow(.)),
+         likes = replace_na(likes, 0)) %>%
+  select(year, likes)
+
+fits.2018$year <- as.integer(fits.2018$year)
+```
+
+After filtering out the data, I can bind the two datasets together into one 'long' dataset that contains two columns; the year and the number of likes.
+
+```{r}
+thumb.data <- bind_rows(fits.2017, fits.2018)
+```
+
+To visualize the distribution of thumbs across fits, I use a density plot and facet the distributions across each year. The dashed blue line represents the median of the distribution. Interestingly, there's quite a large difference in the distributions between years.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+thumb.data %>% 
+  ggplot(aes(x=likes)) +
+  geom_histogram(aes(y=..density..), 
+                 colour="black", 
+                 fill="white") +
+  geom_density(alpha=.6, fill="steelblue") +
+  geom_vline(aes(xintercept=median(likes)),
+             color="blue", linetype="dashed", size=1) +
+  labs(title="Density plot of thumbs in 2018", 
+       subtitle="",
+       caption="Source: SF:WAYWT",
+       x="Thumbs",
+       y="Density") +
+  facet_wrap(~year) +
+  theme_bw()
+```
+
+Because I have right skewed data, it's a good idea to take the log of the response variable (thumbs). 
+
+```{r}
+thumb.data <- thumb.data %>%
+  filter(likes > 0) %>%
+  mutate(log_likes = log(likes))
+```
+
+Another way to compare the distribution of thumbs across the two years is using a boxplot. Boxplots allow to quickly visualize the range of data as well as the medians. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+thumb.data %>%
+  ggplot(aes(x = factor(year), y = log(likes))) +
+  geom_boxplot() +
+  xlab('Year') +
+  ylab('Log(Thumbs)') +
+  theme_bw()
+```
+
+A visual inspection of these density plots and boxplots appears to strongly suggest that there's a difference in the number of thumbs that posts in 2017 received and posts in 2018 received. The next step I'm going to take is to provide additional statistical evidence for my hypothesis.
+
+## Hypothesis Testing
+
+I'm using two data sets that I'm going to assume are independent from one another and follow a normal distribution. I can use an unpaired t-test to obtain an interval estimate ot eh difference between the two population thumb means.
+
+Whenever we do a hypothesis test, it's important to outline our null and alternative hypotheses. Our null will be that there's no difference between the average number of thumbs in 2017 and 2018. Our alternative hypothesis is that there is a difference between the average number of thumbs in 2017 and 2018. 
+
+Running a T-test in r is as simple as calling the t.test function and regressing the dependent variable on the independent variable.
+
+```{r message=FALSE, warning=FALSE}
+classical.test <- t.test(log_likes ~ year, data = thumb.data)
+classical.test
+```
+
+The t-test shows a highly stasticially significant result, 
+
+
+
+An alternative to frequnetist hypothesis testing is to use Bayesian approaches. 
+
+```{r message=FALSE, warning=FALSE}
+bf = ttestBF(formula = log_likes ~ year, data = thumb.data)
+bf
+```
+

@@ -7,10 +7,28 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Thu, 15 Nov 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 25 Jan 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>A Shiny app to find your nearest Arby&#39;s</title>
+      <link>/posts/a-shiny-app-to-find-your-nearest-arby-s/</link>
+      <pubDate>Fri, 25 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/a-shiny-app-to-find-your-nearest-arby-s/</guid>
+      <description>Sometimes your inspirations for data visualizations come from strange places. I can’t say I remember how Arby’s came into a recent conversation with my friends, but someone made a joke about the restaurant chain and the thing that popped into my mind was, “I can make a Shiny app for that.” So that’s the general overview for how this post came to be.</description>
+    </item>
+    
+    <item>
+      <title>The 2018 Best of Styleforum’s What Are You Wearing Today Thread</title>
+      <link>/posts/the-2018-best-of-styleforum-s-what-are-you-wearing-today-thread/</link>
+      <pubDate>Wed, 02 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/the-2018-best-of-styleforum-s-what-are-you-wearing-today-thread/</guid>
+      <description>Introduction Data Scraping Analyzing thumbs in 2017 and 2018 Hypothesis Testing   Introduction Happy New Year! For the second year now, I’ve returned to compile the most popular pictures from Styleforum’s ‘What Are You Wearing Today (WAYWT)’ thread. As a primer if you didn’t read last year’s post, the WAYWT thread is one of the most active and popular areas on the site. In it, users get to show off their clothes and style in ‘fit pictures’ (commonly shortened to fits) and can receive ‘thumbs / likes’ from other users demonstrating approval.</description>
+    </item>
     
     <item>
       <title>Forecasting forum activity the Bayesian way</title>

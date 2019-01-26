@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Shiny on Functionally Defined</title>
+    <link>/tags/shiny/</link>
+    <description>Recent content in Shiny on Functionally Defined</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; 2018 Allen Chang</copyright>
+    <lastBuildDate>Fri, 25 Jan 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/shiny/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>A Shiny app to find your nearest Arby&#39;s</title>
+      <link>/posts/a-shiny-app-to-find-your-nearest-arby-s/</link>
+      <pubDate>Fri, 25 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/a-shiny-app-to-find-your-nearest-arby-s/</guid>
+      <description>Sometimes your inspirations for data visualizations come from strange places. I can’t say I remember how Arby’s came into a recent conversation with my friends, but someone made a joke about the restaurant chain and the thing that popped into my mind was, “I can make a Shiny app for that.” So that’s the general overview for how this post came to be.</description>
+    </item>
+    
+  </channel>
+</rss>

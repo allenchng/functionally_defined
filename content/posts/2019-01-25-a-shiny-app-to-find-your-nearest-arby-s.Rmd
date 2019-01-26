@@ -1,0 +1,142 @@
+---
+title: A Shiny app to find your nearest Arby's
+author: Allen Chang
+date: '2019-01-25'
+slug: a-shiny-app-to-find-your-nearest-arby-s
+categories: []
+tags:
+  - shiny
+  - R
+output:
+  blogdown::html_page:
+    toc: true
+    toc_float: false
+    df_print: kable
+---
+
+Sometimes your inspirations for data visualizations come from strange places. I can't say I remember how Arby's came into a recent conversation with my friends, but someone made a joke about the restaurant chain and the thing that popped into my mind was, "I can make a Shiny app for that." So that's the general overview for how this post came to be. I've previously written about plotting interactive maps for [korean fried chicken](https://functionallydefined.netlify.com/posts/mapping-korean-fried-chicken-restaurants/), but wanted to use this opportunity to learn how to create and customize Shiny apps.
+
+Similar to my fried chicken map, I used a dataset collected by users of the Point of Interest forum.
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(leaflet)
+library(shiny)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+arbys.locations <- read_csv('../../data/arbys_app/Arbys_USA_CAN.csv',
+                            col_names = FALSE)
+
+names(arbys.locations) <- c('longitude', 'latitude', 'city-state', 'address')
+
+head(arbys.locations, 4) %>% knitr::kable()
+```
+
+One thing you might notice here is that the city-state and address columns need to be cleaned up a bit. I used the separate function from the tidyr package to divide the long strings into individual columns.
+
+```{r message=FALSE, warning=FALSE}
+arbys.cleaned <- arbys.locations %>%
+  separate('city-state', c('city', 'state'), ',') %>%
+  separate(city, c('store', 'city'), '-') %>%
+  select(-store) %>%
+  separate(address, c("street", "city", "state", "phone"), ",") %>%
+  mutate(phone = str_trim(phone),
+         city = str_trim(city))
+
+head(arbys.cleaned, 4) %>% knitr::kable()
+```
+
+Once the data was all formatted, it was time to set up the Shiny app. There are multiple ways to create a shiny app. One approach is to use an app.R file that contains all of your code and server logic, or you can separate the components into 3 scripts; one for the server, one for the user interface, and one for the global environment. I chose to construct my app using the 3 script approach.
+
+The global script loads everything into the global R environment. Here, I just load the data into a variable that will be accessible by the other scripts.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+library(readr)
+
+df <- read_csv("./arbys_data.csv")
+```
+
+The server file builds the output for your app. For this project, the output is an interactive map.
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+library(shiny)
+library(leaflet)
+library(dplyr)
+
+server <- function(input,output, session){
+  
+  data <- reactive({
+    x <- df
+  })
+  
+  output$mymap <- renderLeaflet({
+    df <- data()
+    
+    arbys.icon <- makeIcon(
+      iconUrl = "./Arby's.BMP",
+      iconAnchorX = 0
+    )
+    
+    labs <- lapply(seq(nrow(df)), function(i) {
+      paste0( '<p>', df[i, "street"], '<p></p>', 
+              df[i, "city"], ', ', 
+              df[i, "state"],'</p><p>', 
+              df[i, "phone"], '</p>' )
+    })
+    
+    m <- leaflet(data = df) %>%
+      addTiles %>%
+      addMarkers(~longitude, ~latitude, 
+                 icon = arbys.icon,
+                 label = lapply(labs, HTML),
+                 clusterOptions = markerClusterOptions(),
+                 labelOptions = labelOptions(noHide = F, 
+                                             textsize = "14px"))
+    
+    m
+  })
+}
+```
+
+Finally, the ui script defines the UI object. I use the output from my server file as the input for the UI. 
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+library(shiny)
+library(leaflet)
+
+ui <- fluidPage(
+  leafletOutput("mymap", width = '100%', height = 400)
+)
+```
+
+Hosting the Shiny app is as simple as creating an account on the Shinyapps.io website and changing the path to your app directory. You can share the web link to others to provide easy access to your map. This app can be found [here](https://functionallydefined.shinyapps.io/arbys_app/)
+
+I'm also displaying the map on this website as there's a limit to the number of hours per month you can host on the Shiny apps website with a free subscription.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+arbys.icon <- makeIcon(
+  iconUrl = "../../data/arbys_app/Arby's.BMP",
+  iconAnchorX = 0
+)
+
+labs <- lapply(seq(nrow(arbys.cleaned)), function(i) {
+  paste0( '<p>', arbys.cleaned[i, "street"], '<p></p>', 
+          arbys.cleaned[i, "city"], ', ', 
+          arbys.cleaned[i, "state"],'</p><p>', 
+          arbys.cleaned[i, "phone"], '</p>' )
+})
+
+leaflet(data = arbys.cleaned) %>%
+  addTiles %>%
+  addMarkers(~longitude, ~latitude, 
+             icon = arbys.icon,
+             label = lapply(labs, HTML),
+             clusterOptions = markerClusterOptions(),
+             labelOptions = labelOptions(noHide = F, 
+                                         textsize = "14px"))
+
+```
+
+One thing that I particularly enjoyed about making this app was building in clusters to help reduce the amount of visual clutter on the screen. The clusters are adaptive so as you zoom in and out the cluster size changes. It's really fun! There are many ways to modify Shiny apps as well and I've only begun to scratch the surface. Hopefully I'll have more opportunities to play with Shiny apps moving forward.
