@@ -60,7 +60,7 @@ library(readr)
 df <- read_csv("./arbys_data.csv")
 ```
 
-The server file builds the output for your app. For this project, the output is an interactive map.
+The server file builds the output for your app. For this project, the output is an interactive map. In the script, I store my data as a reactive expression. The reactive expression allows my data to 'change over time', giving it flexibility as users interact witht he map. 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 library(shiny)
 library(leaflet)

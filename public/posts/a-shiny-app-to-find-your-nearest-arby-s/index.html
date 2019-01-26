@@ -151,7 +151,7 @@ head(arbys.cleaned, 4) %&gt;% knitr::kable()</code></pre>
 <pre class="r"><code>library(readr)
 
 df &lt;- read_csv(&quot;./arbys_data.csv&quot;)</code></pre>
-<p>The server file builds the output for your app. For this project, the output is an interactive map.</p>
+<p>The server file builds the output for your app. For this project, the output is an interactive map. In the script, I store my data as a reactive expression. The reactive expression allows my data to ‘change over time’, giving it flexibility as users interact witht he map.</p>
 <pre class="r"><code>library(shiny)
 library(leaflet)
 library(dplyr)
