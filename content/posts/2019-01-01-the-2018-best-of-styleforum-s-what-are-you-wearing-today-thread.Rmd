@@ -168,7 +168,7 @@ wget -i urls.txt -w 3 -A .jpg,.png,.gif,.jpeg
 
 One problem I ran into was that files hosted on styleforum were downloaded in html format and stripped of their image extensions. 
 
-![htmls](../../data/2018_best_of_waywt/htmls.png)
+![](/images/htmls.png)
 
 Rather than manually add an image extension to each file, I wrote a simple for loop in unix to add a .jpg extension.
 
