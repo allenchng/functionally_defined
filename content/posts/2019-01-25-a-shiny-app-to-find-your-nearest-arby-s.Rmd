@@ -27,7 +27,7 @@ library(leaflet)
 library(shiny)
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 arbys.locations <- read_csv('../../data/arbys_app/Arbys_USA_CAN.csv',
                             col_names = FALSE)
 
@@ -35,6 +35,7 @@ names(arbys.locations) <- c('longitude', 'latitude', 'city-state', 'address')
 
 head(arbys.locations, 4) %>% knitr::kable()
 ```
+
 
 One thing you might notice here is that the city-state and address columns need to be cleaned up a bit. I used the separate function from the tidyr package to divide the long strings into individual columns.
 

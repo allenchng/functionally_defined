@@ -1,8 +1,8 @@
 ---
-title: The 2018 Best of Styleforum’s What Are You Wearing Today Thread
+title: The Best of Styleforum’s What Are You Wearing Today Thread - 2018 Edition
 author: Allen Chang
 date: '2019-01-02'
-slug: the-2018-best-of-styleforum-s-what-are-you-wearing-today-thread
+slug: the-best-of-styleforum-s-what-are-you-wearing-today-thread-2018
 categories: []
 tags:
   - R
@@ -14,7 +14,6 @@ output:
     toc: true
     toc_float: false
     df_print: kable
-draft: true
 ---
 
 ## Introduction
@@ -27,7 +26,7 @@ The approach this year was to do something similar, though now that I'm a year w
 
 The bulk of my web scraping script remained the same as last year's version. For this year's script, I added additional information to indicate whether a post contains an image in it and whether the post contains a 'quote' (users can quote posts from other users to reply to). I added this information because later on I'm going to look at how the average number of thumbs differed between 2017 and 2018 and I wanted my analysis to take into account only posts with fit pictures embedded within them.
 
-Web scraping only requires a few packages. Rvest does the heavy lifting while dplyr and stringr are used for piping and string manipulation repsectively.
+Web scraping only required a few packages. Rvest did the heavy lifting while dplyr and stringr were used for piping and string manipulation repsectively.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 library(rvest)
@@ -35,7 +34,7 @@ library(stringr)
 library(dplyr)
 ```
 
-First, I specify the list of pages that I want to scrape. These pages correspond to all the posts made in 2018.
+First, I specified the list of pages that I wanted to scrape. These pages corresponded to all the posts made in 2018.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 base <- "https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-"
@@ -43,7 +42,7 @@ page <- c(2139:2486)
 site <- paste0(base, page)
 ```
 
-Next I set up my scraping function. The scrape will be performed in two parts. The first part contains post and user information while the second part contains thumb information. The parts are split because while every post has date, username, and join date information, some posts do not get thumbs. That means I have to do a separate scrape for thumb information and join that with my user information.
+Next I set up my scraping function. The scrape was be performed in two parts. The first part contained post and user information while the second part contained thumb information. The parts were split because while every post had date, username, and join date information, some posts did not receive any thumbs. That means I had to do a separate scrape for thumb information and join that with my user information.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 PullUserData <- function(i){
@@ -88,7 +87,7 @@ PullUserData <- function(i){
 }
 ```
 
-The function to pull thumbs simply extracts the post number and number of thumbs.
+The function to pull thumbs simply extracted the post number and number of thumbs.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 PullThumbData <- function(i){
@@ -100,7 +99,7 @@ PullThumbData <- function(i){
 }
 ```
 
-Now that I've written out my functions, I apply them across my list of pages to scrape. 
+Next I applied my functions across a list of pages to scrape. 
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 user.list <- lapply(url, PullUserData)
@@ -110,7 +109,7 @@ thumbs.list <- lapply(url, PullThumbData)
 thumbs.df <- do.call(rbind, thumbs.list)
 ```
 
-Before I can join my user and thumb information together, I need to convert post number information from character to numeric values. After that, a left join makes it easy to get a data frame with all information.
+Before I could join my user and thumb information together, I needed to convert post number information from character to numeric values. After that, a left join made it easy to get a data frame with all information.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 user.df$post.num <- as.numeric(as.character(user.df$post.num))
@@ -120,7 +119,7 @@ thumb.df$likes <- as.numeric(as.character(thumbs.df$likes))
 waywt.df <- left_join(fits_df, likes_df, by = "post.num") %>% distinct()
 ```
 
-For my album, I want to get the top 100 posts from the year. I filter out all posts without any thumbs, arrange posts by descending number of thumbs, then get the top 100. 
+For my album, I wanted to get the top 100 posts from the year. I filtered out all posts without any thumbs, arranged the posts by descending number of thumbs, then filtered the top 100. 
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 top.posts <- waywt.df %>%
@@ -129,7 +128,7 @@ top.posts <- waywt.df %>%
   top_n(100, wt = num_thumbs)
 ```
 
-Now that I've filtered out the top posts, it's time to get the actual pictures themselves. Users can upload pictures in multiple ways. They can hyperlink them from other image sharing websites or upload them into styleforum directly. That means within each post, there are embedded links for pictures that I need to extract. 
+Once I filtered out the top posts, it was time to get the actual pictures themselves. Users could upload pictures to Styleforum in multiple ways. They could hyperlink them from other image sharing websites or upload them into styleforum directly. That meant within each post, there were embedded links for pictures that I need to extract. 
 
 To extract the image links, I wrote a small function to access each post and copy the image link into a table. 
 
@@ -152,7 +151,7 @@ PullImages <- function(i){
 }
 ```
 
-Like I've done above, I apply the function across all 100 posts, then write out the image links to a text file.
+Like I did above, I applied the function across all 100 posts, then wrote out the image links to a text file.
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 img.list <- lapply(img_url, PullImages)
@@ -161,7 +160,7 @@ img.vec <- unlist(img.list)
 write(img.vec, 'urls.txt')
 ```
 
-I use wget to download the files for each post link in my text file. Wget is a command line program that retrieves content from web servers. The -w flag means wait 3 seconds between requests and the -A flag specifies that I only want to download image files.
+I used wget to download the files for each post link in my text file. Wget is a command line program that retrieves content from web servers. The -w flag meant wait 3 seconds between requests and the -A flag specified that I only want to download image files.
 
 ```{bash eval=FALSE, include=TRUE}
 wget -i urls.txt -w 3 -A .jpg,.png,.gif,.jpeg
@@ -200,9 +199,7 @@ That's it! All I did then was upload the fits to the image hosting site of my ch
 
 ## Analyzing thumbs in 2017 and 2018
 
-Over the course of 2018, I began to notice that the number of thumbs for fits on the site appeared to be lower than they were in previous years. Now that the year has concluded, I can dive into some of the data to determine whether my intuition is correct. In addition to the classic frequentist T-test, I'm also going to use this opportunity to explore Bayesian approaches to hypothesis testing using the [BayesFactor package](https://richarddmorey.github.io/BayesFactor/).
-
-The package list is your standard array from the tidyverse with the addition of BayesFactor.
+Over the course of 2018, Inoticed that the number of thumbs for fits on the site appeared to be lower than they had been in previous years. With the year concluded, I can now dive into some of the data to dermine whether my intuition about the change in number of thumbs is correct. I'm going to take two statistical approaches to investigating this difference; a classic requentist approach and a Bayesian approach using the [BayesFactor package](https://richarddmorey.github.io/BayesFactor/).
 
 ```{r message=FALSE, warning=FALSE}
 library(readr)
@@ -212,14 +209,14 @@ library(tidyr)
 library(dplyr)
 ```
 
-First I'm going to read in my data from 2017 and 2018.
+First I read in my data from 2017 and 2018.
 
 ```{r message=FALSE, warning=FALSE}
 sf2017 <- read_csv('../../data/2018_best_of_waywt/2017_waywt_stats.csv')
 sf2018 <- read_csv('../../data/2018_best_of_waywt/2018_waywt_stats.csv')
 ```
 
-Here is where the updates to my scraping script come into play. I filter each dataset to only contain posts with images embedded in them that were not quoted by another member. I exclude quoted posts with images because it's common for users to comment on the fits of other by quoting.
+Here is where the updates to my scraping script came into play. I filtered each dataset to only contain posts with images embedded in them that were not quoted by another member. I excluded quoted posts with images because users commonly comment and reference the pictures of others by 'quoting' posts.
 
 ```{r message=FALSE, warning=FALSE}
 fits.2017 <- sf2017 %>% 
@@ -238,13 +235,13 @@ fits.2018 <- sf2018 %>%
 fits.2018$year <- as.integer(fits.2018$year)
 ```
 
-After filtering out the data, I can bind the two datasets together into one 'long' dataset that contains two columns; the year and the number of likes.
+After filtering out the data, I combined the two datasets together into one 'long' dataset that contained two columns; year and the number of likes.
 
 ```{r}
 thumb.data <- bind_rows(fits.2017, fits.2018)
 ```
 
-To visualize the distribution of thumbs across fits, I use a density plot and facet the distributions across each year. The dashed blue line represents the median of the distribution. Interestingly, there's quite a large difference in the distributions between years.
+To visualize the distribution of thumbs across fits, I used a density plot and faceted across year. The dashed blue line represents the median of the distribution.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 thumb.data %>% 
@@ -264,15 +261,31 @@ thumb.data %>%
   theme_bw()
 ```
 
-Because I have right skewed data, it's a good idea to take the log of the response variable (thumbs). 
+Because the data is right skewed, I decided to take the log of the response variable (thumbs) and replot the density curves. 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 thumb.data <- thumb.data %>%
   filter(likes > 0) %>%
   mutate(log_likes = log(likes))
+
+thumb.data %>% 
+  ggplot(aes(x=log_likes)) +
+  geom_histogram(aes(y=..density..), 
+                 colour="black", 
+                 fill="white") +
+  geom_density(alpha=.6, fill="steelblue") +
+  geom_vline(aes(xintercept=median(likes)),
+             color="blue", linetype="dashed", size=1) +
+  labs(title="Density plot of thumbs in 2018", 
+       subtitle="",
+       caption="Source: SF:WAYWT",
+       x="Log(Thumbs)",
+       y="Density") +
+  facet_wrap(~year) +
+  theme_bw()
 ```
 
-Another way to compare the distribution of thumbs across the two years is using a boxplot. Boxplots allow to quickly visualize the range of data as well as the medians. 
+Another way to compare the distribution of thumbs across the two years is using a boxplot. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 thumb.data %>%
@@ -283,29 +296,72 @@ thumb.data %>%
   theme_bw()
 ```
 
-A visual inspection of these density plots and boxplots appears to strongly suggest that there's a difference in the number of thumbs that posts in 2017 received and posts in 2018 received. The next step I'm going to take is to provide additional statistical evidence for my hypothesis.
+A visual inspection of these density plots and boxplots strongly suggested that there was a difference in the number of thumbs that posts in 2017 received and posts in 2018 received. The next step I took was to provide statistical evidence for my hypothesis.
 
 ## Hypothesis Testing
 
-I'm using two data sets that I'm going to assume are independent from one another and follow a normal distribution. I can use an unpaired t-test to obtain an interval estimate ot eh difference between the two population thumb means.
+### Frequentist hypothesis testing
 
-Whenever we do a hypothesis test, it's important to outline our null and alternative hypotheses. Our null will be that there's no difference between the average number of thumbs in 2017 and 2018. Our alternative hypothesis is that there is a difference between the average number of thumbs in 2017 and 2018. 
+Given the log transformed thumbs for fit pictures in 2017 and 2018, did the distribution of thumbs for one year differ from the other? My visual inspection above sugested that my data might fail normality tests required to use parametric approaches. To test this assumption, I used the Shapiro-Wilk's test to determine whether my sample data was normally distribution. The null hypothesis of the Shapiro-Wilk's is that a sample of data comes from a normal distribution.
 
-Running a T-test in r is as simple as calling the t.test function and regressing the dependent variable on the independent variable.
-
-```{r message=FALSE, warning=FALSE}
-classical.test <- t.test(log_likes ~ year, data = thumb.data)
-classical.test
+```{r}
+thumb.data %>%
+  group_by(year) %>%
+  summarise(p_val = shapiro.test(.$log_likes)$p.value)
 ```
 
-The t-test shows a highly stasticially significant result, 
+From the Shapiro-Wilk's test, there was significant evidence that the log transformed distribution of likes in 2017 and 2018 were not normally distributed. This meant that non-parametric approaches were more suitable to examine the difference between distributions. Nonparametric approaches to hypothesis testing also make sense if one thinks about the data itself. The distribution of likes is going to be skewed because by the nature of the forum, some photos will have higher thumb counts and be more well liked by other members. This suggests that the better representation for central tendency of this data is the median. 
+
+For nonparametric testing, the null hypothesis is that the two populations are equal or have the same measure of central tendency. 
+
+$H_0$: The two populations are equal
+
+$H_a$: The two populations are not equal
+
+A common approach to testing the equality of medians of two independent groups is to use a Mann Whitney U test. To determine whether the observed difference in thumbs between years was simply due to chance, a U statistic is used.
+
+$U_1 = n_1 n_2 + \frac{n_1(n_1+1)}{2} - R_1$
+
+$U_2 = n_1 n_2 + \frac{n_2(n_2+1)}{2} - R_2$
+
+U statistics are calculated for each group and the smaller of the two statistics is chosen. The range of values that U can take are between 0 (complete separation between groups) to $n_1*n_2$ (no separation between groups). The Mann Whitney U test is calculated using the wilcox.test command in R.
+
+```{r message=FALSE, warning=FALSE}
+wilcox.test(log_likes ~ year, data = thumb.data, conf.int = TRUE)
+```
+
+The Wilcox test suggests that these two samples are not drawn from the same distribution.
 
 
+### Bayesian hypothesis testing
 
-An alternative to frequnetist hypothesis testing is to use Bayesian approaches. 
+An alternative to frequnetist hypothesis testing is to use Bayesian approaches. Importantly, Bayesian approaches allow statisticans to quantify how much experimental evidence favors one hypothesis over another. This is done through the use of the prior-posterior framework, whereinupon prior beliefs are integrated with data to yield posterior beliefs. In the framework of hypothesis testing, there are prior odds, $P(M)$ for which hypothesis is favored before viewing any data, $P(D|M)$. The posterior odds, $P(M|D)$ are the degree to which one hypothesis is favored after viewing data. 
+
+$P(M|D)={\frac{P(D|M)P(M)}{P(D)}}$
+
+The Bayes factor, $K$, represents which hypothesis is more likely given a set of sample data. It can also be thought of as the relative predictive success between two hypotheses. 
+
+$K = {\frac {P(D|M_{1})}{P(D|M_{2})}} = {\frac {\int P(\theta _{1}|M_{1})P(D|\theta _{1},M_{1})\,d\theta _{1}}{\int P(\theta _{2}|M_{2}) P(D|\theta _{2},M_{2})\,d\theta _{2}}} = {\frac {P(M_{1}|D)}{P(M_{2}|D)}}{\frac {P(M_{2})}{P(M_{1})}}$
+
+When the null hypothesis is that the two models have equal chance of explaining the data, the prior probabilities cancel out, leaving ${\frac {P(M_{1}|D)}{P(M_{2}|D)}}$. In R, Bayes factors are easily calculated using the BayesFactor package.
 
 ```{r message=FALSE, warning=FALSE}
 bf = ttestBF(formula = log_likes ~ year, data = thumb.data)
 bf
 ```
 
+The Bayes Factor suggests that the alternative hypothesis is a more likely explanation of the data by $2.1 * 10^{140}$%. The appeal of the Bayes factor is that it reflects the multiplicative change in odds and can be used to answer a more natural question about the data. 
+
+That's it! This was a long walk through of a few topics, but I enjoyed getting to dig into more Styleforum data. My hope is to examine possible causes for the decrease in forum activity and thumbs over time in future analyses.
+
+## References
+
+[nonparametric testing](http://sphweb.bumc.bu.edu/otlt/mph-modules/bs/bs704_nonparametric/BS704_Nonparametric_print.html)
+
+[intro to bayesfactor part 1](http://bayesfactor.blogspot.com/2014/02/bayes-factor-t-tests-part-1.html)
+
+[intro to bayesfactor part 2](https://richarddmorey.org/2014/02/bayes-factor-t-tests-part-2-two-sample-tests/)
+
+[BayesFactor](https://cran.r-project.org/web/packages/BayesFactor/index.html)
+
+[Effect of priors on Bayes factors](https://richarddmorey.shinyapps.io/jzsMarginal/)

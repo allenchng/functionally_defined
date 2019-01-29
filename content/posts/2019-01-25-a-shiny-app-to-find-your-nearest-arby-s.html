@@ -38,6 +38,42 @@ library(dplyr)
 library(stringr)
 library(leaflet)
 library(shiny)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">longitude</th>
+<th align="right">latitude</th>
+<th align="left">city-state</th>
+<th align="left">address</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">-114.0634</td>
+<td align="right">50.93025</td>
+<td align="left">Arby’s-Calgary,AB</td>
+<td align="left">#2102 380 Canyon Meadows Dr, Calgary,AB T2J 7C3, (403) 271-1808</td>
+</tr>
+<tr class="even">
+<td align="right">-113.9624</td>
+<td align="right">51.03772</td>
+<td align="left">Arby’s-Calgary,AB</td>
+<td align="left">5029 17Th Ave, Calgary,AB T2A 0V5, (403) 207-5073</td>
+</tr>
+<tr class="odd">
+<td align="right">-113.5576</td>
+<td align="right">53.58250</td>
+<td align="left">Arby’s-Edmonton,AB</td>
+<td align="left">12523 St Albert Trail, Edmonton,AB T5L 4H3, (780) 455-5513</td>
+</tr>
+<tr class="even">
+<td align="right">-113.4047</td>
+<td align="right">53.59448</td>
+<td align="left">Arby’s-Edmonton,AB</td>
+<td align="left">12805-50 Street Nw, Edmonton,AB T5A 3P3, (780) 473-5790</td>
+</tr>
+</tbody>
+</table>
 <p>One thing you might notice here is that the city-state and address columns need to be cleaned up a bit. I used the separate function from the tidyr package to divide the long strings into individual columns.</p>
 <pre class="r"><code>arbys.cleaned &lt;- arbys.locations %&gt;%
   separate(&#39;city-state&#39;, c(&#39;city&#39;, &#39;state&#39;), &#39;,&#39;) %&gt;%
