@@ -36,7 +36,7 @@ library(dplyr)
 
 First, I specified the list of pages that I wanted to scrape. These pages corresponded to all the posts made in 2018.
 
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 base <- "https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-"
 page <- c(2139:2486)
 site <- paste0(base, page)
@@ -44,7 +44,7 @@ site <- paste0(base, page)
 
 Next I set up my scraping function. The scrape was be performed in two parts. The first part contained post and user information while the second part contained thumb information. The parts were split because while every post had date, username, and join date information, some posts did not receive any thumbs. That means I had to do a separate scrape for thumb information and join that with my user information.
 
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 PullUserData <- function(i){
   html <- read_html(i)
   
@@ -89,7 +89,7 @@ PullUserData <- function(i){
 
 The function to pull thumbs simply extracted the post number and number of thumbs.
 
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 PullThumbData <- function(i){
   html <- read_html(i)
   likes <- html_nodes(html, ".likesTotal") %>% html_text()

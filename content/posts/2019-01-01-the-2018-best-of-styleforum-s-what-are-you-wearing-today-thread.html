@@ -43,8 +43,58 @@ output:
 library(stringr)
 library(dplyr)</code></pre>
 <p>First, I specified the list of pages that I wanted to scrape. These pages corresponded to all the posts made in 2018.</p>
+<pre class="r"><code>base &lt;- &quot;https://www.styleforum.net/threads/the-what-are-you-wearing-today-waywt-discussion-thread-part-ii.394687/page-&quot;
+page &lt;- c(2139:2486)
+site &lt;- paste0(base, page)</code></pre>
 <p>Next I set up my scraping function. The scrape was be performed in two parts. The first part contained post and user information while the second part contained thumb information. The parts were split because while every post had date, username, and join date information, some posts did not receive any thumbs. That means I had to do a separate scrape for thumb information and join that with my user information.</p>
+<pre class="r"><code>PullUserData &lt;- function(i){
+  html &lt;- read_html(i)
+  
+  post.href &lt;- html_nodes(html, &quot;.hashPermalink&quot;)
+  post.num &lt;- html_attr(post.href, &quot;href&quot;) %&gt;% str_sub(., start= -7)
+  thread.post &lt;- html_nodes(html, &quot;.hashPermalink&quot;) %&gt;% html_text()
+  post.link &lt;- html_attr(post_href, &quot;href&quot;)
+  
+  date.href &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;)
+  date &lt;- html_attr(date_href, &quot;title&quot;) %&gt;% data.frame(stringsAsFactors = FALSE)
+  toDelete &lt;- seq(2, nrow(date), 2)
+  date.proc &lt;- date[-toDelete,]
+  
+  user &lt;- html_nodes(html, &quot;.userText .username&quot;) %&gt;% html_text()
+  
+  image &lt;- html_node(html_nodes(html, &#39;.primaryContent&#39;), &#39;.LbImage&#39;)
+  image.df &lt;- bind_rows(lapply(xml_attrs(image), function(x) 
+                data.frame(as.list(x), stringsAsFactors=FALSE))) %&gt;%
+    filter(row_number() &gt; 8 &amp; row_number() &lt; 24) %&gt;% 
+    mutate(image = ifelse(is.na(src), 0, 1)) %&gt;%
+    select(image)
+  
+  quote &lt;- html_node(html_nodes(html, &#39;.primaryContent&#39;), &quot;.SelectQuoteContainer .quote&quot;)
+  quote.df &lt;- bind_rows(lapply(xml_attrs(quote), function(x) 
+                data.frame(as.list(x), stringsAsFactors=FALSE))) %&gt;%
+    filter(row_number() &gt; 8 &amp; row_number() &lt; 24) %&gt;% 
+    mutate(quote = ifelse(is.na(class), 0, 1)) %&gt;%
+    select(quote)
+  
+  join_date &lt;- html_nodes(html, &quot;.xbJoinDate dd&quot;) %&gt;% html_text()
+  
+  cbind(thread_post,
+        user, 
+        date.proc, 
+        image.df, 
+        post.num, 
+        post.link,
+        quote.df,
+        join.date) %&gt;% as.data.frame()
+}</code></pre>
 <p>The function to pull thumbs simply extracted the post number and number of thumbs.</p>
+<pre class="r"><code>PullThumbData &lt;- function(i){
+  html &lt;- read_html(i)
+  likes &lt;- html_nodes(html, &quot;.likesTotal&quot;) %&gt;% html_text()
+  post.num &lt;- html_nodes(html, &quot;.likesTotal&quot;) %&gt;% html_attr(&quot;href&quot;) %&gt;% str_extract(., &quot;(?&lt;=\\/)[^/]+(?=\\/)&quot;)
+  
+  cbind(post.num, likes) %&gt;% as.data.frame()
+}</code></pre>
 <p>Next I applied my functions across a list of pages to scrape.</p>
 <pre class="r"><code>user.list &lt;- lapply(url, PullUserData)
 user.df &lt;- do.call(rbind, user.list)
