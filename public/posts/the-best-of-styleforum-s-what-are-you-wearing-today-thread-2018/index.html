@@ -106,10 +106,10 @@ site &lt;- paste0(base, page)</code></pre>
   post.href &lt;- html_nodes(html, &quot;.hashPermalink&quot;)
   post.num &lt;- html_attr(post.href, &quot;href&quot;) %&gt;% str_sub(., start= -7)
   thread.post &lt;- html_nodes(html, &quot;.hashPermalink&quot;) %&gt;% html_text()
-  post.link &lt;- html_attr(post_href, &quot;href&quot;)
+  post.link &lt;- html_attr(post.href, &quot;href&quot;)
   
   date.href &lt;- html_nodes(html, &quot;.datePermalink .DateTime&quot;)
-  date &lt;- html_attr(date_href, &quot;title&quot;) %&gt;% data.frame(stringsAsFactors = FALSE)
+  date &lt;- html_attr(date.href, &quot;title&quot;) %&gt;% data.frame(stringsAsFactors = FALSE)
   toDelete &lt;- seq(2, nrow(date), 2)
   date.proc &lt;- date[-toDelete,]
   
@@ -129,9 +129,9 @@ site &lt;- paste0(base, page)</code></pre>
     mutate(quote = ifelse(is.na(class), 0, 1)) %&gt;%
     select(quote)
   
-  join_date &lt;- html_nodes(html, &quot;.xbJoinDate dd&quot;) %&gt;% html_text()
+  join.date &lt;- html_nodes(html, &quot;.xbJoinDate dd&quot;) %&gt;% html_text()
   
-  cbind(thread_post,
+  cbind(thread.post,
         user, 
         date.proc, 
         image.df, 
@@ -149,10 +149,10 @@ site &lt;- paste0(base, page)</code></pre>
   cbind(post.num, likes) %&gt;% as.data.frame()
 }</code></pre>
 <p>Next I applied my functions across a list of pages to scrape.</p>
-<pre class="r"><code>user.list &lt;- lapply(url, PullUserData)
+<pre class="r"><code>user.list &lt;- lapply(site, PullUserData)
 user.df &lt;- do.call(rbind, user.list)
 
-thumbs.list &lt;- lapply(url, PullThumbData)
+thumbs.list &lt;- lapply(site, PullThumbData)
 thumbs.df &lt;- do.call(rbind, thumbs.list)</code></pre>
 <p>Before I could join my user and thumb information together, I needed to convert post number information from character to numeric values. After that, a left join made it easy to get a data frame with all information.</p>
 <pre class="r"><code>user.df$post.num &lt;- as.numeric(as.character(user.df$post.num))

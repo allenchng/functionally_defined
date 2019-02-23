@@ -51,10 +51,10 @@ PullUserData <- function(i){
   post.href <- html_nodes(html, ".hashPermalink")
   post.num <- html_attr(post.href, "href") %>% str_sub(., start= -7)
   thread.post <- html_nodes(html, ".hashPermalink") %>% html_text()
-  post.link <- html_attr(post_href, "href")
+  post.link <- html_attr(post.href, "href")
   
   date.href <- html_nodes(html, ".datePermalink .DateTime")
-  date <- html_attr(date_href, "title") %>% data.frame(stringsAsFactors = FALSE)
+  date <- html_attr(date.href, "title") %>% data.frame(stringsAsFactors = FALSE)
   toDelete <- seq(2, nrow(date), 2)
   date.proc <- date[-toDelete,]
   
@@ -74,9 +74,9 @@ PullUserData <- function(i){
     mutate(quote = ifelse(is.na(class), 0, 1)) %>%
     select(quote)
   
-  join_date <- html_nodes(html, ".xbJoinDate dd") %>% html_text()
+  join.date <- html_nodes(html, ".xbJoinDate dd") %>% html_text()
   
-  cbind(thread_post,
+  cbind(thread.post,
         user, 
         date.proc, 
         image.df, 
@@ -102,10 +102,10 @@ PullThumbData <- function(i){
 Next I applied my functions across a list of pages to scrape. 
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
-user.list <- lapply(url, PullUserData)
+user.list <- lapply(site, PullUserData)
 user.df <- do.call(rbind, user.list)
 
-thumbs.list <- lapply(url, PullThumbData)
+thumbs.list <- lapply(site, PullThumbData)
 thumbs.df <- do.call(rbind, thumbs.list)
 ```
 
