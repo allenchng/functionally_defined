@@ -1,0 +1,270 @@
+---
+title: Animating time series data
+author: Allen Chang
+date: '2019-02-24'
+slug: animating-time-series-data
+categories: []
+tags:
+  - R
+  - animation
+  - time series
+  - ggplot
+  - visualization
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#packages-and-data">Packages and data</a></li>
+<li><a href="#summarizing-posts-by-month">Summarizing posts by month</a></li>
+<li><a href="#making-animations">Making animations</a></li>
+<li><a href="#future-directions">Future directions</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>A year ago, I started playing around with the gganimate package for my <a href="https://functionallydefined.netlify.com/posts/interactive-clothing-networks/">interactive clothing network post</a>. I decided to revisit the package again as I wanted to create some animated visualizations for my upcoming PhD defense (It’s partially my hope that saying that out loud will make it feel more real). To my surprise, the gganimate package has undergone a transformation in the last year under the stewardship of <a href="https://github.com/thomasp85/gganimate">Thomas Pederson</a>. After reading through some of the documentation and watching Pederson’s <a href="https://youtu.be/21ZWDrTukEs">excellent overview</a>, I decided to get some practice working with gganimate for my defense.</p>
+<p>One of Pederson’s examples in his github is an animation of <a href="https://github.com/thomasp85/gganimate/wiki/Temperature-time-series">time series data</a>. It made me remember that I had time series data of my own via my scraping of Styleforum threads. In this post, I will visualize how the number of posts in three different threads varied across time.</p>
+</div>
+<div id="packages-and-data" class="section level2">
+<h2>Packages and data</h2>
+<p>I used data from <a href="https://functionallydefined.netlify.com/posts/sentiment-analysis-of-fashion-enthusiasts/">previous posts</a> and bound them into a tidy data frame. The data columns corresponded to the post number in the thread, the user, the date of the post, and which thread the user posted in.</p>
+<pre class="r"><code>library(readr)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+library(ggimage)
+library(knitr)
+
+data &lt;- read_csv(&#39;../../data/time_series_animation/three_threads.csv&#39;) %&gt;%
+  select(-X1, -X1_1)
+
+post_data &lt;- data %&gt;%
+  select(thread.post, user, mdy, thread) 
+
+head(post_data) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">thread.post</th>
+<th align="left">user</th>
+<th align="left">mdy</th>
+<th align="left">thread</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">#61</td>
+<td align="left">bows1</td>
+<td align="left">Jan 16, 2013</td>
+<td align="left">Saint Laurent Paris</td>
+</tr>
+<tr class="even">
+<td align="left">#62</td>
+<td align="left">Earnest Hemingway</td>
+<td align="left">Jan 16, 2013</td>
+<td align="left">Saint Laurent Paris</td>
+</tr>
+<tr class="odd">
+<td align="left">#63</td>
+<td align="left">KingJulien</td>
+<td align="left">Jan 16, 2013</td>
+<td align="left">Saint Laurent Paris</td>
+</tr>
+<tr class="even">
+<td align="left">#64</td>
+<td align="left">uzairh</td>
+<td align="left">Jan 16, 2013</td>
+<td align="left">Saint Laurent Paris</td>
+</tr>
+<tr class="odd">
+<td align="left">#65</td>
+<td align="left">cyc wid it</td>
+<td align="left">Jan 16, 2013</td>
+<td align="left">Saint Laurent Paris</td>
+</tr>
+<tr class="even">
+<td align="left">#66</td>
+<td align="left">Mesta</td>
+<td align="left">Jan 16, 2013</td>
+<td align="left">Saint Laurent Paris</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="summarizing-posts-by-month" class="section level2">
+<h2>Summarizing posts by month</h2>
+<p>Next I had to do some data manipulation. My date column was coded as a character vector, so the first thing to do was to convert that into a date object. Then, I used the floor_date command from the lubridate package to create a new column binning posts by month. Finally, I counted the number of posts for each unique year-month combination, creating the time series data I needed to visualize.</p>
+<pre class="r"><code>post_data$mdy &lt;- as.Date(post_data$mdy, &quot;%b %d, %Y&quot;)
+
+post_month_year &lt;- post_data %&gt;%
+  mutate(month_date = floor_date(post_data$mdy, unit = &#39;month&#39;)) %&gt;%
+  group_by(month_date, thread) %&gt;%
+  summarise(total.posts = n())</code></pre>
+<pre><code>## Warning: package &#39;bindrcpp&#39; was built under R version 3.4.4</code></pre>
+<pre class="r"><code>head(post_month_year) %&gt;% kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">month_date</th>
+<th align="left">thread</th>
+<th align="right">total.posts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2013-01-01</td>
+<td align="left">Saint Laurent Paris</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="left">2013-02-01</td>
+<td align="left">Saint Laurent Paris</td>
+<td align="right">59</td>
+</tr>
+<tr class="odd">
+<td align="left">2013-04-01</td>
+<td align="left">John Elliot</td>
+<td align="right">34</td>
+</tr>
+<tr class="even">
+<td align="left">2013-04-01</td>
+<td align="left">Saint Laurent Paris</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">2013-05-01</td>
+<td align="left">John Elliot</td>
+<td align="right">41</td>
+</tr>
+<tr class="even">
+<td align="left">2013-05-01</td>
+<td align="left">Saint Laurent Paris</td>
+<td align="right">18</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="making-animations" class="section level2">
+<h2>Making animations</h2>
+<p>After my data was tidied up and summarized, it was time to do some animations. The great thing about the gganimation package is that a lot of care was taken to integrate it with ggplot. I simply constructed a ggplot as normal, then added one line using the transition_reveal to denote which variable I wanted to animate along. Transition_reveal is just one of multiple transition functions that you can call. What’s special about transition_reveal though, is that it maintains its ‘shadow’, so previous time points are kept.</p>
+<pre class="r"><code>combined_anim &lt;- post_month_year %&gt;%
+  ggplot(aes(month_date, total.posts, group = thread, color = thread)) +
+  geom_line() +
+  geom_segment(aes(xend = as.Date(&#39;2019-03-01&#39;), 
+                   yend = total.posts), linetype = 2, colour = &#39;grey&#39;) +
+  geom_text(aes(x = as.Date(&#39;2019-03-01&#39;), 
+                label = thread), hjust = 0) + 
+  geom_point(size = 2) + 
+  coord_cartesian(clip = &#39;off&#39;) +
+  scale_x_date(breaks = &#39;1 year&#39;, date_labels = &#39;%Y&#39;) +
+  labs(title = &quot;Monthly Posts Per Thread&quot;,
+       subtitle = &quot;Time:{frame_along}&quot;,
+       x = &quot;Date&quot;, y = &#39;Total Posts (Monthly)&#39;)+
+  theme_minimal() + 
+  theme(legend.position = &#39;none&#39;,
+    plot.margin = margin(5.5, 90, 5.5, 5.5),
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    plot.title = element_text(size = 15),
+    plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(combined_anim, nframes = 200, fps=10)</code></pre>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-3-1.gif" /><!-- --></p>
+<p>The animations already looked great, but I wanted to add a bit more customization to my plots by changing my geom_dot indicator to a custom icon. Each icon was chosen to immortalize a particularly famous user from each post. Luckily, the ggimage package provided an easy way to do just that. I simply added a column designating the path to each icon that I wanted to display.</p>
+<p>To prevent graphs from looking too cluttered, I filtered subsets of my data based on thread.</p>
+<pre class="r"><code>john &lt;- &#39;../../data/time_series_animation/icons/john.png&#39;
+foo &lt;- &#39;../../data/time_series_animation/icons/foo.gif&#39;
+kyle &lt;- &#39;../../data/time_series_animation/icons/kyle.png&#39;
+
+je &lt;- post_month_year %&gt;%
+  filter(thread == &#39;John Elliot&#39;) %&gt;%
+  ungroup() %&gt;%
+  mutate(image = rep(c(john), nrow(.)))
+
+slp &lt;- post_month_year %&gt;%
+  filter(thread == &#39;Saint Laurent Paris&#39;) %&gt;%
+  ungroup() %&gt;%
+  mutate(image = rep(c(foo), nrow(.)))
+
+nmwa &lt;- post_month_year %&gt;%
+  filter(thread == &#39;No Man Walks Alone&#39;) %&gt;%
+  ungroup() %&gt;%
+  mutate(image = rep(c(kyle), nrow(.)))</code></pre>
+<p>The only change I needed to make was to substitute my geom_dot layer for a geom_image layer specifying the image path to each icon.</p>
+<pre class="r"><code>slp_anim &lt;- slp %&gt;%
+  ggplot(aes(month_date, total.posts)) +
+  geom_line() +
+  geom_image(aes(image=image), size=.08) +
+  geom_vline(aes(xintercept = as.Date(&quot;2016-04-01&quot;)),
+             color = &#39;red&#39;, lty = 2) +
+  geom_vline(aes(xintercept = as.Date(&quot;2018-01-01&quot;)),
+             color = &#39;blue&#39;, lty = 2) +
+  coord_cartesian(clip = &#39;off&#39;) +
+  scale_x_date(breaks = &#39;1 year&#39;, date_labels = &#39;%Y&#39;) +
+  labs(title = &quot;Monthly Posts in the SLP Thread&quot;,
+       subtitle = &quot;Time:{frame_along}&quot;,
+       x = &quot;Date&quot;, y = &#39;Total Posts (Monthly)&#39;)+
+  theme_minimal() + 
+  theme(legend.position = &#39;none&#39;,
+        plot.margin = margin(5.5, 90, 5.5, 5.5),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(slp_anim, nframes = 200, fps=10)</code></pre>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-5-1.gif" /><!-- --></p>
+<pre class="r"><code>nmwa_anim &lt;- nmwa %&gt;%
+  ggplot(aes(month_date, total.posts)) +
+  geom_line() +
+  geom_image(aes(image=image), size=.08) +
+  coord_cartesian(clip = &#39;off&#39;) +
+  scale_x_date(breaks = &#39;1 year&#39;, date_labels = &#39;%Y&#39;) +
+  labs(title = &quot;Monthly Posts in the NMWA Thread&quot;,
+       subtitle = &quot;Time:{frame_along}&quot;,
+       x = &quot;Date&quot;, y = &#39;Total Posts (Monthly)&#39;)+
+  theme_minimal() + 
+  theme(legend.position = &#39;none&#39;,
+        plot.margin = margin(5.5, 90, 5.5, 5.5),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(nmwa_anim, nframes = 200, fps=10)</code></pre>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-6-1.gif" /><!-- --></p>
+<pre class="r"><code>je_anim &lt;- je %&gt;%
+  ggplot(aes(month_date, total.posts)) +
+  geom_line() +
+  geom_image(aes(image=image), size=.08) +
+  coord_cartesian(clip = &#39;off&#39;) +
+  scale_x_date(breaks = &#39;1 year&#39;, date_labels = &#39;%Y&#39;) +
+  labs(title = &quot;Monthly Posts in the JE Thread&quot;,
+       subtitle = &quot;Time:{frame_along}&quot;,
+       x = &quot;Date&quot;, y = &#39;Total Posts (Monthly)&#39;)+
+  theme_minimal() + 
+  theme(legend.position = &#39;none&#39;,
+        plot.margin = margin(5.5, 90, 5.5, 5.5),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(je_anim, nframes = 200, fps=10)</code></pre>
+<p><img src="/rmarkdown-libs/figure-html4/unnamed-chunk-7-1.gif" /><!-- --></p>
+</div>
+<div id="future-directions" class="section level2">
+<h2>Future directions</h2>
+<p>I was blown away at how straightforward and effective it was to create animations using the gganimate package. One thing I noticed is that the new gganimate renders animations noticeably faster than the previous iteration. I’m looking forward to using it more to make descriptive animations of my research data.</p>
+</div>

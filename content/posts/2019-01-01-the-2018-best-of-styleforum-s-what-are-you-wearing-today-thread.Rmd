@@ -114,9 +114,9 @@ Before I could join my user and thumb information together, I needed to convert 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 user.df$post.num <- as.numeric(as.character(user.df$post.num))
 thumbs.df$post.num <- as.numeric(as.character(thumbs.df$post.num))
-thumb.df$likes <- as.numeric(as.character(thumbs.df$likes))
+thumbs.df$likes <- as.numeric(as.character(thumbs.df$likes))
 
-waywt.df <- left_join(fits_df, likes_df, by = "post.num") %>% distinct()
+waywt.df <- left_join(user.df, thumbs.df, by = "post.num") %>% distinct()
 ```
 
 For my album, I wanted to get the top 100 posts from the year. I filtered out all posts without any thumbs, arranged the posts by descending number of thumbs, then filtered the top 100. 

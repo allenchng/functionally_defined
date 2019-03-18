@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Tue, 06 Mar 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 24 Feb 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/ggplot/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Animating time series data</title>
+      <link>/posts/animating-time-series-data/</link>
+      <pubDate>Sun, 24 Feb 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/animating-time-series-data/</guid>
+      <description>Introduction Packages and data Summarizing posts by month Making animations Future directions   Introduction A year ago, I started playing around with the gganimate package for my interactive clothing network post. I decided to revisit the package again as I wanted to create some animated visualizations for my upcoming PhD defense (It’s partially my hope that saying that out loud will make it feel more real). To my surprise, the gganimate package has undergone a transformation in the last year under the stewardship of Thomas Pederson.</description>
+    </item>
     
     <item>
       <title>Making a ggplot theme for my scientific publications</title>

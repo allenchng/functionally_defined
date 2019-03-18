@@ -1,0 +1,190 @@
+---
+title: Animating time series data
+author: Allen Chang
+date: '2019-02-24'
+slug: animating-time-series-data
+categories: []
+tags:
+  - R
+  - animation
+  - time series
+  - ggplot
+  - visualization
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+## Introduction
+
+A year ago, I started playing around with the gganimate package for my [interactive clothing network post](https://functionallydefined.netlify.com/posts/interactive-clothing-networks/). I decided to revisit the package again as I wanted to create some animated visualizations for my upcoming PhD defense (It's partially my hope that saying that out loud will make it feel more real). To my surprise, the gganimate package has undergone a transformation in the last year under the stewardship of [Thomas Pederson](https://github.com/thomasp85/gganimate). After reading through some of the documentation and watching Pederson's [excellent overview](https://youtu.be/21ZWDrTukEs), I decided to get some practice working with gganimate for my defense. 
+
+One of Pederson's examples in his github is an animation of [time series data](https://github.com/thomasp85/gganimate/wiki/Temperature-time-series). It made me remember that I had time series data of my own via my scraping of Styleforum threads. In this post, I will visualize how the number of posts in three different threads varied across time.
+
+## Packages and data
+
+I used data from [previous posts](https://functionallydefined.netlify.com/posts/sentiment-analysis-of-fashion-enthusiasts/) and bound them into a tidy data frame. The data columns corresponded to the post number in the thread, the user, the date of the post, and which thread the user posted in. 
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+library(ggimage)
+library(knitr)
+
+data <- read_csv('../../data/time_series_animation/three_threads.csv') %>%
+  select(-X1, -X1_1)
+
+post_data <- data %>%
+  select(thread.post, user, mdy, thread) 
+
+head(post_data) %>% knitr::kable()
+```
+
+## Summarizing posts by month
+
+Next I had to do some data manipulation. My date column was coded as a character vector, so the first thing to do was to convert that into a date object. Then, I used the floor_date command from the lubridate package to create a new column binning posts by month. Finally, I counted the number of posts for each unique year-month combination, creating the time series data I needed to visualize. 
+
+```{r}
+post_data$mdy <- as.Date(post_data$mdy, "%b %d, %Y")
+
+post_month_year <- post_data %>%
+  mutate(month_date = floor_date(post_data$mdy, unit = 'month')) %>%
+  group_by(month_date, thread) %>%
+  summarise(total.posts = n())
+
+head(post_month_year) %>% kable()
+```
+
+## Making animations
+
+After my data was tidied up and summarized, it was time to do some animations. The great thing about the gganimation package is that a lot of care was taken to integrate it with ggplot. I simply constructed a ggplot as normal, then added one line using the transition_reveal to denote which variable I wanted to animate along. Transition_reveal is just one of multiple transition functions that you can call. What's special about transition_reveal though, is that it maintains its 'shadow', so previous time points are kept. 
+
+```{r}
+combined_anim <- post_month_year %>%
+  ggplot(aes(month_date, total.posts, group = thread, color = thread)) +
+  geom_line() +
+  geom_segment(aes(xend = as.Date('2019-03-01'), 
+                   yend = total.posts), linetype = 2, colour = 'grey') +
+  geom_text(aes(x = as.Date('2019-03-01'), 
+                label = thread), hjust = 0) + 
+  geom_point(size = 2) + 
+  coord_cartesian(clip = 'off') +
+  scale_x_date(breaks = '1 year', date_labels = '%Y') +
+  labs(title = "Monthly Posts Per Thread",
+       subtitle = "Time:{frame_along}",
+       x = "Date", y = 'Total Posts (Monthly)')+
+  theme_minimal() + 
+  theme(legend.position = 'none',
+    plot.margin = margin(5.5, 90, 5.5, 5.5),
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    plot.title = element_text(size = 15),
+    plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(combined_anim, nframes = 200, fps=10)
+```
+
+The animations already looked great, but I wanted to add a bit more customization to my plots by changing my geom_dot indicator to a custom icon. Each icon was chosen to immortalize a particularly famous user from each post. Luckily, the ggimage package provided an easy way to do just that. I simply added a column designating the path to each icon that I wanted to display.
+
+To prevent graphs from looking too cluttered, I filtered subsets of my data based on thread.
+
+```{r}
+john <- '../../data/time_series_animation/icons/john.png'
+foo <- '../../data/time_series_animation/icons/foo.gif'
+kyle <- '../../data/time_series_animation/icons/kyle.png'
+
+je <- post_month_year %>%
+  filter(thread == 'John Elliot') %>%
+  ungroup() %>%
+  mutate(image = rep(c(john), nrow(.)))
+
+slp <- post_month_year %>%
+  filter(thread == 'Saint Laurent Paris') %>%
+  ungroup() %>%
+  mutate(image = rep(c(foo), nrow(.)))
+
+nmwa <- post_month_year %>%
+  filter(thread == 'No Man Walks Alone') %>%
+  ungroup() %>%
+  mutate(image = rep(c(kyle), nrow(.)))
+```
+
+The only change I needed to make was to substitute my geom_dot layer for a geom_image layer specifying the image path to each icon.
+
+```{r}
+slp_anim <- slp %>%
+  ggplot(aes(month_date, total.posts)) +
+  geom_line() +
+  geom_image(aes(image=image), size=.08) +
+  geom_vline(aes(xintercept = as.Date("2016-04-01")),
+             color = 'red', lty = 2) +
+  geom_vline(aes(xintercept = as.Date("2018-01-01")),
+             color = 'blue', lty = 2) +
+  coord_cartesian(clip = 'off') +
+  scale_x_date(breaks = '1 year', date_labels = '%Y') +
+  labs(title = "Monthly Posts in the SLP Thread",
+       subtitle = "Time:{frame_along}",
+       x = "Date", y = 'Total Posts (Monthly)')+
+  theme_minimal() + 
+  theme(legend.position = 'none',
+        plot.margin = margin(5.5, 90, 5.5, 5.5),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(slp_anim, nframes = 200, fps=10)
+```
+
+```{r}
+nmwa_anim <- nmwa %>%
+  ggplot(aes(month_date, total.posts)) +
+  geom_line() +
+  geom_image(aes(image=image), size=.08) +
+  coord_cartesian(clip = 'off') +
+  scale_x_date(breaks = '1 year', date_labels = '%Y') +
+  labs(title = "Monthly Posts in the NMWA Thread",
+       subtitle = "Time:{frame_along}",
+       x = "Date", y = 'Total Posts (Monthly)')+
+  theme_minimal() + 
+  theme(legend.position = 'none',
+        plot.margin = margin(5.5, 90, 5.5, 5.5),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(nmwa_anim, nframes = 200, fps=10)
+```
+
+```{r}
+je_anim <- je %>%
+  ggplot(aes(month_date, total.posts)) +
+  geom_line() +
+  geom_image(aes(image=image), size=.08) +
+  coord_cartesian(clip = 'off') +
+  scale_x_date(breaks = '1 year', date_labels = '%Y') +
+  labs(title = "Monthly Posts in the JE Thread",
+       subtitle = "Time:{frame_along}",
+       x = "Date", y = 'Total Posts (Monthly)')+
+  theme_minimal() + 
+  theme(legend.position = 'none',
+        plot.margin = margin(5.5, 90, 5.5, 5.5),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15),
+        plot.subtitle = element_text(size = 12)) +
+  transition_reveal(month_date)
+
+animate(je_anim, nframes = 200, fps=10)
+```
+
+## Future directions
+
+I was blown away at how straightforward and effective it was to create animations using the gganimate package. One thing I noticed is that the new gganimate renders animations noticeably faster than the previous iteration. I'm looking forward to using it more to make descriptive animations of my research data.

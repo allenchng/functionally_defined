@@ -104,9 +104,9 @@ thumbs.df &lt;- do.call(rbind, thumbs.list)</code></pre>
 <p>Before I could join my user and thumb information together, I needed to convert post number information from character to numeric values. After that, a left join made it easy to get a data frame with all information.</p>
 <pre class="r"><code>user.df$post.num &lt;- as.numeric(as.character(user.df$post.num))
 thumbs.df$post.num &lt;- as.numeric(as.character(thumbs.df$post.num))
-thumb.df$likes &lt;- as.numeric(as.character(thumbs.df$likes))
+thumbs.df$likes &lt;- as.numeric(as.character(thumbs.df$likes))
 
-waywt.df &lt;- left_join(fits_df, likes_df, by = &quot;post.num&quot;) %&gt;% distinct()</code></pre>
+waywt.df &lt;- left_join(user.df, thumbs.df, by = &quot;post.num&quot;) %&gt;% distinct()</code></pre>
 <p>For my album, I wanted to get the top 100 posts from the year. I filtered out all posts without any thumbs, arranged the posts by descending number of thumbs, then filtered the top 100.</p>
 <pre class="r"><code>top.posts &lt;- waywt.df %&gt;%
   filter(!is.na(num_thumbs)) %&gt;%
