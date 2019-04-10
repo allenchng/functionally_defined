@@ -7,10 +7,25 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; 2018 Allen Chang</copyright>
-    <lastBuildDate>Sun, 24 Feb 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 10 Apr 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Remembering a colleague, mentor, and friend</title>
+      <link>/posts/remembering-a-colleague-mentor-and-friend/</link>
+      <pubDate>Wed, 10 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/posts/remembering-a-colleague-mentor-and-friend/</guid>
+      <description>On cognition Neural Ensembles in CA3 Transiently Encode Paths Forward of the Animal at a Decision Point
+Measuring distributed properties of neural representations beyond the decoding of local variables — implications for cognition
+Integrating hippocampus and striatum in decision-making
+Looking for cognition in the structure within the noise
+ On life The legacy of Adam Johnson
+Me? Oh, I’m fine, other than the (terminal) cancer
+ </description>
+    </item>
     
     <item>
       <title>Animating time series data</title>
@@ -37,16 +52,6 @@
       
       <guid>/posts/the-best-of-styleforum-s-what-are-you-wearing-today-thread-2018/</guid>
       <description>Introduction Data Scraping Analyzing thumbs in 2017 and 2018 Hypothesis Testing Frequentist hypothesis testing Bayesian hypothesis testing  References   Introduction Happy New Year! For the second year now, I’ve returned to compile the most popular pictures from Styleforum’s ‘What Are You Wearing Today (WAYWT)’ thread. As a primer if you didn’t read last year’s post, the WAYWT thread is one of the most active and popular areas on the site.</description>
-    </item>
-    
-    <item>
-      <title>Forecasting forum activity the Bayesian way</title>
-      <link>/posts/forecasting-forum-activity-the-bayesian-way/</link>
-      <pubDate>Thu, 15 Nov 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/forecasting-forum-activity-the-bayesian-way/</guid>
-      <description>Introduction   Introduction I was reading through Google’s unofficial data science blog and came upon a post about Bayesian Structural Time Series Modeling and their bsts R package. I wanted to familiarize myself with time series approaches, as they’re relevant for business. I realized I had all the forum data that I had been scraping for the last year contained time series information built into it.
-During my participation in the forum, I’ve noticed that the number of posts</description>
     </item>
     
     <item>

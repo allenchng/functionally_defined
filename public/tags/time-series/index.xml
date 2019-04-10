@@ -21,15 +21,5 @@
       <description>Introduction Packages and data Summarizing posts by month Making animations Future directions   Introduction A year ago, I started playing around with the gganimate package for my interactive clothing network post. I decided to revisit the package again as I wanted to create some animated visualizations for my upcoming PhD defense (It’s partially my hope that saying that out loud will make it feel more real). To my surprise, the gganimate package has undergone a transformation in the last year under the stewardship of Thomas Pederson.</description>
     </item>
     
-    <item>
-      <title>Forecasting forum activity the Bayesian way</title>
-      <link>/posts/forecasting-forum-activity-the-bayesian-way/</link>
-      <pubDate>Thu, 15 Nov 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/posts/forecasting-forum-activity-the-bayesian-way/</guid>
-      <description>Introduction   Introduction I was reading through Google’s unofficial data science blog and came upon a post about Bayesian Structural Time Series Modeling and their bsts R package. I wanted to familiarize myself with time series approaches, as they’re relevant for business. I realized I had all the forum data that I had been scraping for the last year contained time series information built into it.
-During my participation in the forum, I’ve noticed that the number of posts</description>
-    </item>
-    
   </channel>
 </rss>

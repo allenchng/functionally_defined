@@ -1,0 +1,29 @@
+---
+title: Remembering a colleague, mentor, and friend
+author: Allen Chang
+date: '2019-04-10'
+slug: remembering-a-colleague-mentor-and-friend
+categories: []
+tags: []
+---
+
+
+## On cognition
+
+[Neural Ensembles in CA3 Transiently Encode Paths Forward
+of the Animal at a Decision Point](http://www.jneurosci.org/content/jneuro/27/45/12176.full.pdf)
+
+[Measuring distributed properties of neural representations
+beyond the decoding of local variables — implications for
+cognition](https://pdfs.semanticscholar.org/4299/a664aec405aa8ef011fe039e5bdb6e907310.pdf)
+
+[Integrating hippocampus and striatum in decision-making](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3774291/pdf/nihms45333.pdf)
+
+[Looking for cognition in the structure
+within the noise](https://www.cell.com/action/showPdf?pii=S1364-6613%2808%2900261-1)
+
+## On life
+
+[The legacy of Adam Johnson](http://redishlab.neuroscience.umn.edu/papers/2018-Legacy-of-Adam-Johnson.pdf)
+
+[Me? Oh, I’m fine, other than the (terminal) cancer](http://www.citypages.com/arts/me-oh-im-fine-other-than-the-terminal-cancer/421006743)
